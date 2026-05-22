@@ -2,26 +2,114 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --gold: 212 175 55;
+    --gold-light: 255 223 122;
+    --cream: 245 240 232;
+    --navy: 10 10 26;
+    --navy-dark: 5 5 15;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: #0a0a1a;
+  }
+
+  body {
+    font-family: var(--font-inter), sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom selection in gold */
+  ::selection {
+    background-color: rgba(212, 175, 55, 0.25);
+    color: #f5f0e8;
+  }
+
+  /* Custom Scrollbars in Gold */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #05050f;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.3);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.6);
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+/* Glassmorphism Styles */
+.glass-card {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.glass-nav {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f5f0e8;
+  transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+  border-color: rgba(212, 175, 55, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+}
+
+/* Typography Helpers */
+.font-playfair {
+  font-family: var(--font-playfair), serif;
+}
+
+.font-inter {
+  font-family: var(--font-inter), sans-serif;
+}
+
+.text-gold {
+  color: rgb(212, 175, 55);
+}
+
+.bg-gold {
+  background-color: rgb(212, 175, 55);
+}
+
+.bg-gold-light {
+  background-color: rgb(255, 223, 122);
+}
+
+.border-gold {
+  border-color: rgb(212, 175, 55);
+}
+
+.text-cream {
+  color: rgb(245, 240, 232);
+}
+
+.bg-navy {
+  background-color: rgb(10 10 26);
+}
+
+.bg-navy-dark {
+  background-color: rgb(5 5 15);
 }
