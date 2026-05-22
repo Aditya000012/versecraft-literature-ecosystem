@@ -24,7 +24,7 @@ Ensure you only recommend real published books. Do not include mock titles.`;
 
     console.log('[Recommendations API] Prompting Gemini...');
     const geminiResponse = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       contents: prompt,
       config: {
         systemInstruction: `You are an elegant, classical librarian and poetic curator. Output a JSON object matching the requested schema. Write only a single poetic sentence explaining why each book fits the user's filters.`,

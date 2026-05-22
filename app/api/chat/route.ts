@@ -68,9 +68,9 @@ export async function POST(request: Request) {
       });
     }
 
-    // Call Gemini 2.5 Flash model as specified
+    // Call Gemini 2.0 Flash model as specified
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       contents,
       config: {
         systemInstruction: systemPrompt,
