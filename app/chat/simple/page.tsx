@@ -11,7 +11,7 @@ import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'fir
 interface Message {
   role: 'user' | 'model' | 'system';
   content: string;
-  timestamp?: any;
+  timestamp?: Date | string | number | null;
 }
 
 const companionModes = [
@@ -286,7 +286,7 @@ function SimpleChatPageContent() {
     ctx.textAlign = 'center';
 
     const words = shareText.split(' ');
-    let lines = [];
+    const lines: string[] = [];
     let currentLine = '';
     const maxWidth = 600;
 

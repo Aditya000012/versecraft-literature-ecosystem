@@ -10,7 +10,7 @@ import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'fir
 interface Message {
   role: 'user' | 'model' | 'system';
   content: string;
-  timestamp?: any;
+  timestamp?: Date | string | number | null;
 }
 
 const genres = [
@@ -420,7 +420,7 @@ function AdvancedChatPageContent() {
     ctx.textAlign = 'center';
 
     const words = shareText.split(' ');
-    let lines = [];
+    const lines: string[] = [];
     let currentLine = '';
     const maxWidth = 600;
 
@@ -549,7 +549,7 @@ function AdvancedChatPageContent() {
                 {/* Author Persona Mimicry */}
                 <div>
                   <label className="block text-xs uppercase tracking-widest text-gold font-bold mb-2 font-inter">3. Author Style Mimicry (Optional)</label>
-                  <p className="text-[10px] text-cream/40 mb-3 font-light">Input a writer's name (e.g. John Milton, Virginia Woolf) to enforce their syntax and vocabulary structure.</p>
+                  <p className="text-[10px] text-cream/40 mb-3 font-light">Input a writer&apos;s name (e.g. John Milton, Virginia Woolf) to enforce their syntax and vocabulary structure.</p>
                   <input
                     type="text"
                     placeholder="e.g. Oscar Wilde, Edgar Allan Poe, Rumi..."

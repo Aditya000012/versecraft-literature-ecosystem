@@ -109,15 +109,16 @@ function AuthPageContent() {
         sessionStorage.setItem('versecraft_signup_flow', isLogin ? 'false' : 'true');
         sessionStorage.setItem('versecraft_signup_name', displayName.trim());
       }
-    } catch (err: any) {
-      console.error('Credentials Authentication Error:', err);
+    } catch (err: unknown) {
+      const errorObj = err as Error & { code?: string };
+      console.error('Credentials Authentication Error:', errorObj);
       // Clean up readable messages
-      if (err.code === 'auth/email-already-in-use') {
+      if (errorObj.code === 'auth/email-already-in-use') {
         setError('An account with this email already exists.');
-      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+      } else if (errorObj.code === 'auth/invalid-credential' || errorObj.code === 'auth/wrong-password' || errorObj.code === 'auth/user-not-found') {
         setError('Invalid email or password. Please try again.');
       } else {
-        setError(err.message || 'Authentication failed. Please check your inputs.');
+        setError(errorObj.message || 'Authentication failed. Please check your inputs.');
       }
       setAuthLoading(false);
     }
@@ -130,9 +131,10 @@ function AuthPageContent() {
       sessionStorage.setItem('versecraft_signup_flow', 'google');
       await signInWithGoogle();
       router.push('/dashboard');
-    } catch (err: any) {
-      console.error('Google Auth Error:', err);
-      setError(err.message || 'Google Sign In failed.');
+    } catch (err: unknown) {
+      const errorObj = err as Error;
+      console.error('Google Auth Error:', errorObj);
+      setError(errorObj.message || 'Google Sign In failed.');
       setAuthLoading(false);
     }
   };

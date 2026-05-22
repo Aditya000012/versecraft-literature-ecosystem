@@ -30,7 +30,7 @@ interface WishlistItem {
   authors: string[];
   thumbnail?: string;
   infoLink?: string;
-  addedAt: any;
+  addedAt: Date | string | { seconds: number; nanoseconds: number } | null;
 }
 
 const genres = [

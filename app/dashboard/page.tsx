@@ -12,13 +12,13 @@ interface ChatSession {
   id: string;
   type: 'simple' | 'advanced';
   mode: string;
-  createdAt: any;
+  createdAt?: { seconds: number; nanoseconds: number } | null;
   filters?: {
     genre: string;
     era: string;
     language: string;
   };
-  messages: any[];
+  messages: { role: string; content: string; timestamp?: Date | string | number | null }[];
 }
 
 interface BookTeaser {
@@ -140,9 +140,9 @@ export default function DashboardPage() {
         const apiRecs = data.recommendations || [];
         if (apiRecs.length >= 3) {
           setTeasers(
-            apiRecs.slice(0, 3).map((item: any) => ({
+            apiRecs.slice(0, 3).map((item: { title: string; author?: string; authors?: string[]; thumbnail: string; poeticReason: string; infoLink: string }) => ({
               title: item.title,
-              author: item.authors[0] || 'Unknown',
+              author: item.author || item.authors?.join(', ') || 'Unknown Author',
               thumbnail: item.thumbnail,
               poeticReason: item.poeticReason,
               infoLink: item.infoLink,

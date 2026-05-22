@@ -25,7 +25,7 @@ export default function InkCanvas() {
     if (!ctx) return;
 
     let animationId: number;
-    let particles: Particle[] = [];
+    const particles: Particle[] = [];
     const maxParticles = 60;
     
     // Explicit gold and cream colors

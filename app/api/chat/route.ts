@@ -39,10 +39,10 @@ export async function POST(request: Request) {
     }
 
     // Build contents array from history plus new message
-    const contents: any[] = [];
+    const contents: { role: string; parts: { text: string }[] }[] = [];
 
     if (history && Array.isArray(history)) {
-      history.forEach((msg: any) => {
+      history.forEach((msg: { role?: string; content?: string }) => {
         // Exclude previous BEGIN_SESSION system calls or placeholder greetings to keep history clean
         if (msg.content && msg.content !== 'BEGIN_SESSION') {
           contents.push({
@@ -79,10 +79,11 @@ export async function POST(request: Request) {
     });
 
     return Response.json({ response: response.text });
-  } catch (error: any) {
-    console.error('Error in /api/chat route:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Error in /api/chat route:', err);
     return Response.json(
-      { error: error?.message || 'An error occurred during generative session.' },
+      { error: err?.message || 'An error occurred during generative session.' },
       { status: 500 }
     );
   }
