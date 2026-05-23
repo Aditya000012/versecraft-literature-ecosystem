@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import Groq from 'groq-sdk';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -6,11 +6,9 @@ export async function POST(request: NextRequest) {
     const { genre, era, author, language } = await request.json();
     console.log('[Recommendations API] Received request with filters:', { genre, era, author, language });
 
-    // Initialize Google GenAI client inside request handler
-    const ai = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY || '',
-    });
-    console.log('[Recommendations API] API Key present:', !!process.env.GEMINI_API_KEY);
+    // Initialize Groq client inside request handler
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    console.log('[Recommendations API] API Key present:', !!process.env.GROQ_API_KEY);
 
     // 1. Call Gemini to generate a list of 6 book recommendations as JSON
     const prompt = `You are a legendary literary curator. Generate a list of exactly 6 book recommendations that perfectly match the reader's vibe:
@@ -22,39 +20,20 @@ export async function POST(request: NextRequest) {
 Provide highly specific, diverse, and classical/insightful recommendations. For each book, generate the title, author, genre, era, and exactly one beautiful, poetic sentence explaining why it fits their vibe (poeticReason).
 Ensure you only recommend real published books. Do not include mock titles.`;
 
-    console.log('[Recommendations API] Prompting Gemini...');
-    const geminiResponse = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: {
-        systemInstruction: `You are an elegant, classical librarian and poetic curator. Output a JSON object matching the requested schema. Write only a single poetic sentence explaining why each book fits the user's filters.`,
-        temperature: 0.75,
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'object',
-          properties: {
-            books: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  title: { type: 'string' },
-                  author: { type: 'string' },
-                  genre: { type: 'string' },
-                  era: { type: 'string' },
-                  poeticReason: { type: 'string' }
-                },
-                required: ['title', 'author', 'genre', 'era', 'poeticReason']
-              }
-            }
-          },
-          required: ['books']
-        }
-      }
+    console.log('[Recommendations API] Prompting Groq...');
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: 'You are an elegant, classical librarian and poetic curator. Output a JSON object matching the requested schema. Write only a single poetic sentence explaining why each book fits the user\'s filters. The schema must be: { "books": [{ "title": string, "author": string, "genre": string, "era": string, "poeticReason": string }] }' },
+        { role: 'user', content: prompt }
+      ],
+      response_format: { type: 'json_object' },
+      max_tokens: 1024,
     });
+    const text = completion.choices[0].message.content || '[]';
 
-    console.log('[Recommendations API] Gemini response received. Parsing...');
-    const parsedData = JSON.parse(geminiResponse.text || '{}');
+    console.log('[Recommendations API] Groq response received. Parsing...');
+    const parsedData = JSON.parse(text || '{}');
     const geminiBooks = parsedData.books || [];
     console.log(`[Recommendations API] Parsed ${geminiBooks.length} book recommendations from Gemini.`);
 

@@ -1,13 +1,11 @@
-import { GoogleGenAI } from '@google/genai';
+import Groq from 'groq-sdk';
 
 export async function POST(request: Request) {
   try {
     const { message, mode, history, filters } = await request.json();
 
-    // Initialize Gemini inside the handler
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    // Build system prompt based on mode
     let systemPrompt = '';
     switch (mode) {
       case 'poetry':
@@ -20,7 +18,7 @@ export async function POST(request: Request) {
         systemPrompt = "You are a master novelist. When given a seed idea, write a rich, atmospheric opening paragraph in flowing prose. Make it cinematic and immersive.";
         break;
       case 'analysis':
-        systemPrompt = "You are a knowledgeable literary scholar and critic. When given a book title, author, poem, or pasted text, provide a thorough literary analysis covering: themes, character development, narrative structure, historical and cultural context, literary devices used, and the work's significance in literature. Write in clear, engaging prose like a passionate professor who loves their subject. Be specific, insightful, and avoid vague generalizations.";
+        systemPrompt = "You are a knowledgeable literary scholar and critic. When given a book title, author, poem, or pasted text, provide a thorough literary analysis covering: themes, character development, narrative structure, historical and cultural context, literary devices used, and the work's significance in literature. Write in clear, engaging prose like a passionate professor who loves their subject.";
         break;
       case 'judgement':
         systemPrompt = "You are a sharp literary critic. Give honest, direct, constructive critique of the user's writing. Identify weaknesses specifically, then suggest concrete improvements. Be fair but unflinching.";
@@ -30,7 +28,6 @@ export async function POST(request: Request) {
         break;
     }
 
-    // If filters exist, prepend to system prompt
     if (filters) {
       const genre = filters.genre || 'any';
       const era = filters.era || 'any';
@@ -38,53 +35,37 @@ export async function POST(request: Request) {
       systemPrompt = `The conversation is set in the ${genre} genre, ${era} era, in the style of ${authorStyle}. Respond accordingly in tone, vocabulary, and references.\n\n${systemPrompt}`;
     }
 
-    // Build contents array from history plus new message
-    const contents: { role: string; parts: { text: string }[] }[] = [];
+    const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
+      { role: 'system', content: systemPrompt }
+    ];
 
     if (history && Array.isArray(history)) {
       history.forEach((msg: { role?: string; content?: string }) => {
-        // Exclude previous BEGIN_SESSION system calls or placeholder greetings to keep history clean
         if (msg.content && msg.content !== 'BEGIN_SESSION') {
-          contents.push({
-            role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
-            parts: [{ text: msg.content }],
+          messages.push({
+            role: msg.role === 'assistant' || msg.role === 'model' ? 'assistant' : 'user',
+            content: msg.content,
           });
         }
       });
     }
 
-    // If message is "BEGIN_SESSION", we generate a warm custom opening greeting, but do NOT save it as a user message
     if (message === 'BEGIN_SESSION') {
-      const welcomePrompt = `Generate a warm, atmospheric opening greeting or invitation matching your persona. DO NOT exceed 3 sentences.`;
-      contents.push({
-        role: 'user',
-        parts: [{ text: welcomePrompt }],
-      });
+      messages.push({ role: 'user', content: 'Generate a warm, atmospheric opening greeting matching your persona. Do not exceed 3 sentences.' });
     } else {
-      // Normal message
-      contents.push({
-        role: 'user',
-        parts: [{ text: message }],
-      });
+      messages.push({ role: 'user', content: message });
     }
 
-    // Call Gemini 2.0 Flash model as specified
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents,
-      config: {
-        systemInstruction: systemPrompt,
-        maxOutputTokens: 1024,
-      },
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages,
+      max_tokens: 1024,
     });
 
-    return Response.json({ response: response.text });
+    return Response.json({ response: completion.choices[0].message.content });
   } catch (error: unknown) {
     const err = error as Error;
     console.error('Error in /api/chat route:', err);
-    return Response.json(
-      { error: err?.message || 'An error occurred during generative session.' },
-      { status: 500 }
-    );
+    return Response.json({ error: err?.message || 'An error occurred.' }, { status: 500 });
   }
 }
