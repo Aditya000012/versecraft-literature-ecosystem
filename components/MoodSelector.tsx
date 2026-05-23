@@ -4,12 +4,12 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
 const moods = [
-  { id: 'melancholy', label: 'Melancholy', emoji: '🌧️', description: 'Heavy hearted and reflective', genre: 'Gothic', era: 'Modernist' },
-  { id: 'euphoric', label: 'Euphoric', emoji: '✨', description: 'Bright, alive, and full of wonder', genre: 'Romance', era: 'Romantic Period' },
-  { id: 'restless', label: 'Restless', emoji: '🌊', description: 'Searching for something unnamed', genre: 'Mystery', era: 'Contemporary' },
-  { id: 'nostalgic', label: 'Nostalgic', emoji: '🍂', description: 'Longing for what once was', genre: 'Classics', era: 'Victorian' },
-  { id: 'curious', label: 'Curious', emoji: '🔭', description: 'Open, questioning, exploratory', genre: 'Fantasy', era: 'Renaissance' },
-  { id: 'dark', label: 'Dark', emoji: '🕯️', description: 'Drawn to shadows and depth', genre: 'Gothic', era: 'Victorian' },
+  { id: 'melancholy', label: 'Melancholy', emoji: '🌧️', description: 'Heavy hearted and reflective' },
+  { id: 'euphoric', label: 'Euphoric', emoji: '✨', description: 'Bright, alive, and full of wonder' },
+  { id: 'restless', label: 'Restless', emoji: '🌊', description: 'Searching for something unnamed' },
+  { id: 'nostalgic', label: 'Nostalgic', emoji: '🍂', description: 'Longing for what once was' },
+  { id: 'curious', label: 'Curious', emoji: '🔭', description: 'Open, questioning, exploratory' },
+  { id: 'dark', label: 'Dark', emoji: '🕯️', description: 'Drawn to shadows and depth' },
 ];
 
 export default function MoodSelector() {
@@ -19,7 +19,7 @@ export default function MoodSelector() {
   const handleMoodSelect = (mood: typeof moods[0]) => {
     setSelected(mood.id);
     setTimeout(() => {
-      router.push(`/chat/advanced?genre=${mood.genre}&era=${mood.era}&autostart=true`);
+      router.push(`/chat/simple?mood=${mood.id}`);
     }, 600);
   };
 

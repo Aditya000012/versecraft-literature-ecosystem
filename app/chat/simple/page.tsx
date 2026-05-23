@@ -23,11 +23,45 @@ const companionModes = [
   { id: 'judgement', name: 'Judgement Mode', icon: '⚖️', desc: 'Rigorous critique' },
 ];
 
+const moodConfigs: Record<string, { genre: string; era: string; style: string }> = {
+  melancholy: {
+    genre: 'reflective and melancholy',
+    era: 'introspective',
+    style: 'an AI that speaks softly, acknowledges weight, and recommends introspective literature',
+  },
+  euphoric: {
+    genre: 'vibrant and celebratory',
+    era: 'joyous',
+    style: 'an AI that is warm and celebratory, suggesting uplifting poetry and stories',
+  },
+  restless: {
+    genre: 'searching and dynamic',
+    era: 'exploratory',
+    style: 'an AI that is curious and probing, asking what the user is searching for',
+  },
+  nostalgic: {
+    genre: 'gentle and reminiscent',
+    era: 'reminiscent',
+    style: 'an AI that is gentle and reminiscent, speaking of timeless classics',
+  },
+  curious: {
+    genre: 'enthusiastic and exploratory',
+    era: 'open',
+    style: 'an AI that is enthusiastic and exploratory, ready to dive into any topic',
+  },
+  dark: {
+    genre: 'gothic and philosophical',
+    era: 'deep',
+    style: 'an AI that leans into gothic and philosophical territory, deep and unflinching',
+  }
+};
+
 function SimpleChatPageContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlChatId = searchParams.get('id');
+  const moodParam = searchParams.get('mood') || '';
 
   const [chatId, setChatId] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -37,6 +71,7 @@ function SimpleChatPageContent() {
   const [shareText, setShareText] = useState('');
   const [shareMode, setShareMode] = useState(false);
   const [saveSuccessId, setSaveSuccessId] = useState<string | null>(null);
+  const [activeMood, setActiveMood] = useState<{ genre: string; era: string; style: string } | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -53,6 +88,18 @@ function SimpleChatPageContent() {
 
     const loadSession = async () => {
       setAiLoading(true);
+      
+      let initialFilters: { genre: string; era: string; authorStyle: string } | undefined = undefined;
+      if (moodParam && moodConfigs[moodParam]) {
+        const config = moodConfigs[moodParam];
+        setActiveMood(config);
+        initialFilters = {
+          genre: config.genre,
+          era: config.era,
+          authorStyle: config.style
+        };
+      }
+
       if (urlChatId) {
         try {
           const docRef = doc(db, 'users', user.uid, 'chats', urlChatId);
@@ -62,6 +109,12 @@ function SimpleChatPageContent() {
             setChatId(urlChatId);
             setCurrentMode(data.mode || 'default');
             setMessages(data.messages || []);
+            
+            if (data.filters && data.filters.authorStyle) {
+              const matchedConfig = Object.values(moodConfigs).find(c => c.style === data.filters.authorStyle);
+              if (matchedConfig) setActiveMood(matchedConfig);
+            }
+            
             setAiLoading(false);
             return;
           }
@@ -80,7 +133,8 @@ function SimpleChatPageContent() {
           body: JSON.stringify({
             message: 'BEGIN_SESSION',
             mode: 'default',
-            history: []
+            history: [],
+            filters: initialFilters
           })
         });
         if (res.ok) {
@@ -110,7 +164,7 @@ function SimpleChatPageContent() {
     };
 
     loadSession();
-  }, [user, urlChatId]);
+  }, [user, urlChatId, moodParam]);
 
   // Scroll to bottom of chat on new messages
   useEffect(() => {
@@ -146,6 +200,11 @@ function SimpleChatPageContent() {
           message: userText,
           mode: currentMode,
           history: clientHistory,
+          filters: (activeMood && currentMode === 'default') ? {
+            genre: activeMood.genre,
+            era: activeMood.era,
+            authorStyle: activeMood.style
+          } : undefined
         }),
       });
 
@@ -182,6 +241,11 @@ function SimpleChatPageContent() {
           type: 'simple',
           createdAt: serverTimestamp(),
           messages: savedMessageList,
+          filters: activeMood ? {
+            genre: activeMood.genre,
+            era: activeMood.era,
+            authorStyle: activeMood.style
+          } : null
         });
       } else {
         await updateDoc(chatDocRef, {
@@ -377,7 +441,12 @@ function SimpleChatPageContent() {
                 body: JSON.stringify({
                   message: 'BEGIN_SESSION',
                   mode: currentMode,
-                  history: []
+                  history: [],
+                  filters: (activeMood && currentMode === 'default') ? {
+                    genre: activeMood.genre,
+                    era: activeMood.era,
+                    authorStyle: activeMood.style
+                  } : undefined
                 })
               });
               if (res.ok) {
@@ -488,7 +557,12 @@ function SimpleChatPageContent() {
                       body: JSON.stringify({
                         message: 'BEGIN_SESSION',
                         mode: mode.id,
-                        history: messages.filter(m => m.content !== 'BEGIN_SESSION')
+                        history: messages.filter(m => m.content !== 'BEGIN_SESSION'),
+                        filters: (activeMood && mode.id === 'default') ? {
+                          genre: activeMood.genre,
+                          era: activeMood.era,
+                          authorStyle: activeMood.style
+                        } : undefined
                       })
                     });
                     if (res.ok) {
