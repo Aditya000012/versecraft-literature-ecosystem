@@ -419,7 +419,7 @@ function AdvancedChatPageContent() {
     const chunks: string[] = [];
     let current = '';
     for (const word of words) {
-      if ((current + ' ' + word).length > 800) {
+      if ((current + ' ' + word).length > 1500) {
         chunks.push(current.trim());
         current = word;
       } else {
