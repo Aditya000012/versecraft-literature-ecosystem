@@ -363,6 +363,17 @@ function LibraryPageContent() {
                           </p>
                         </div>
 
+                        {/* Discuss Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/chat/simple?book=${encodeURIComponent(book.volumeInfo.title)}&author=${encodeURIComponent(book.volumeInfo.authors?.[0] || 'Unknown')}`);
+                          }}
+                          className="mt-3 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-[#c9a84c]/40 text-[#c9a84c] text-xs font-inter hover:bg-[#c9a84c]/10 transition-all duration-200 w-full"
+                        >
+                          💬 Discuss with Companion
+                        </button>
+
                         {/* Categories footer */}
                         <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[9px] font-bold uppercase tracking-wider text-gold">
                           <span>{info.categories?.[0] || 'Literature'}</span>
@@ -449,6 +460,14 @@ function LibraryPageContent() {
 
                   {/* Actions buttons footer */}
                   <div className="mt-6 pt-4 border-t border-white/5 flex flex-col sm:flex-row gap-3">
+                    {/* Discuss button */}
+                    <button
+                      onClick={() => router.push(`/chat/simple?book=${encodeURIComponent(selectedBook.volumeInfo.title)}&author=${encodeURIComponent(selectedBook.volumeInfo.authors?.[0] || 'Unknown')}`)}
+                      className="flex-1 py-3 rounded-xl border border-[#c9a84c]/40 text-[#c9a84c] text-xs font-bold uppercase tracking-wider font-inter hover:bg-[#c9a84c]/10 transition-all duration-200 flex items-center justify-center gap-1.5"
+                    >
+                      💬 Discuss with Companion
+                    </button>
+
                     {/* Buy Link Button */}
                     <a
                       href={selectedBook.volumeInfo.infoLink || `https://books.google.com/books?id=${selectedBook.id}`}
@@ -459,7 +478,7 @@ function LibraryPageContent() {
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                       </svg>
-                      Acquire Volume (Google Books)
+                      Acquire Volume
                     </a>
 
                     {/* Wishlist Toggle Button */}
@@ -474,7 +493,7 @@ function LibraryPageContent() {
                       <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                       </svg>
-                      {isBookInWishlist(selectedBook.id) ? 'Saved in Wishlist' : 'Add to Wishlist'}
+                      {isBookInWishlist(selectedBook.id) ? 'Saved' : 'Add to Wishlist'}
                     </button>
                   </div>
                 </div>

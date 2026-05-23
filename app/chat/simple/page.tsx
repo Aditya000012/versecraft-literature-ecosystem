@@ -62,6 +62,8 @@ function SimpleChatPageContent() {
   const searchParams = useSearchParams();
   const urlChatId = searchParams.get('id');
   const moodParam = searchParams.get('mood') || '';
+  const bookParam = searchParams.get('book') || '';
+  const authorParam = searchParams.get('author') || '';
 
   const [chatId, setChatId] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -127,11 +129,15 @@ function SimpleChatPageContent() {
       const newId = `chat_${Math.random().toString(36).substring(2, 15)}`;
       setChatId(newId);
       try {
+        const messageText = bookParam && authorParam
+          ? `The user wants to discuss the book '${bookParam}' by ${authorParam}. Open the conversation by warmly introducing this book — share something intriguing about it, its themes, its author, or its place in literary history. Then invite the user to share their thoughts or questions about it.`
+          : 'BEGIN_SESSION';
+
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            message: 'BEGIN_SESSION',
+            message: messageText,
             mode: 'default',
             history: [],
             filters: initialFilters
@@ -164,7 +170,7 @@ function SimpleChatPageContent() {
     };
 
     loadSession();
-  }, [user, urlChatId, moodParam]);
+  }, [user, urlChatId, moodParam, bookParam, authorParam]);
 
   // Scroll to bottom of chat on new messages
   useEffect(() => {
@@ -411,21 +417,28 @@ function SimpleChatPageContent() {
       
       {/* Session Header Bar */}
       <div className="glass-card py-3 px-6 border-b border-white/5 fixed top-20 left-0 right-0 z-30 flex justify-between items-center max-w-7xl mx-auto rounded-b-xl">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/dashboard"
-            className="text-xs text-cream/60 hover:text-gold transition-colors flex items-center gap-1 font-inter font-medium"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-            </svg>
-            Dashboard
-          </Link>
-          <span className="text-white/20">|</span>
-          <span className="text-xs font-semibold text-gold font-inter tracking-wide capitalize flex items-center gap-1.5">
-            <span>{companionModes.find((m) => m.id === currentMode)?.icon}</span>
-            {companionModes.find((m) => m.id === currentMode)?.name}
-          </span>
+        <div className="flex flex-col items-start gap-1">
+          <div className="flex items-center gap-2">
+            <Link
+              href="/dashboard"
+              className="text-xs text-cream/60 hover:text-gold transition-colors flex items-center gap-1 font-inter font-medium"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              </svg>
+              Dashboard
+            </Link>
+            <span className="text-white/20">|</span>
+            <span className="text-xs font-semibold text-gold font-inter tracking-wide capitalize flex items-center gap-1.5">
+              <span>{companionModes.find((m) => m.id === currentMode)?.icon}</span>
+              {companionModes.find((m) => m.id === currentMode)?.name}
+            </span>
+          </div>
+          {bookParam && authorParam && (
+            <span className="text-[10px] text-gold font-inter font-medium flex items-center gap-1 mt-0.5">
+              📖 Discussing: <span className="italic">{bookParam}</span> by {authorParam}
+            </span>
+          )}
         </div>
 
         <button
