@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
+import html2canvas from 'html2canvas';
 
 interface Message {
   role: 'user' | 'model' | 'system';
@@ -70,8 +71,6 @@ function SimpleChatPageContent() {
   const [input, setInput] = useState('');
   const [currentMode, setCurrentMode] = useState('default');
   const [aiLoading, setAiLoading] = useState(false);
-  const [shareText, setShareText] = useState('');
-  const [shareMode, setShareMode] = useState(false);
   const [saveSuccessId, setSaveSuccessId] = useState<string | null>(null);
   const [activeMood, setActiveMood] = useState<{ genre: string; era: string; style: string } | null>(null);
 
@@ -308,102 +307,35 @@ function SimpleChatPageContent() {
     }
   };
 
-  const triggerExportCard = (text: string) => {
-    setShareText(text);
-    setShareMode(true);
-  };
-
-  const handleExportPNG = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 600;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Background Gradient (Dark Obsidian)
-    const bgGrad = ctx.createLinearGradient(0, 0, 800, 600);
-    bgGrad.addColorStop(0, '#0a0a1a');
-    bgGrad.addColorStop(1, '#05050f');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, 800, 600);
-
-    // Gold Border Filigree
-    ctx.strokeStyle = '#c9a84c';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(30, 30, 740, 540);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(201, 168, 76, 0.3)';
-    ctx.strokeRect(40, 40, 720, 520);
-
-    // Draw Corner Accents
-    const drawCorner = (x: number, y: number, r: number) => {
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fillStyle = '#c9a84c';
-      ctx.fill();
-    };
-    drawCorner(40, 40, 4);
-    drawCorner(760, 40, 4);
-    drawCorner(40, 560, 4);
-    drawCorner(760, 560, 4);
-
-    // Title
-    ctx.fillStyle = '#c9a84c';
-    ctx.font = 'bold 28px Georgia, serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('VERSECRAFT', 400, 95);
-
-    // Subtitle
-    ctx.fillStyle = 'rgba(245, 240, 232, 0.4)';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('AI-POWERED LITERARY SANCTUARY', 400, 115);
-
-    // Quote mark backdrops
-    ctx.fillStyle = 'rgba(201, 168, 76, 0.15)';
-    ctx.font = 'italic 160px Georgia, serif';
-    ctx.fillText('“', 400, 260);
-
-    ctx.fillStyle = '#f5f0e8';
-    ctx.font = 'italic 20px Georgia, serif';
-    ctx.textAlign = 'center';
-
-    const words = shareText.split(' ');
-    const lines: string[] = [];
-    let currentLine = '';
-    const maxWidth = 600;
-
-    for (let i = 0; i < words.length; i++) {
-      const testLine = currentLine + words[i] + ' ';
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && i > 0) {
-        lines.push(currentLine);
-        currentLine = words[i] + ' ';
-      } else {
-        currentLine = testLine;
-      }
+  const handleShareCard = async (content: string) => {
+    const card = document.createElement('div');
+    card.style.cssText = `
+      position: fixed;
+      top: -9999px;
+      left: -9999px;
+      width: 600px;
+      padding: 48px;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 100%);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      border-radius: 16px;
+      font-family: Georgia, serif;
+      color: #f5f0e8;
+    `;
+    card.innerHTML = `
+      <div style="color: #c9a84c; font-size: 12px; letter-spacing: 3px; margin-bottom: 24px; text-transform: uppercase;">✦ Versecraft</div>
+      <div style="font-size: 16px; line-height: 1.8; font-style: italic; color: #f5f0e8; margin-bottom: 32px;">${content.slice(0, 500)}${content.length > 500 ? '...' : ''}</div>
+      <div style="color: #c9a84c; font-size: 11px; letter-spacing: 2px; border-top: 1px solid rgba(201, 168, 76, 0.2); padding-top: 16px;">versecraft.app</div>
+    `;
+    document.body.appendChild(card);
+    try {
+      const canvas = await html2canvas(card, { backgroundColor: null, scale: 2 });
+      const link = document.createElement('a');
+      link.download = 'versecraft-verse.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } finally {
+      document.body.removeChild(card);
     }
-    lines.push(currentLine);
-
-    let startY = 300 - (lines.length * 15);
-    lines.forEach((line) => {
-      ctx.fillText(line.trim(), 400, startY);
-      startY += 32;
-    });
-
-    ctx.fillStyle = 'rgba(201, 168, 76, 0.15)';
-    ctx.font = 'italic 120px Georgia, serif';
-    ctx.fillText('”', 400, startY + 50);
-
-    ctx.fillStyle = '#c9a84c';
-    ctx.font = 'italic 14px Georgia, serif';
-    ctx.fillText(`Companion Dialogue • ${currentMode.toUpperCase()}`, 400, 520);
-
-    const dataUrl = canvas.toDataURL('image/png');
-    const downloadLink = document.createElement('a');
-    downloadLink.download = `versecraft-anthology-${Date.now()}.png`;
-    downloadLink.href = dataUrl;
-    downloadLink.click();
-    setShareMode(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -537,7 +469,7 @@ function SimpleChatPageContent() {
                     </button>
                     <span>•</span>
                     <button
-                      onClick={() => triggerExportCard(msg.content)}
+                      onClick={() => handleShareCard(msg.content)}
                       className="hover:text-gold flex items-center gap-1 transition-colors"
                     >
                       🎨 Share Card
@@ -642,48 +574,7 @@ function SimpleChatPageContent() {
         </div>
       </div>
 
-      {/* Share/Export Card Modal Overlay */}
-      {shareMode && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="glass-card max-w-xl w-full p-6 sm:p-8 rounded-2xl border border-white/10 shadow-2xl relative">
-            <button
-              onClick={() => setShareMode(false)}
-              className="absolute top-4 right-4 text-cream/40 hover:text-cream transition-colors text-lg"
-            >
-              ✕
-            </button>
-            <h3 className="font-playfair text-xl font-bold text-gold text-center mb-6">Aesthetic Card Export</h3>
-            
-            {/* Live Card Preview */}
-            <div className="rounded-xl border border-gold/30 p-6 bg-gradient-to-br from-[#0c0c24] to-[#04040a] relative mb-6 min-h-[220px] flex flex-col justify-between">
-              <div className="text-center">
-                <span className="font-playfair text-xs font-bold text-gold tracking-widest block mb-4">VERSECRAFT</span>
-                <p className="font-playfair italic text-cream/90 text-sm leading-relaxed text-center px-4">
-                  “ {shareText} ”
-                </p>
-              </div>
-              <span className="text-[10px] text-gold font-bold uppercase tracking-wider block text-center mt-6">
-                Companion Dialogue • {currentMode.toUpperCase()}
-              </span>
-            </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShareMode(false)}
-                className="flex-1 py-3 bg-white/5 border border-white/10 rounded-lg text-xs font-bold uppercase tracking-wider font-inter text-cream transition-all hover:bg-white/10"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleExportPNG}
-                className="flex-1 py-3 bg-gold hover:bg-gold-light rounded-lg text-xs font-bold uppercase tracking-wider font-inter text-navy transition-all shadow-md shadow-gold/15"
-              >
-                Download Graphic Card
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

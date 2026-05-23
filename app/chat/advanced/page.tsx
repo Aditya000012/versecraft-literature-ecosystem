@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
+import html2canvas from 'html2canvas';
 
 interface Message {
   role: 'user' | 'model' | 'system';
@@ -126,9 +127,6 @@ function AdvancedChatPageContent() {
   const [authorStyle, setAuthorStyle] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('english');
 
-  // Sharing states
-  const [shareText, setShareText] = useState('');
-  const [shareMode, setShareMode] = useState(false);
   const [saveSuccessId, setSaveSuccessId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -416,126 +414,35 @@ function AdvancedChatPageContent() {
     }
   };
 
-  const triggerExportCard = (text: string) => {
-    setShareText(text);
-    setShareMode(true);
-  };
-
-  const handleExportPNG = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 600;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Background Gradient (Dark Obsidian matching advanced layout)
-    const bgGrad = ctx.createLinearGradient(0, 0, 800, 600);
-    if (selectedGenre === 'gothic' && selectedEra === 'victorian') {
-      bgGrad.addColorStop(0, '#050000');
-      bgGrad.addColorStop(1, '#100305');
-      ctx.strokeStyle = '#b91c1c'; // crimson borders
-    } else if (selectedGenre === 'sufi' && selectedEra === 'ancient') {
-      bgGrad.addColorStop(0, '#0e071e');
-      bgGrad.addColorStop(1, '#05020c');
-      ctx.strokeStyle = '#d97706'; // deep amber/gold borders
-    } else if (selectedGenre === 'fantasy' && selectedEra === 'renaissance') {
-      bgGrad.addColorStop(0, '#021008');
-      bgGrad.addColorStop(1, '#010201');
-      ctx.strokeStyle = '#10b981'; // emerald borders
-    } else if (selectedGenre === 'romance' && selectedEra === 'modernist') {
-      bgGrad.addColorStop(0, '#140b12');
-      bgGrad.addColorStop(1, '#050206');
-      ctx.strokeStyle = '#fb7185'; // soft rose borders
-    } else {
-      bgGrad.addColorStop(0, '#0a0a1a');
-      bgGrad.addColorStop(1, '#05050f');
-      ctx.strokeStyle = '#c9a84c'; // classic gold borders
+  const handleShareCard = async (content: string) => {
+    const card = document.createElement('div');
+    card.style.cssText = `
+      position: fixed;
+      top: -9999px;
+      left: -9999px;
+      width: 600px;
+      padding: 48px;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 100%);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      border-radius: 16px;
+      font-family: Georgia, serif;
+      color: #f5f0e8;
+    `;
+    card.innerHTML = `
+      <div style="color: #c9a84c; font-size: 12px; letter-spacing: 3px; margin-bottom: 24px; text-transform: uppercase;">✦ Versecraft</div>
+      <div style="font-size: 16px; line-height: 1.8; font-style: italic; color: #f5f0e8; margin-bottom: 32px;">${content.slice(0, 500)}${content.length > 500 ? '...' : ''}</div>
+      <div style="color: #c9a84c; font-size: 11px; letter-spacing: 2px; border-top: 1px solid rgba(201, 168, 76, 0.2); padding-top: 16px;">versecraft.app</div>
+    `;
+    document.body.appendChild(card);
+    try {
+      const canvas = await html2canvas(card, { backgroundColor: null, scale: 2 });
+      const link = document.createElement('a');
+      link.download = 'versecraft-verse.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } finally {
+      document.body.removeChild(card);
     }
-
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, 800, 600);
-
-    // Gold Border Filigree
-    ctx.lineWidth = 3;
-    ctx.strokeRect(30, 30, 740, 540);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.strokeRect(40, 40, 720, 520);
-
-    // Draw Corner Accents
-    const drawCorner = (x: number, y: number, r: number) => {
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fillStyle = ctx.strokeStyle as string;
-      ctx.fill();
-    };
-    drawCorner(40, 40, 4);
-    drawCorner(760, 40, 4);
-    drawCorner(40, 560, 4);
-    drawCorner(760, 560, 4);
-
-    // Title: Versecraft
-    ctx.fillStyle = ctx.strokeStyle as string;
-    ctx.font = 'bold 28px Georgia, serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('VERSECRAFT', 400, 95);
-
-    // Subtitle
-    ctx.fillStyle = 'rgba(245, 240, 232, 0.4)';
-    ctx.font = '10px sans-serif';
-    ctx.fillText(`${selectedGenre.toUpperCase()} • ${selectedEra.toUpperCase()} CHAMBER`, 400, 115);
-
-    // Drawing quote marks
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
-    ctx.font = 'italic 160px Georgia, serif';
-    ctx.fillText('“', 400, 260);
-
-    // Wrap quote text
-    ctx.fillStyle = '#f5f0e8';
-    ctx.font = 'italic 20px Georgia, serif';
-    ctx.textAlign = 'center';
-
-    const words = shareText.split(' ');
-    const lines: string[] = [];
-    let currentLine = '';
-    const maxWidth = 600;
-
-    for (let i = 0; i < words.length; i++) {
-      const testLine = currentLine + words[i] + ' ';
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && i > 0) {
-        lines.push(currentLine);
-        currentLine = words[i] + ' ';
-      } else {
-        currentLine = testLine;
-      }
-    }
-    lines.push(currentLine);
-
-    // Print lines
-    let startY = 300 - (lines.length * 15);
-    lines.forEach((line) => {
-      ctx.fillText(line.trim(), 400, startY);
-      startY += 32;
-    });
-
-    // Drawing closing quote marks
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
-    ctx.font = 'italic 120px Georgia, serif';
-    ctx.fillText('”', 400, startY + 50);
-
-    // Footer signature
-    ctx.fillStyle = ctx.strokeStyle as string;
-    ctx.font = 'italic 14px Georgia, serif';
-    ctx.fillText(`Advanced Dialogue • ${currentMode.toUpperCase()}`, 400, 520);
-
-    // Convert and Download
-    const dataUrl = canvas.toDataURL('image/png');
-    const downloadLink = document.createElement('a');
-    downloadLink.download = `versecraft-advanced-anthology-${Date.now()}.png`;
-    downloadLink.href = dataUrl;
-    downloadLink.click();
-    setShareMode(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -763,7 +670,7 @@ function AdvancedChatPageContent() {
                           </button>
                           <span>•</span>
                           <button
-                            onClick={() => triggerExportCard(msg.content)}
+                            onClick={() => handleShareCard(msg.content)}
                             className="hover:text-gold flex items-center gap-1 transition-colors"
                           >
                             🎨 Share Card
@@ -839,54 +746,7 @@ function AdvancedChatPageContent() {
         )}
       </AnimatePresence>
 
-      {/* Share card Overlay Modal */}
-      {shareMode && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="glass-card max-w-xl w-full p-6 sm:p-8 rounded-2xl border border-white/10 shadow-2xl relative">
-            <button
-              onClick={() => setShareMode(false)}
-              className="absolute top-4 right-4 text-cream/40 hover:text-cream transition-colors text-lg"
-            >
-              ✕
-            </button>
-            <h3 className="font-playfair text-xl font-bold text-gold text-center mb-6">Aesthetic Card Export</h3>
-            
-            {/* Live Card Preview */}
-            <div className={`rounded-xl border p-6 relative mb-6 min-h-[220px] flex flex-col justify-between ${
-              selectedGenre === 'gothic' && selectedEra === 'victorian' ? 'bg-gradient-to-br from-[#050000] to-[#100305] border-red-500/40' :
-              selectedGenre === 'sufi' && selectedEra === 'ancient' ? 'bg-gradient-to-br from-[#0e071e] to-[#05020c] border-amber-500/40' :
-              selectedGenre === 'fantasy' && selectedEra === 'renaissance' ? 'bg-gradient-to-br from-[#021008] to-[#010201] border-emerald-500/40' :
-              selectedGenre === 'romance' && selectedEra === 'modernist' ? 'bg-gradient-to-br from-[#140b12] to-[#050206] border-rose-500/40' :
-              'bg-gradient-to-br from-[#0c0c24] to-[#04040a] border-gold/30'
-            }`}>
-              <div className="text-center">
-                <span className="font-playfair text-xs font-bold text-gold tracking-widest block mb-4">VERSECRAFT</span>
-                <p className="font-playfair italic text-cream/90 text-sm leading-relaxed text-center px-4">
-                  “ {shareText} ”
-                </p>
-              </div>
-              <span className="text-[10px] text-gold font-bold uppercase tracking-wider block text-center mt-6">
-                {selectedGenre.toUpperCase()} • {selectedEra.toUpperCase()} CHAMBER
-              </span>
-            </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShareMode(false)}
-                className="flex-1 py-3 bg-white/5 border border-white/10 rounded-lg text-xs font-bold uppercase tracking-wider font-inter text-cream transition-all hover:bg-white/10"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleExportPNG}
-                className="flex-1 py-3 bg-gold hover:bg-gold-light rounded-lg text-xs font-bold uppercase tracking-wider font-inter text-navy transition-all shadow-md shadow-gold/15"
-              >
-                Download Graphic Card
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
