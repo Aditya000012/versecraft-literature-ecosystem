@@ -398,7 +398,29 @@ export default function RecommendationsPage() {
                         {rec.title}
                       </h3>
                       <p className="font-inter text-xs text-cream/50 mt-0.5 mb-4">
-                        by {rec.author || rec.authors?.join(', ') || 'Unknown Author'}
+                        by{' '}
+                        {rec.author ? (
+                          <span
+                            onClick={() => router.push(`/authors?name=${encodeURIComponent(rec.author!)}`)}
+                            className="cursor-pointer hover:text-[#c9a84c] transition-colors duration-200 underline underline-offset-2"
+                          >
+                            {rec.author}
+                          </span>
+                        ) : rec.authors && rec.authors.length > 0 ? (
+                          rec.authors.map((authorName, index) => (
+                            <React.Fragment key={authorName}>
+                              {index > 0 && ', '}
+                              <span
+                                onClick={() => router.push(`/authors?name=${encodeURIComponent(authorName)}`)}
+                                className="cursor-pointer hover:text-[#c9a84c] transition-colors duration-200 underline underline-offset-2"
+                              >
+                                {authorName}
+                              </span>
+                            </React.Fragment>
+                          ))
+                        ) : (
+                          'Unknown Author'
+                        )}
                       </p>
 
                       {/* POETIC MATCH CARD BLOCK */}

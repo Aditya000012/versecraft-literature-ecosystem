@@ -177,6 +177,11 @@ export default function Navbar() {
               </div>
             </div>
 
+            {/* Authors Link */}
+            <Link href="/authors" className="hover:text-gold transition-colors">
+              Authors
+            </Link>
+
             {/* Chat Dropdown Trigger */}
             <div 
               className="relative py-2 group"

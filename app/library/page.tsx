@@ -359,7 +359,21 @@ function LibraryPageContent() {
                             {title}
                           </h4>
                           <p className="font-inter text-[11px] text-cream/50 mt-1 line-clamp-1">
-                            by {authors.join(', ')}
+                            by{' '}
+                            {authors.map((authorName, index) => (
+                              <React.Fragment key={authorName}>
+                                {index > 0 && ', '}
+                                <span
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(`/authors?name=${encodeURIComponent(authorName)}`);
+                                  }}
+                                  className="cursor-pointer hover:text-[#c9a84c] transition-colors duration-200 underline underline-offset-2"
+                                >
+                                  {authorName}
+                                </span>
+                              </React.Fragment>
+                            ))}
                           </p>
                         </div>
 
@@ -436,7 +450,18 @@ function LibraryPageContent() {
                       {selectedBook.volumeInfo.title}
                     </h2>
                     <p className="font-inter text-xs font-semibold text-cream/60 mt-1">
-                      by {(selectedBook.volumeInfo.authors || ['Unknown Author']).join(', ')}
+                      by{' '}
+                      {(selectedBook.volumeInfo.authors || ['Unknown Author']).map((authorName, index) => (
+                        <React.Fragment key={authorName}>
+                          {index > 0 && ', '}
+                          <span
+                            onClick={() => router.push(`/authors?name=${encodeURIComponent(authorName)}`)}
+                            className="cursor-pointer hover:text-[#c9a84c] transition-colors duration-200 underline underline-offset-2"
+                          >
+                            {authorName}
+                          </span>
+                        </React.Fragment>
+                      ))}
                     </p>
 
                     <div className="flex gap-2.5 mt-3">
