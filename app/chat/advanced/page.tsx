@@ -415,35 +415,49 @@ function AdvancedChatPageContent() {
   };
 
   const handleShareCard = async (content: string) => {
-    const card = document.createElement('div');
-    card.style.cssText = `
-      position: fixed;
-      top: -9999px;
-      left: -9999px;
-      width: 800px;
-      padding: 48px;
-      background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 100%);
-      border: 1px solid rgba(201, 168, 76, 0.3);
-      border-radius: 16px;
-      font-family: Georgia, serif;
-      color: #f5f0e8;
-      max-height: none;
-      overflow: visible;
-    `;
-    card.innerHTML = `
-      <div style="color: #c9a84c; font-size: 12px; letter-spacing: 3px; margin-bottom: 24px; text-transform: uppercase;">✦ Versecraft</div>
-      <div style="font-size: 14px; line-height: 1.7; font-style: italic; color: #f5f0e8; margin-bottom: 32px;">${content.slice(0, 1200)}${content.length > 1200 ? '...' : ''}</div>
-      <div style="color: #c9a84c; font-size: 11px; letter-spacing: 2px; border-top: 1px solid rgba(201, 168, 76, 0.2); padding-top: 16px;">versecraft.app</div>
-    `;
-    document.body.appendChild(card);
-    try {
-      const canvas = await html2canvas(card, { backgroundColor: null, scale: 2 });
-      const link = document.createElement('a');
-      link.download = 'versecraft-verse.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } finally {
-      document.body.removeChild(card);
+    const words = content.split(' ');
+    const chunks: string[] = [];
+    let current = '';
+    for (const word of words) {
+      if ((current + ' ' + word).length > 800) {
+        chunks.push(current.trim());
+        current = word;
+      } else {
+        current += ' ' + word;
+      }
+    }
+    if (current.trim()) chunks.push(current.trim());
+
+    for (let i = 0; i < chunks.length; i++) {
+      const card = document.createElement('div');
+      card.style.cssText = `
+        position: fixed;
+        top: -9999px;
+        left: -9999px;
+        width: 800px;
+        padding: 48px;
+        background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 100%);
+        border: 1px solid rgba(201, 168, 76, 0.3);
+        border-radius: 16px;
+        font-family: Georgia, serif;
+        color: #f5f0e8;
+      `;
+      card.innerHTML = `
+        <div style="color: #c9a84c; font-size: 12px; letter-spacing: 3px; margin-bottom: 24px; text-transform: uppercase;">✦ Versecraft ${chunks.length > 1 ? `(${i + 1}/${chunks.length})` : ''}</div>
+        <div style="font-size: 14px; line-height: 1.7; font-style: italic; color: #f5f0e8; margin-bottom: 32px;">${chunks[i]}</div>
+        <div style="color: #c9a84c; font-size: 11px; letter-spacing: 2px; border-top: 1px solid rgba(201, 168, 76, 0.2); padding-top: 16px;">versecraft.app</div>
+      `;
+      document.body.appendChild(card);
+      try {
+        const canvas = await html2canvas(card, { backgroundColor: null, scale: 2 });
+        const link = document.createElement('a');
+        link.download = chunks.length > 1 ? `versecraft-verse-${i + 1}.png` : 'versecraft-verse.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } finally {
+        document.body.removeChild(card);
+      }
     }
   };
 
