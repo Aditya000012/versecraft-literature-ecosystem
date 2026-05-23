@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
     let searchQuery = '';
     if (query && query.trim() !== '') {
-      searchQuery = query.trim();
+      searchQuery = `intitle:${query.trim()}`;
     } else if (genre && genre.trim() !== '') {
       searchQuery = `subject:${genre.trim()}`;
     } else {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     const encodedQuery = encodeURIComponent(searchQuery);
-    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=20&printType=books&orderBy=relevance&langRestrict=en&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=20&printType=books&orderBy=relevance&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
 
     console.log('Library API fetching:', url);
 
