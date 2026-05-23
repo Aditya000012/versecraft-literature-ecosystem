@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     const encodedQuery = encodeURIComponent(searchQuery);
-    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=20&printType=books&orderBy=relevance&langRestrict=en`;
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=20&printType=books&orderBy=relevance&langRestrict=en&key=${process.env.GOOGLE_BOOKS_API_KEY}`;
 
     console.log('Library API fetching:', url);
 
