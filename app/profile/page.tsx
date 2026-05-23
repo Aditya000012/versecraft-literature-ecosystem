@@ -101,6 +101,11 @@ function ProfilePageContent() {
           setFavoriteEra(data.preferences?.favoriteEra || '');
           setCustomNote(data.preferences?.customNote || '');
           setTimeSpent(data.timeSpent || 0);
+
+          if (data.timeSpent > 100) {
+            await updateDoc(doc(db, 'users', user.uid), { timeSpent: 0 });
+            setTimeSpent(0);
+          }
         }
         
         // Fetch total count of chats
@@ -117,17 +122,16 @@ function ProfilePageContent() {
   }, [user]);
 
   useEffect(() => {
+    if (!user) return;
     const interval = setInterval(async () => {
-      if (user) {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          setTimeSpent(data.timeSpent || 0);
-        }
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        setTimeSpent(data.timeSpent || 0);
       }
     }, 60000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, user?.uid]);
 
   useEffect(() => {
     if (!user) return;
@@ -138,7 +142,7 @@ function ProfilePageContent() {
       });
     }, 60000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, user?.uid]);
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
