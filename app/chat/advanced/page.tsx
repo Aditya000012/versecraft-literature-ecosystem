@@ -132,6 +132,7 @@ function AdvancedChatPageContent() {
   const [saveSuccessId, setSaveSuccessId] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Dynamic Theme Styling Resolution
   const getActiveThemeKey = () => {
@@ -299,6 +300,14 @@ function AdvancedChatPageContent() {
     }
   };
 
+  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+    }
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || aiLoading || !user) return;
@@ -312,6 +321,9 @@ function AdvancedChatPageContent() {
 
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
     setAiLoading(true);
 
     try {
@@ -804,12 +816,13 @@ function AdvancedChatPageContent() {
                 {/* Form Input */}
                 <form onSubmit={handleSendMessage} className="flex gap-3 relative items-center">
                   <textarea
+                    ref={textareaRef}
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={handleTextareaInput}
                     onKeyDown={handleKeyPress}
                     placeholder={`Scribe your response inside the locked room... Mode: ${companionModes.find((m) => m.id === currentMode)?.name}`}
                     rows={1}
-                    className="flex-grow px-4 py-3.5 text-sm rounded-xl outline-none glass-input resize-none"
+                    className="flex-grow px-4 py-3.5 text-sm rounded-xl outline-none glass-input resize-none overflow-y-auto"
                     disabled={aiLoading}
                   />
                   <button
