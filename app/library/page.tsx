@@ -79,39 +79,18 @@ function LibraryPageContent() {
     fetchWishlist();
   }, [user]);
 
-  // Fetch books when search queries or URL params change
-  useEffect(() => {
-    const fetchBooks = async () => {
-      setLoadingBooks(true);
-      try {
-        const genre = genreParam || 'fiction';
-        console.log('Library fetch URL:', `/api/library?genre=${genre}`);
-        const res = await fetch(`/api/library?genre=${genre}`);
-        const data = await res.json();
-        console.log('Library data received:', data?.length, data?.[0]);
-        setBooks(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error('Error fetching books:', err);
-        setBooks([]);
-      } finally {
-        setLoadingBooks(false);
-      }
-    };
-
-    setSearchQuery(queryParam);
-    setActiveGenre(genreParam || (queryParam ? '' : 'fiction'));
-    fetchBooks();
-  }, [queryParam, genreParam]);
-
-  const handleSearchSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const query = searchQuery.trim();
-    
-    // Call fetch directly and immediately
+  const fetchBooks = React.useCallback(async (genreName: string, queryText: string) => {
     setLoadingBooks(true);
     try {
-      console.log('Library fetch URL:', `/api/library?q=${query}`);
-      const res = await fetch(`/api/library?q=${query}`);
+      let url = '/api/library';
+      if (queryText.trim()) {
+        url = `/api/library?q=${encodeURIComponent(queryText.trim())}`;
+      } else {
+        const genre = genreName || 'fiction';
+        url = `/api/library?genre=${encodeURIComponent(genre)}`;
+      }
+      console.log('Library fetch URL:', url);
+      const res = await fetch(url);
       const data = await res.json();
       console.log('Library data received:', data?.length, data?.[0]);
       setBooks(Array.isArray(data) ? data : []);
@@ -121,6 +100,24 @@ function LibraryPageContent() {
     } finally {
       setLoadingBooks(false);
     }
+  }, []);
+
+  // Fetch books when search queries or URL params change
+  useEffect(() => {
+    setSearchQuery(queryParam);
+    setActiveGenre(genreParam || (queryParam ? '' : 'fiction'));
+    fetchBooks(genreParam, queryParam);
+  }, [queryParam, genreParam, fetchBooks]);
+
+  const handleSearchSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = searchQuery.trim();
+    
+    // Clear active genre sidebar selection when search is active
+    setActiveGenre('');
+    
+    // Call fetch directly and immediately
+    await fetchBooks('', query);
 
     const params = new URLSearchParams();
     if (query) {
@@ -137,20 +134,7 @@ function LibraryPageContent() {
     setSearchQuery('');
 
     // Call fetch directly and immediately
-    setLoadingBooks(true);
-    try {
-      const genre = newGenre || 'fiction';
-      console.log('Library fetch URL:', `/api/library?genre=${genre}`);
-      const res = await fetch(`/api/library?genre=${genre}`);
-      const data = await res.json();
-      console.log('Library data received:', data?.length, data?.[0]);
-      setBooks(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Error fetching books:', err);
-      setBooks([]);
-    } finally {
-      setLoadingBooks(false);
-    }
+    await fetchBooks(newGenre, '');
 
     const params = new URLSearchParams();
     if (newGenre) params.set('genre', newGenre);
@@ -234,9 +218,33 @@ function LibraryPageContent() {
             placeholder="Search volumes, authors, or literary movements..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                if (searchQuery.trim()) {
+                  setActiveGenre('');
+                  fetchBooks('', searchQuery.trim());
+                  const params = new URLSearchParams();
+                  params.set('q', searchQuery.trim());
+                  router.push(`/library?${params.toString()}`);
+                }
+              }
+            }}
             className="w-full px-4 py-3 pl-11 rounded-xl outline-none glass-input text-sm text-cream shadow-inner"
           />
-          <button type="submit" className="absolute left-3.5 top-3.5 text-cream/40 hover:text-gold transition-colors">
+          <button
+            type="submit"
+            onClick={() => {
+              if (searchQuery.trim()) {
+                setActiveGenre('');
+                fetchBooks('', searchQuery.trim());
+                const params = new URLSearchParams();
+                params.set('q', searchQuery.trim());
+                router.push(`/library?${params.toString()}`);
+              }
+            }}
+            className="absolute left-3.5 top-3.5 text-cream/40 hover:text-gold transition-colors"
+          >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
