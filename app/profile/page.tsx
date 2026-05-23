@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, increment, collection, getDocs } from 'firebase/firestore';
 
 interface AnthologyItem {
   id: string;
@@ -53,6 +53,8 @@ function ProfilePageContent() {
   const [activeTab, setActiveTab] = useState(tabParam);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [loadingData, setLoadingData] = useState(true);
+  const [timeSpent, setTimeSpent] = useState(0);
+  const [chatCount, setChatCount] = useState(0);
 
   // Preference Form states
   const [interestedGenres, setInterestedGenres] = useState<string[]>([]);
@@ -98,7 +100,12 @@ function ProfilePageContent() {
           setFavoriteGenre(data.preferences?.favoriteGenre || '');
           setFavoriteEra(data.preferences?.favoriteEra || '');
           setCustomNote(data.preferences?.customNote || '');
+          setTimeSpent(data.timeSpent || 0);
         }
+        
+        // Fetch total count of chats
+        const chatsSnapshot = await getDocs(collection(db, 'users', user.uid, 'chats'));
+        setChatCount(chatsSnapshot.size);
       } catch (err) {
         console.error('Error loading profile:', err);
       } finally {
@@ -107,6 +114,30 @@ function ProfilePageContent() {
     };
 
     fetchProfile();
+  }, [user]);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setTimeSpent(data.timeSpent || 0);
+        }
+      }
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(async () => {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
+        timeSpent: increment(1)
+      });
+    }, 60000);
+    return () => clearInterval(interval);
   }, [user]);
 
   const handleTabChange = (tabId: string) => {
@@ -329,7 +360,6 @@ function ProfilePageContent() {
     );
   }
 
-  const timeSpentVal = profileData?.timeSpent || 0;
   const anthologyItems = profileData?.anthology || [];
   const wishlistItems = profileData?.wishlist || [];
 
@@ -362,7 +392,7 @@ function ProfilePageContent() {
           <div className="text-center">
             <span className="text-[10px] uppercase font-bold tracking-wider text-gold font-inter block">Time Active</span>
             <span className="font-playfair text-sm text-gold block mt-1.5 uppercase font-bold tracking-wider">
-              {Math.floor(timeSpentVal / 60)} mins
+              {timeSpent} mins
             </span>
           </div>
         </div>
@@ -674,7 +704,7 @@ function ProfilePageContent() {
                 {/* Text center */}
                 <div className="relative z-10 text-center">
                   <span className="font-playfair text-3xl font-bold text-gold block">
-                    {Math.floor(timeSpentVal / 60)}
+                    {timeSpent}
                   </span>
                   <span className="text-[9px] uppercase tracking-wider text-cream/40 block font-bold mt-0.5">minutes</span>
                 </div>
@@ -686,14 +716,14 @@ function ProfilePageContent() {
                   Every second spent reading, dueling, and exploring inside the sanctuary is logged in our real-time visibility-aware database. You have dedicated:
                 </p>
                 <p className="font-playfair text-gold text-lg italic mt-3 font-semibold">
-                  {formatTimeSpent(timeSpentVal)}
+                  {formatTimeSpent(timeSpent * 60)}
                 </p>
               </div>
 
               {/* Synthesized stats */}
               <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-6 text-center font-inter text-xs">
                 <div>
-                  <span className="text-gold font-bold block">{Math.max(1, Math.floor(timeSpentVal / 180))}</span>
+                  <span className="text-gold font-bold block">{wishlistItems.length}</span>
                   <span className="text-[9px] text-cream/40 font-bold block uppercase tracking-wider mt-0.5">Books Cataloged</span>
                 </div>
                 <div>
@@ -701,7 +731,7 @@ function ProfilePageContent() {
                   <span className="text-[9px] text-cream/40 font-bold block uppercase tracking-wider mt-0.5">verses forged</span>
                 </div>
                 <div>
-                  <span className="text-gold font-bold block">{Math.max(1, Math.floor(timeSpentVal / 45))}</span>
+                  <span className="text-gold font-bold block">{chatCount}</span>
                   <span className="text-[9px] text-cream/40 font-bold block uppercase tracking-wider mt-0.5">Alchemical Fusions</span>
                 </div>
               </div>
