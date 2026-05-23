@@ -183,6 +183,70 @@ function AdvancedChatPageContent() {
     loadSession();
   }, [user, urlChatId]);
 
+  // Autostart from URL parameters
+  useEffect(() => {
+    if (!user || urlChatId) return;
+
+    const genreParam = searchParams.get('genre') || '';
+    const eraParam = searchParams.get('era') || '';
+    const autostartParam = searchParams.get('autostart') === 'true';
+
+    if (genreParam && eraParam) {
+      const matchedGenre = genres.find(g => g.name.toLowerCase() === genreParam.toLowerCase() || g.id.toLowerCase() === genreParam.toLowerCase())?.id || genreParam.toLowerCase();
+      const matchedEra = eras.find(e => e.name.toLowerCase() === eraParam.toLowerCase() || e.id.toLowerCase() === eraParam.toLowerCase())?.id || eraParam.toLowerCase();
+
+      setSelectedGenre(matchedGenre);
+      setSelectedEra(matchedEra);
+
+      if (autostartParam) {
+        const autoLaunch = async () => {
+          const newChatId = `chat_adv_${Math.random().toString(36).substring(2, 15)}`;
+          setChatId(newChatId);
+
+          const genreObj = genres.find(g => g.id === matchedGenre) || { name: matchedGenre };
+          const eraObj = eras.find(e => e.id === matchedEra) || { name: matchedEra };
+
+          const greetingText = `Welcome. I'm glad you've found your way here. I have prepared our workspace for our journey into ${genreObj.name} literature from the ${eraObj.name} era. We will converse in English. What are you reading, writing, or thinking about today?`;
+
+          const initialMessages: Message[] = [
+            {
+              role: 'model',
+              content: greetingText,
+              timestamp: new Date(),
+            },
+          ];
+
+          setMessages(initialMessages);
+          setWizardActive(false);
+
+          try {
+            const chatDocRef = doc(db, 'users', user.uid, 'chats', newChatId);
+            await setDoc(chatDocRef, {
+              mode: 'poetry',
+              type: 'advanced',
+              filters: {
+                genre: matchedGenre,
+                era: matchedEra,
+                authorStyle: '',
+                language: 'english',
+              },
+              createdAt: serverTimestamp(),
+              messages: initialMessages.map((msg) => ({
+                role: msg.role,
+                content: msg.content,
+                timestamp: new Date(),
+              })),
+            });
+          } catch (err) {
+            console.error('Failed to initialize autostart advanced session:', err);
+          }
+        };
+
+        autoLaunch();
+      }
+    }
+  }, [user, urlChatId, searchParams]);
+
   // Scroll to bottom of chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

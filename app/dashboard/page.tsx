@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
 import DailyVerse from '@/components/DailyVerse';
+import MoodSelector from '@/components/MoodSelector';
 
 interface ChatSession {
   id: string;
@@ -198,6 +199,8 @@ export default function DashboardPage() {
       </motion.section>
 
       <DailyVerse />
+
+      <MoodSelector />
 
       {/* Quick Launch Cards */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
