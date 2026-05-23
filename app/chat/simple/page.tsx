@@ -313,17 +313,19 @@ function SimpleChatPageContent() {
       position: fixed;
       top: -9999px;
       left: -9999px;
-      width: 600px;
+      width: 800px;
       padding: 48px;
       background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 100%);
       border: 1px solid rgba(201, 168, 76, 0.3);
       border-radius: 16px;
       font-family: Georgia, serif;
       color: #f5f0e8;
+      max-height: none;
+      overflow: visible;
     `;
     card.innerHTML = `
       <div style="color: #c9a84c; font-size: 12px; letter-spacing: 3px; margin-bottom: 24px; text-transform: uppercase;">✦ Versecraft</div>
-      <div style="font-size: 16px; line-height: 1.8; font-style: italic; color: #f5f0e8; margin-bottom: 32px;">${content.slice(0, 500)}${content.length > 500 ? '...' : ''}</div>
+      <div style="font-size: 14px; line-height: 1.7; font-style: italic; color: #f5f0e8; margin-bottom: 32px;">${content.slice(0, 1200)}${content.length > 1200 ? '...' : ''}</div>
       <div style="color: #c9a84c; font-size: 11px; letter-spacing: 2px; border-top: 1px solid rgba(201, 168, 76, 0.2); padding-top: 16px;">versecraft.app</div>
     `;
     document.body.appendChild(card);
