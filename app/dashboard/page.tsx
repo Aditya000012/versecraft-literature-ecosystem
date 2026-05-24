@@ -328,6 +328,14 @@ export default function DashboardPage() {
                   </div>
                 </Link>
               ))}
+              <div className="pt-2">
+                <Link
+                  href="/chat/simple?sidebar=open"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-[#c9a84c]/10 border border-[#c9a84c]/30 hover:border-[#c9a84c]/60 rounded-lg text-xs font-semibold font-inter text-[#c9a84c] transition-all shadow shadow-gold/5"
+                >
+                  ⏱️ View All History
+                </Link>
+              </div>
             </div>
           )}
         </div>

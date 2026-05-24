@@ -140,12 +140,21 @@ function AuthorsPageContent() {
         >
           {/* Top Section */}
           <motion.div variants={itemVariants} className="space-y-4">
-            <Link
-              href="/authors"
-              className="text-xs text-[#f5f0e8]/60 hover:text-[#c9a84c] transition-colors flex items-center gap-1 font-inter font-medium"
-            >
-              ← All Authors
-            </Link>
+            <div className="flex gap-4">
+              <Link
+                href="/dashboard"
+                className="text-xs text-[#c9a84c] hover:text-[#c9a84c]/85 transition-colors flex items-center gap-1 font-inter font-semibold"
+              >
+                ← Dashboard
+              </Link>
+              <span className="text-[#f5f0e8]/20">|</span>
+              <Link
+                href="/authors"
+                className="text-xs text-[#f5f0e8]/60 hover:text-[#c9a84c] transition-colors flex items-center gap-1 font-inter font-medium"
+              >
+                ← All Authors
+              </Link>
+            </div>
             
             <div className="flex flex-col sm:flex-row sm:items-baseline gap-3 pt-2">
               <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#c9a84c]">
@@ -279,6 +288,15 @@ function AuthorsPageContent() {
   // Curated list view (when no name param exists)
   return (
     <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Dashboard Back Link */}
+      <div className="mb-4">
+        <Link
+          href="/dashboard"
+          className="text-xs text-[#c9a84c] hover:text-[#c9a84c]/85 transition-colors flex items-center gap-1 font-inter font-medium"
+        >
+          ← Dashboard
+        </Link>
+      </div>
       {/* Title */}
       <div className="text-center mb-12">
         <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#c9a84c] mb-2 tracking-wide">

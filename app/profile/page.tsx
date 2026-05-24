@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, increment, collection, getDocs } from 'firebase/firestore';
@@ -369,6 +370,15 @@ function ProfilePageContent() {
 
   return (
     <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Dashboard Back Link */}
+      <div className="mb-4 text-left">
+        <Link
+          href="/dashboard"
+          className="text-xs text-gold hover:text-gold-light transition-colors inline-flex items-center gap-1 font-inter font-medium"
+        >
+          ← Dashboard
+        </Link>
+      </div>
       {/* Header Profile Info card */}
       <div className="glass-card border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl mb-10 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-4 text-center sm:text-left">

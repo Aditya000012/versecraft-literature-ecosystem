@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
@@ -202,6 +203,15 @@ function LibraryPageContent() {
 
   return (
     <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Dashboard Back Link */}
+      <div className="mb-4">
+        <Link
+          href="/dashboard"
+          className="text-xs text-gold hover:text-gold-light transition-colors flex items-center gap-1 font-inter font-medium"
+        >
+          ← Dashboard
+        </Link>
+      </div>
       {/* Search Header */}
       <div className="mb-10 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6">
         <div>

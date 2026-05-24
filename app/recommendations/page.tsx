@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
@@ -232,6 +233,15 @@ export default function RecommendationsPage() {
 
   return (
     <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Dashboard Back Link */}
+      <div className="mb-4 text-left">
+        <Link
+          href="/dashboard"
+          className="text-xs text-gold hover:text-gold-light transition-colors inline-flex items-center gap-1 font-inter font-medium"
+        >
+          ← Dashboard
+        </Link>
+      </div>
       {/* Title */}
       <div className="text-center mb-10">
         <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-gold/80 block mb-2 font-inter">THE ORACLE&apos;S CHOICE</span>

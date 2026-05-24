@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import html2canvas from 'html2canvas';
+import ChatSidebar from '@/components/ChatSidebar';
 
 interface Message {
   role: 'user' | 'model' | 'system';
@@ -62,6 +63,7 @@ function SimpleChatPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlChatId = searchParams.get('id');
+  const sessionParam = searchParams.get('session') || '';
   const moodParam = searchParams.get('mood') || '';
   const bookParam = searchParams.get('book') || '';
   const authorParam = searchParams.get('author') || '';
@@ -102,13 +104,14 @@ function SimpleChatPageContent() {
         };
       }
 
-      if (urlChatId) {
+      const targetChatId = sessionParam || urlChatId;
+      if (targetChatId) {
         try {
-          const docRef = doc(db, 'users', user.uid, 'chats', urlChatId);
+          const docRef = doc(db, 'users', user.uid, 'chats', targetChatId);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             const data = docSnap.data();
-            setChatId(urlChatId);
+            setChatId(targetChatId);
             setCurrentMode(data.mode || 'default');
             setMessages(data.messages || []);
             
@@ -170,7 +173,7 @@ function SimpleChatPageContent() {
     };
 
     loadSession();
-  }, [user, urlChatId, moodParam, bookParam, authorParam]);
+  }, [user, urlChatId, sessionParam, moodParam, bookParam, authorParam]);
 
   // Scroll to bottom of chat on new messages
   useEffect(() => {
@@ -374,6 +377,7 @@ function SimpleChatPageContent() {
 
   return (
     <div className="relative z-10 w-full min-h-screen flex flex-col pt-20">
+      <ChatSidebar currentChatId={chatId || null} chatType="simple" />
       
       {/* Session Header Bar */}
       <div className="glass-card py-3 px-6 border-b border-white/5 fixed top-20 left-0 right-0 z-30 flex justify-between items-center max-w-7xl mx-auto rounded-b-xl">

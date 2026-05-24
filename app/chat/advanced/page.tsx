@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import html2canvas from 'html2canvas';
+import ChatSidebar from '@/components/ChatSidebar';
 
 interface Message {
   role: 'user' | 'model' | 'system';
@@ -113,6 +114,7 @@ function AdvancedChatPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlChatId = searchParams.get('id');
+  const sessionParam = searchParams.get('session') || '';
 
   const [chatId, setChatId] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -154,13 +156,14 @@ function AdvancedChatPageContent() {
     if (!user) return;
 
     const loadSession = async () => {
-      if (urlChatId) {
+      const targetChatId = sessionParam || urlChatId;
+      if (targetChatId) {
         try {
-          const docRef = doc(db, 'users', user.uid, 'chats', urlChatId);
+          const docRef = doc(db, 'users', user.uid, 'chats', targetChatId);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             const data = docSnap.data();
-            setChatId(urlChatId);
+            setChatId(targetChatId);
             setCurrentMode(data.mode || 'poetry');
             setMessages(data.messages || []);
             
@@ -180,7 +183,7 @@ function AdvancedChatPageContent() {
     };
 
     loadSession();
-  }, [user, urlChatId]);
+  }, [user, urlChatId, sessionParam]);
 
   // Autostart from URL parameters
   useEffect(() => {
@@ -481,6 +484,7 @@ function AdvancedChatPageContent() {
 
   return (
     <div className={`relative z-10 w-full min-h-screen flex flex-col pt-20 transition-all duration-1000 bg-gradient-to-br ${currentTheme.bgClass}`}>
+      <ChatSidebar currentChatId={chatId || null} chatType="advanced" />
       <AnimatePresence mode="wait">
         {wizardActive ? (
           /* PART A: The Selection Wizard */
