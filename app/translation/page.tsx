@@ -116,6 +116,17 @@ export default function TranslationChamberPage() {
         translatorsNote: data.translatorsNote,
       });
 
+      // Update source language dropdown to detected language if Auto Detect is active and matches options exactly
+      if (data.detectedLanguage && sourceLanguage === 'Auto Detect') {
+        const cleanedDetected = data.detectedLanguage.trim();
+        const exactMatch = sourceLanguages.find(
+          (lang) => lang === cleanedDetected
+        );
+        if (exactMatch && exactMatch !== 'Auto Detect') {
+          setSourceLanguage(exactMatch);
+        }
+      }
+
       // Add to session history
       const newHistoryItem: RecentTranslation = {
         sourceLanguage,
