@@ -14,6 +14,25 @@ import {
 } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 
+const sidebarStyles = `
+  @keyframes pulse-once {
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 0.4; }
+  }
+  .pulse-sidebar-tab {
+    animation: pulse-once 2s ease-in-out 2;
+  }
+  @keyframes fade-in-out {
+    0% { opacity: 0; transform: translateX(-10px); }
+    15% { opacity: 1; transform: translateX(0); }
+    85% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(-10px); }
+  }
+  .sidebar-tooltip {
+    animation: fade-in-out 4s ease-in-out forwards;
+  }
+`;
+
 interface ChatSession {
   id: string;
   type: 'simple' | 'advanced';
@@ -35,6 +54,7 @@ export default function ChatSidebar({ currentChatId, chatType }: ChatSidebarProp
   const [isHovered, setIsHovered] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   // Addition 2 — Start expanded if sidebar=open is in the URL
   useEffect(() => {
@@ -42,6 +62,24 @@ export default function ChatSidebar({ currentChatId, chatType }: ChatSidebarProp
       setIsHovered(true);
     }
   }, [sidebarParam]);
+
+  // First-visit tooltip showing after 2 seconds and fading after 4 seconds
+  useEffect(() => {
+    const tooltipSeen = localStorage.getItem('sidebar_tooltip_seen') === 'true';
+    if (!tooltipSeen) {
+      const timer = setTimeout(() => {
+        setShowTooltip(true);
+        localStorage.setItem('sidebar_tooltip_seen', 'true');
+      }, 2000);
+      const hideTimer = setTimeout(() => {
+        setShowTooltip(false);
+      }, 6000);
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(hideTimer);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -92,22 +130,52 @@ export default function ChatSidebar({ currentChatId, chatType }: ChatSidebarProp
   };
 
   return (
-    <motion.div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      animate={{ width: isHovered ? 280 : 12 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="fixed left-0 bottom-0 z-40 bg-[#0a0a1a]/95 backdrop-blur-xl border-r border-[#c9a84c]/15 select-none overflow-hidden flex flex-col justify-between"
-      style={{
-        top: '64px',
-        height: 'calc(100vh - 64px)',
-      }}
-    >
-      {!isHovered ? (
-        <div className="w-full h-full flex justify-center items-center cursor-pointer">
-          <div className="w-[2px] h-[60%] bg-[#c9a84c]/30 rounded-full" />
+    <>
+      <style dangerouslySetInnerHTML={{ __html: sidebarStyles }} />
+      
+      {showTooltip && !isHovered && (
+        <div className="fixed left-[40px] top-[120px] z-50 bg-[#0a0a1a]/95 backdrop-blur border border-[#c9a84c]/30 px-3 py-2 rounded-lg shadow-xl shadow-black/80 sidebar-tooltip pointer-events-none">
+          <span className="font-inter text-[10px] italic text-[#c9a84c] whitespace-nowrap tracking-wide">
+            ← Hover for chat history
+          </span>
         </div>
-      ) : (
+      )}
+
+      <motion.div
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        animate={{ width: isHovered ? 280 : 28 }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        className="fixed left-0 bottom-0 z-40 bg-[#0a0a1a]/95 backdrop-blur-xl border-r border-[#c9a84c]/15 select-none overflow-hidden flex flex-col justify-between"
+        style={{
+          top: '64px',
+          height: 'calc(100vh - 64px)',
+        }}
+      >
+        {!isHovered ? (
+          <div 
+            className="w-full h-full flex flex-col justify-center items-center cursor-pointer pulse-sidebar-tab"
+            style={{
+              background: 'rgba(201, 168, 76, 0.15)',
+              borderRight: '1px solid rgba(201, 168, 76, 0.4)',
+            }}
+          >
+            <span 
+              style={{
+                writingMode: 'vertical-rl',
+                transform: 'rotate(180deg)',
+                color: '#c9a84c',
+                fontSize: '9px',
+                textTransform: 'uppercase',
+                letterSpacing: '2px',
+                fontWeight: 'bold',
+                fontFamily: 'Inter, sans-serif',
+              }}
+            >
+              HISTORY
+            </span>
+          </div>
+        ) : (
         <div className="flex-grow flex flex-col min-w-[280px] p-5 overflow-hidden h-full">
           {/* Header */}
           <div className="mb-6 flex-shrink-0">
@@ -192,9 +260,10 @@ export default function ChatSidebar({ currentChatId, chatType }: ChatSidebarProp
             >
               <span>✦</span> New Chat
             </button>
-          </div>
         </div>
+      </div>
       )}
     </motion.div>
+    </>
   );
 }
