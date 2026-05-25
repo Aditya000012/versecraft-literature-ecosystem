@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import html2canvas from 'html2canvas';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, increment, collection, getDocs } from 'firebase/firestore';
@@ -65,10 +66,7 @@ function ProfilePageContent() {
   const [customNote, setCustomNote] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Exporter Share state
-  const [shareText, setShareText] = useState('');
-  const [shareMode, setShareMode] = useState(false);
-  const [shareModeName, setShareModeName] = useState('poetry');
+
 
   // Protected route check
   useEffect(() => {
@@ -240,108 +238,51 @@ function ProfilePageContent() {
     );
   };
 
-  const triggerExportCard = (text: string, modeName: string) => {
-    setShareText(text);
-    setShareModeName(modeName);
-    setShareMode(true);
-  };
-
-  const handleExportPNG = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 600;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Background Gradient (Dark Obsidian)
-    const bgGrad = ctx.createLinearGradient(0, 0, 800, 600);
-    bgGrad.addColorStop(0, '#0a0a1a');
-    bgGrad.addColorStop(1, '#05050f');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, 800, 600);
-
-    // Gold Border Filigree
-    ctx.strokeStyle = '#c9a84c';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(30, 30, 740, 540);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(201, 168, 76, 0.3)';
-    ctx.strokeRect(40, 40, 720, 520);
-
-    // Draw Corner Accents
-    const drawCorner = (x: number, y: number, r: number) => {
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fillStyle = '#c9a84c';
-      ctx.fill();
-    };
-    drawCorner(40, 40, 4);
-    drawCorner(760, 40, 4);
-    drawCorner(40, 560, 4);
-    drawCorner(760, 560, 4);
-
-    // Title: Versecraft
-    ctx.fillStyle = '#c9a84c';
-    ctx.font = 'bold 28px Georgia, serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('VERSECRAFT', 400, 95);
-
-    // Subtitle
-    ctx.fillStyle = 'rgba(245, 240, 232, 0.4)';
-    ctx.font = '10px sans-serif';
-    ctx.fillText('SAVED PORTFOLIO ANTHOLOGY', 400, 115);
-
-    // Drawing quote marks
-    ctx.fillStyle = 'rgba(201, 168, 76, 0.15)';
-    ctx.font = 'italic 160px Georgia, serif';
-    ctx.fillText('“', 400, 260);
-
-    // Wrap quote text
-    ctx.fillStyle = '#f5f0e8';
-    ctx.font = 'italic 20px Georgia, serif';
-    ctx.textAlign = 'center';
-
-    const words = shareText.split(' ');
-    const lines: string[] = [];
-    let currentLine = '';
-    const maxWidth = 600;
-
-    for (let i = 0; i < words.length; i++) {
-      const testLine = currentLine + words[i] + ' ';
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && i > 0) {
-        lines.push(currentLine);
-        currentLine = words[i] + ' ';
+  const handleAnthologyShareCard = async (content: string) => {
+    const words = content.split(' ');
+    const chunks: string[] = [];
+    let current = '';
+    for (const word of words) {
+      if ((current + ' ' + word).length > 1500) {
+        chunks.push(current.trim());
+        current = word;
       } else {
-        currentLine = testLine;
+        current += ' ' + word;
       }
     }
-    lines.push(currentLine);
+    if (current.trim()) chunks.push(current.trim());
 
-    // Print lines
-    let startY = 300 - (lines.length * 15);
-    lines.forEach((line) => {
-      ctx.fillText(line.trim(), 400, startY);
-      startY += 32;
-    });
-
-    // Drawing closing quote marks
-    ctx.fillStyle = 'rgba(201, 168, 76, 0.15)';
-    ctx.font = 'italic 120px Georgia, serif';
-    ctx.fillText('”', 400, startY + 50);
-
-    // Footer signature
-    ctx.fillStyle = '#c9a84c';
-    ctx.font = 'italic 14px Georgia, serif';
-    ctx.fillText(`Anthology Record • ${shareModeName.toUpperCase()}`, 400, 520);
-
-    // Convert and Download
-    const dataUrl = canvas.toDataURL('image/png');
-    const downloadLink = document.createElement('a');
-    downloadLink.download = `versecraft-saved-verse-${Date.now()}.png`;
-    downloadLink.href = dataUrl;
-    downloadLink.click();
-    setShareMode(false);
+    for (let i = 0; i < chunks.length; i++) {
+      const card = document.createElement('div');
+      card.style.cssText = `
+        position: fixed;
+        top: -9999px;
+        left: -9999px;
+        width: 800px;
+        padding: 48px;
+        background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 100%);
+        border: 1px solid rgba(201, 168, 76, 0.3);
+        border-radius: 16px;
+        font-family: Georgia, serif;
+        color: #f5f0e8;
+      `;
+      card.innerHTML = `
+        <div style="color: #c9a84c; font-size: 12px; letter-spacing: 3px; margin-bottom: 24px; text-transform: uppercase;">✦ Versecraft ${chunks.length > 1 ? `(${i + 1}/${chunks.length})` : ''}</div>
+        <div style="font-size: 14px; line-height: 1.7; font-style: italic; color: #f5f0e8; margin-bottom: 32px;">${chunks[i]}</div>
+        <div style="color: #c9a84c; font-size: 11px; letter-spacing: 2px; border-top: 1px solid rgba(201, 168, 76, 0.2); padding-top: 16px;">versecraft.app</div>
+      `;
+      document.body.appendChild(card);
+      try {
+        const canvas = await html2canvas(card, { backgroundColor: null, scale: 2 });
+        const link = document.createElement('a');
+        link.download = chunks.length > 1 ? `versecraft-verse-${i + 1}.png` : 'versecraft-verse.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } finally {
+        document.body.removeChild(card);
+      }
+    }
   };
 
   const formatTimeSpent = (seconds: number) => {
@@ -489,7 +430,7 @@ function ProfilePageContent() {
                     {/* Exporter triggers */}
                     <div className="mt-6 pt-3 border-t border-white/5 flex justify-end">
                       <button
-                        onClick={() => triggerExportCard(item.response, item.mode)}
+                        onClick={() => handleAnthologyShareCard(item.response)}
                         className="text-[10px] uppercase font-bold tracking-wider font-inter text-gold hover:text-gold-light transition-colors flex items-center gap-1"
                       >
                         🎨 Download Share Card
@@ -754,48 +695,7 @@ function ProfilePageContent() {
         )}
       </AnimatePresence>
 
-      {/* Card Share overlay */}
-      {shareMode && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="glass-card max-w-xl w-full p-6 sm:p-8 rounded-2xl border border-white/10 shadow-2xl relative">
-            <button
-              onClick={() => setShareMode(false)}
-              className="absolute top-4 right-4 text-cream/40 hover:text-cream transition-colors text-lg"
-            >
-              ✕
-            </button>
-            <h3 className="font-playfair text-xl font-bold text-gold text-center mb-6">Aesthetic Card Export</h3>
-            
-            {/* Live Card Preview */}
-            <div className="rounded-xl border border-gold/30 p-6 bg-gradient-to-br from-[#0c0c24] to-[#04040a] relative mb-6 min-h-[220px] flex flex-col justify-between">
-              <div className="text-center">
-                <span className="font-playfair text-xs font-bold text-gold tracking-widest block mb-4">VERSECRAFT</span>
-                <p className="font-playfair italic text-cream/90 text-sm leading-relaxed text-center px-4">
-                  “ {shareText} ”
-                </p>
-              </div>
-              <span className="text-[10px] text-gold font-bold uppercase tracking-wider block text-center mt-6">
-                Anthology Record • {shareModeName.toUpperCase()}
-              </span>
-            </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShareMode(false)}
-                className="flex-1 py-3 bg-white/5 border border-white/10 rounded-lg text-xs font-bold uppercase tracking-wider font-inter text-cream transition-all hover:bg-white/10"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleExportPNG}
-                className="flex-1 py-3 bg-gold hover:bg-gold-light rounded-lg text-xs font-bold uppercase tracking-wider font-inter text-navy transition-all shadow-md shadow-gold/15"
-              >
-                Download Graphic Card
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
