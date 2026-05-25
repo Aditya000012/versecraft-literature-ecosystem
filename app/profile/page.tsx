@@ -65,6 +65,7 @@ function ProfilePageContent() {
   const [favoriteEra, setFavoriteEra] = useState('');
   const [customNote, setCustomNote] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [expandedCards, setExpandedCards] = useState<{ [key: string]: boolean }>({});
 
 
 
@@ -238,6 +239,39 @@ function ProfilePageContent() {
     );
   };
 
+  const parseSavedAt = (savedAt: AnthologyItem['savedAt'] | undefined): Date => {
+    if (!savedAt) return new Date();
+    if (savedAt instanceof Date) return savedAt;
+    if (typeof savedAt === 'string') return new Date(savedAt);
+    if (savedAt && typeof savedAt === 'object' && 'seconds' in savedAt && typeof (savedAt as { seconds: number }).seconds === 'number') {
+      return new Date((savedAt as { seconds: number }).seconds * 1000);
+    }
+    if (savedAt && typeof savedAt === 'object' && 'toDate' in savedAt && typeof (savedAt as { toDate: () => Date }).toDate === 'function') {
+      return (savedAt as { toDate: () => Date }).toDate();
+    }
+    return new Date();
+  };
+
+  const formatDateHeader = (date: Date): string => {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const formatTimeSaved = (date: Date): string => {
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
+  const toggleCardExpanded = (id: string) => {
+    setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
   const handleAnthologyShareCard = async (content: string) => {
     const words = content.split(' ');
     const chunks: string[] = [];
@@ -300,7 +334,7 @@ function ProfilePageContent() {
       <div className="min-h-screen bg-navy flex items-center justify-center relative z-10">
         <div className="animate-pulse flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-full border-t-2 border-gold border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-gold font-medium italic">Opening secret profile archives...</span>
+          <span className="font-playfair text-lg text-gold font-medium italic">Consulting the archives...</span>
         </div>
       </div>
     );
@@ -357,6 +391,7 @@ function ProfilePageContent() {
       <div className="flex border-b border-white/5 gap-6 mb-8 overflow-x-auto no-scrollbar pb-1">
         {[
           { id: 'anthology', name: '📜 Personal Anthology' },
+          { id: 'timeline', name: '📅 Timeline' },
           { id: 'wishlist', name: '❤️ Wishlist' },
           { id: 'preferences', name: '⚙️ Preferences' },
           { id: 'timeSpent', name: '⏳ Exploration Timer' },
@@ -693,6 +728,148 @@ function ProfilePageContent() {
             </div>
           </motion.div>
         )}
+
+        {/* 5. TIMELINE */}
+        {activeTab === 'timeline' && (
+          <motion.div
+            key="timeline"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="max-w-3xl mx-auto"
+          >
+            {anthologyItems.length === 0 ? (
+              <div className="glass-card border-white/5 rounded-xl p-12 text-center max-w-lg mx-auto">
+                <span className="text-3xl block mb-2">⏳</span>
+                <p className="font-playfair text-lg text-gold italic">Your timeline awaits its first verse.</p>
+                <div className="mt-6">
+                  <Link
+                    href="/chat/simple"
+                    className="px-6 py-2.5 bg-gold hover:bg-gold-light text-navy font-bold uppercase tracking-wider rounded-xl text-xs font-inter transition-all inline-block"
+                  >
+                    Forge a Verse
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="relative pl-8 ml-3 space-y-8" style={{ borderLeft: '2px solid rgba(201, 168, 76, 0.3)' }}>
+                {(() => {
+                  const sortedItems = [...anthologyItems].sort((a, b) => {
+                    const dateA = parseSavedAt(a.savedAt).getTime();
+                    const dateB = parseSavedAt(b.savedAt).getTime();
+                    return dateB - dateA;
+                  });
+
+                  const groups: { [key: string]: AnthologyItem[] } = {};
+                  sortedItems.forEach((item) => {
+                    const date = parseSavedAt(item.savedAt);
+                    const dateStr = formatDateHeader(date);
+                    if (!groups[dateStr]) {
+                      groups[dateStr] = [];
+                    }
+                    groups[dateStr].push(item);
+                  });
+
+                  let globalIdx = 0;
+
+                  return Object.entries(groups).map(([dateStr, items]) => (
+                    <div key={dateStr} className="space-y-6">
+                      {/* Date Header */}
+                      <div className="text-xs font-bold uppercase tracking-[0.2em] text-gold font-inter mb-4">
+                        {dateStr}
+                      </div>
+
+                      {/* Grouped items */}
+                      <div className="space-y-6">
+                        {items.map((item) => {
+                          const date = parseSavedAt(item.savedAt);
+                          const timeStr = formatTimeSaved(date);
+                          const isExpanded = !!expandedCards[item.id];
+                          const isLong = item.response.length > 120;
+                          const previewText = isLong ? item.response.slice(0, 120) : item.response;
+                          const currentIdx = globalIdx++;
+
+                          return (
+                            <div key={item.id} className="relative">
+                              {/* Gold timeline dot */}
+                              <div
+                                className="absolute rounded-full"
+                                style={{
+                                  width: '10px',
+                                  height: '10px',
+                                  backgroundColor: '#c9a84c',
+                                  left: '-38px',
+                                  top: '28px',
+                                }}
+                              />
+                              <motion.div
+                                initial={{ opacity: 0, x: 30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: currentIdx * 0.1, duration: 0.4 }}
+                                className="glass-card border-white/5 hover:border-gold/15 rounded-2xl p-6 shadow-2xl relative flex flex-col justify-between group"
+                              >
+                                <div>
+                                  {/* Card Header */}
+                                  <div className="flex justify-between items-center mb-3 pb-2 border-b border-white/5">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-gold bg-gold/10 px-2 py-0.5 rounded-full">
+                                      {item.mode}
+                                    </span>
+                                    <span className="text-[10px] text-cream/40 font-inter">
+                                      {timeStr}
+                                    </span>
+                                  </div>
+
+                                  {/* Invocation */}
+                                  <p className="text-[12px] italic text-cream/70 mb-3">
+                                    <strong className="text-cream/50 uppercase tracking-widest text-[8px] font-bold block mb-1">
+                                      Invocation:
+                                    </strong>
+                                    “{item.prompt.length > 60 ? `${item.prompt.slice(0, 60)}...` : item.prompt}”
+                                  </p>
+
+                                  {/* Response Content Preview / Expanded */}
+                                  <div className="p-4 bg-purple-dark/15 border border-white/5 rounded-xl shadow-inner mt-2">
+                                    <p className="font-playfair italic text-[13px] leading-relaxed text-cream/90 font-light">
+                                      “ {isExpanded ? item.response : previewText}{!isExpanded && isLong && '...'} ”
+                                    </p>
+                                    {isLong && (
+                                      <button
+                                        onClick={() => toggleCardExpanded(item.id)}
+                                        className="text-[10px] text-gold uppercase tracking-wider font-bold mt-2 hover:text-gold-light transition-colors block"
+                                      >
+                                        {isExpanded ? 'Show Less' : 'Read More'}
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Footer actions */}
+                                <div className="mt-6 pt-3 border-t border-white/5 flex justify-between items-center">
+                                  <button
+                                    onClick={() => handleAnthologyShareCard(item.response)}
+                                    className="text-[10px] uppercase font-bold tracking-wider font-inter text-gold hover:text-gold-light transition-colors flex items-center gap-1"
+                                  >
+                                    🎨 Download Card
+                                  </button>
+                                  <button
+                                    onClick={() => handleRemoveFromAnthology(item.id)}
+                                    className="text-[10px] uppercase font-bold tracking-wider font-inter text-red-400 hover:text-red-300 transition-colors"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </motion.div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            )}
+          </motion.div>
+        )}
       </AnimatePresence>
 
 
@@ -706,7 +883,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-navy flex items-center justify-center relative z-10">
         <div className="animate-pulse flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-full border-t-2 border-gold border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-gold font-medium italic">Opening secret profile archives...</span>
+          <span className="font-playfair text-lg text-gold font-medium italic">Consulting the archives...</span>
         </div>
       </div>
     }>
