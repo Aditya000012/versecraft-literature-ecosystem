@@ -72,6 +72,11 @@ const modeNames: Record<string, string> = {
   judgement: 'Judgement Mode',
 };
 
+const getWobblyLineX = (y: number, startX: number) => {
+  // Deterministic organic wobbly guide line formula for realistic manuscript ink trace
+  return startX + Math.sin(y * 0.015) * 3 + Math.cos(y * 0.04) * 1.2 + Math.sin(y * 0.08) * 0.5;
+};
+
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -93,17 +98,6 @@ export default function DashboardPage() {
   const dashboardContainerRef = React.useRef<HTMLDivElement | null>(null);
   const dividerRefs = React.useRef<(HTMLDivElement | null)[]>([]);
 
-  // Ink Droplet Queue interface definition
-  interface CanvasDroplet {
-    x: number;
-    pageY: number;
-    currentPageY: number;
-    radius: number;
-    opacity: number;
-    speed: number;
-    state: 'falling' | 'blotting';
-  }
-
   interface CanvasBlot {
     x: number;
     pageY: number;
@@ -112,27 +106,52 @@ export default function DashboardPage() {
     progress: number;
   }
 
-  const activeDropletsRef = React.useRef<CanvasDroplet[]>([]);
   const activeBlotsRef = React.useRef<CanvasBlot[]>([]);
+  const currentTipYRef = React.useRef<number>(0);
+  const unrolledDividersRef = React.useRef<boolean[]>([false, false, false, false, false, false]);
 
-  // Dynamic ink droplet spawning trigger
-  const spawnDroplet = (targetPageY: number) => {
-    if (typeof window === 'undefined' || window.innerWidth < 768) return;
-    const container = dashboardContainerRef.current;
-    if (!container) return;
-    const containerRect = container.getBoundingClientRect();
-    const leftMarginX = containerRect.left + 24;
+  // Sync ref with state
+  useEffect(() => {
+    unrolledDividersRef.current = unrolledDividers;
+  }, [unrolledDividers]);
 
-    const startPageY = window.scrollY - 10;
-    activeDropletsRef.current.push({
-      x: leftMarginX,
-      pageY: targetPageY,
-      currentPageY: startPageY,
-      radius: 2.2,
-      opacity: 0.85,
-      speed: 10,
-      state: 'falling',
+  // Spawn wobbly organic blot
+  const triggerUnroll = (idx: number, dividerPageY: number) => {
+    if (unrolledDividersRef.current[idx]) return;
+    
+    // Mark as unrolled immediately in ref to prevent duplicate triggers
+    unrolledDividersRef.current[idx] = true;
+    
+    setUnrolledDividers((prev) => {
+      const next = [...prev];
+      next[idx] = true;
+      return next;
     });
+
+    const logoEl = document.querySelector('a[href="/"]');
+    let logoX = 64;
+    if (logoEl) {
+      const rect = logoEl.getBoundingClientRect();
+      logoX = rect.left + rect.width / 2;
+    } else {
+      const container = dashboardContainerRef.current;
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        logoX = rect.left + 24;
+      }
+    }
+    const blotX = getWobblyLineX(dividerPageY, logoX);
+
+    // Avoid duplicate blots near the same Y coordinate
+    if (!activeBlotsRef.current.some(b => Math.abs(b.pageY - dividerPageY) < 15)) {
+      activeBlotsRef.current.push({
+        x: blotX,
+        pageY: dividerPageY,
+        maxCoreRadius: 7.5,
+        maxBleedRadius: 17.5,
+        progress: 0,
+      });
+    }
   };
 
   // 1. Mobile screen check
@@ -148,17 +167,16 @@ export default function DashboardPage() {
   // 2. Unrolling Dividers and Scroll Tracking
   useEffect(() => {
     const handleScroll = () => {
-      // Check dividers scroll thresholds
-      let triggeredIndex = -1;
-      let triggeredPageY = 0;
+      // Desktop checks are handled by the canvas animate() loop for frame-perfect droplet alignment!
+      if (window.innerWidth >= 768) return;
 
+      let triggeredIndex = -1;
       dividerRefs.current.forEach((el, idx) => {
         if (!el) return;
         const rect = el.getBoundingClientRect();
-        // If the top of the divider enters the lower portion of the viewport (75% height threshold)
+        // If the top of the divider enters the viewport on mobile
         if (rect.top < window.innerHeight * 0.75 && !unrolledDividers[idx]) {
           triggeredIndex = idx;
-          triggeredPageY = rect.top + window.scrollY;
         }
       });
 
@@ -169,7 +187,6 @@ export default function DashboardPage() {
           next[triggeredIndex] = true;
           return next;
         });
-        spawnDroplet(triggeredPageY);
       }
     };
 
@@ -182,7 +199,7 @@ export default function DashboardPage() {
     };
   }, [unrolledDividers]);
 
-  // 3. Ink Droplet Fall Animation Loop
+  // 3. Wobbly Ink Parchment Line & Organic Droplet Animation Loop
   useEffect(() => {
     if (typeof window === 'undefined' || window.innerWidth < 768) return;
     const canvas = canvasRef.current;
@@ -197,90 +214,163 @@ export default function DashboardPage() {
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    const getLeftMarginX = () => {
+    const getLogoX = () => {
+      const logoEl = document.querySelector('a[href="/"]');
+      if (logoEl) {
+        const rect = logoEl.getBoundingClientRect();
+        return rect.left + rect.width / 2;
+      }
       const container = dashboardContainerRef.current;
-      if (!container) return 32;
-      const rect = container.getBoundingClientRect();
-      return rect.left + 24;
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        return rect.left + 24;
+      }
+      return 50;
+    };
+
+    const drawTeardrop = (cContext: CanvasRenderingContext2D, cx: number, cy: number, width: number, height: number) => {
+      cContext.beginPath();
+      // Pointy end pointing UPWARD (towards the line)
+      cContext.moveTo(cx, cy - height / 2);
+      // Curve to bottom right
+      cContext.bezierCurveTo(
+        cx + width * 0.6, cy - height * 0.1,
+        cx + width * 0.5, cy + height * 0.5,
+        cx, cy + height * 0.5
+      );
+      // Curve to bottom left
+      cContext.bezierCurveTo(
+        cx - width * 0.5, cy + height * 0.5,
+        cx - width * 0.6, cy - height * 0.1,
+        cx, cy - height / 2
+      );
+      cContext.closePath();
+      cContext.fillStyle = '#121212';
+      cContext.fill();
+
+      // Premium gloss reflection accent
+      cContext.beginPath();
+      cContext.arc(cx - width * 0.15, cy + height * 0.1, width * 0.12, 0, Math.PI * 2);
+      cContext.fillStyle = 'rgba(255, 255, 255, 0.22)';
+      cContext.fill();
     };
 
     let animationFrameId: number;
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const leftMarginX = getLeftMarginX();
       const currentScrollY = window.scrollY;
 
-      // Draw the static vertical guide line in the left margin
-      ctx.beginPath();
-      ctx.moveTo(leftMarginX, 0);
-      ctx.lineTo(leftMarginX, canvas.height);
-      ctx.strokeStyle = 'rgba(26, 26, 26, 0.08)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
+      // Find the logo and set start Y position
+      const logoEl = document.querySelector('a[href="/"]');
+      const logoX = getLogoX();
+      let logoY_viewport = 40;
+      if (logoEl) {
+        const rect = logoEl.getBoundingClientRect();
+        logoY_viewport = rect.bottom;
+      }
+      const logoY_page = logoY_viewport + currentScrollY;
 
-      // Update and draw active falling droplets
-      const droplets = activeDropletsRef.current;
-      for (let i = droplets.length - 1; i >= 0; i--) {
-        const d = droplets[i];
-        
-        // Translate dynamic coordinate for scrolling
-        const viewportY = d.currentPageY - currentScrollY;
-
-        // Draw droplet
-        ctx.beginPath();
-        ctx.arc(leftMarginX, viewportY, d.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(18, 18, 18, ${d.opacity})`;
-        ctx.fill();
-
-        if (d.state === 'falling') {
-          d.currentPageY += d.speed;
-          d.speed += 0.55; // acceleration
-
-          if (d.currentPageY >= d.pageY) {
-            d.currentPageY = d.pageY;
-            d.state = 'blotting';
-            
-            // Add a static blot on the parchment
-            activeBlotsRef.current.push({
-              x: leftMarginX,
-              pageY: d.pageY,
-              maxCoreRadius: 3.2,
-              maxBleedRadius: 8.0,
-              progress: 0,
-            });
-            
-            droplets.splice(i, 1);
-          }
-        }
+      // Find last divider page Y to limit the line length
+      let maxLineY = 10000;
+      const lastDivider = dividerRefs.current[5];
+      if (lastDivider) {
+        const rect = lastDivider.getBoundingClientRect();
+        maxLineY = rect.top + currentScrollY + 20;
       }
 
-      // Update and draw active blots
+      // Calculate scroll-driven tip Y target (40% down viewport)
+      const targetTipY = Math.min(maxLineY, Math.max(logoY_page, currentScrollY + window.innerHeight * 0.40));
+      
+      // Smooth lerped movement for droplet lag
+      if (currentTipYRef.current === 0) {
+        currentTipYRef.current = targetTipY;
+      } else {
+        currentTipYRef.current += (targetTipY - currentTipYRef.current) * 0.08;
+      }
+      const tipY = currentTipYRef.current;
+
+      // 1. Draw Growing Wobbly Parchment Line
+      ctx.beginPath();
+      const startX = getWobblyLineX(logoY_page, logoX);
+      ctx.moveTo(startX, logoY_viewport);
+
+      for (let tempY = logoY_page + 4; tempY <= tipY; tempY += 4) {
+        const x = getWobblyLineX(tempY, logoX);
+        const y_viewport = tempY - currentScrollY;
+        ctx.lineTo(x, y_viewport);
+      }
+
+      const endX = getWobblyLineX(tipY, logoX);
+      const endY_viewport = tipY - currentScrollY;
+      ctx.lineTo(endX, endY_viewport);
+
+      ctx.strokeStyle = 'rgba(26, 26, 26, 0.18)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // 2. Draw Teardrop Droplet at the tip
+      drawTeardrop(ctx, endX, endY_viewport, 14, 20);
+
+      // 3. Check Divider Crossings and trigger unroll & blot spawn
+      dividerRefs.current.forEach((el, idx) => {
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const dividerPageY = rect.top + currentScrollY;
+
+        if (tipY >= dividerPageY && !unrolledDividersRef.current[idx]) {
+          triggerUnroll(idx, dividerPageY);
+        }
+      });
+
+      // 4. Update and draw active wobbly organic blots
       const blots = activeBlotsRef.current;
       for (let i = blots.length - 1; i >= 0; i--) {
         const b = blots[i];
         const viewportY = b.pageY - currentScrollY;
 
-        // Only render if visible in viewport
-        if (viewportY >= -50 && viewportY <= canvas.height + 50) {
+        if (viewportY >= -100 && viewportY <= canvas.height + 100) {
           if (b.progress < 1) {
-            b.progress += 0.035; // blot expansion speed
+            b.progress += 0.025; // elegant expansion speed
             if (b.progress > 1) b.progress = 1;
           }
 
           const coreRadius = b.maxCoreRadius * b.progress;
           const bleedRadius = b.maxBleedRadius * b.progress;
 
-          // Double concentric circular bleed
+          // Double concentric wobbly organic splatter
           const bleedOpacity = 0.28 * (1 - b.progress * 0.45);
+
+          // Draw wobbly outer bleed
           ctx.beginPath();
-          ctx.arc(leftMarginX, viewportY, bleedRadius, 0, Math.PI * 2);
+          const bleedPoints = 24;
+          for (let p = 0; p <= bleedPoints; p++) {
+            const angle = (p / bleedPoints) * Math.PI * 2;
+            const wobble = 1 + Math.sin(angle * 5 + b.pageY) * 0.22 + Math.cos(angle * 3 - b.pageY) * 0.14;
+            const r = bleedRadius * wobble;
+            const px = b.x + Math.cos(angle) * r;
+            const py = viewportY + Math.sin(angle) * r;
+            if (p === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
           ctx.fillStyle = `rgba(18, 18, 18, ${bleedOpacity})`;
           ctx.fill();
 
+          // Draw wobbly inner core
           ctx.beginPath();
-          ctx.arc(leftMarginX, viewportY, coreRadius, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(18, 18, 18, ${0.85})`;
+          const corePoints = 20;
+          for (let p = 0; p <= corePoints; p++) {
+            const angle = (p / corePoints) * Math.PI * 2;
+            const wobble = 1 + Math.sin(angle * 4 - b.pageY) * 0.16 + Math.cos(angle * 6 + b.pageY) * 0.10;
+            const r = coreRadius * wobble;
+            const px = b.x + Math.cos(angle) * r;
+            const py = viewportY + Math.sin(angle) * r;
+            if (p === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(18, 18, 18, 0.85)';
           ctx.fill();
         }
       }
