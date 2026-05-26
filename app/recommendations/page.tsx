@@ -69,6 +69,70 @@ export default function RecommendationsPage() {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [curating, setCurating] = useState(false);
 
+  const [activeListDropdown, setActiveListDropdown] = useState<string | null>(null);
+  const [readingLists, setReadingLists] = useState<{ id: string; name: string }[]>([]);
+  const [savedStatus, setSavedStatus] = useState<Record<string, string>>({});
+
+  const handleDropdownToggle = async (e: React.MouseEvent, bookId: string) => {
+    e.stopPropagation();
+    if (!user) {
+      router.push('/auth?mode=login');
+      return;
+    }
+    if (activeListDropdown === bookId) {
+      setActiveListDropdown(null);
+    } else {
+      setActiveListDropdown(bookId);
+      try {
+        const res = await fetch(`/api/reading-lists?uid=${user.uid}`);
+        if (res.ok) {
+          const data = await res.json();
+          setReadingLists(data);
+        }
+      } catch (err) {
+        console.error('Error fetching reading lists:', err);
+      }
+    }
+  };
+
+  const handleSaveToReadingList = async (e: React.MouseEvent, listId: string, rec: Recommendation) => {
+    e.stopPropagation();
+    if (!user) return;
+
+    try {
+      const res = await fetch('/api/reading-lists', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: user.uid,
+          listId,
+          book: {
+            bookId: rec.id,
+            title: rec.title,
+            authors: Array.isArray(rec.authors) ? rec.authors : (rec.author ? [rec.author] : ['Unknown Author']),
+            thumbnail: rec.thumbnail,
+            infoLink: rec.infoLink || '',
+          }
+        })
+      });
+
+      if (res.ok) {
+        setSavedStatus({ ...savedStatus, [rec.id]: 'Saved!' });
+        setTimeout(() => {
+          setSavedStatus(prev => {
+            const updated = { ...prev };
+            delete updated[rec.id];
+            return updated;
+          });
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Error saving book:', err);
+    } finally {
+      setActiveListDropdown(null);
+    }
+  };
+
   // Load wishlist from Firestore
   useEffect(() => {
     if (!user) return;
@@ -378,6 +442,14 @@ export default function RecommendationsPage() {
                       alt={rec.title}
                       className="w-full h-full object-cover"
                     />
+                    {/* Saved overlay alert */}
+                    {savedStatus[rec.id] && (
+                      <div className="absolute inset-0 bg-navy/95 z-15 flex items-center justify-center rounded-xl">
+                        <span className="font-playfair text-gold italic text-sm font-semibold animate-pulse">
+                          ✨ {savedStatus[rec.id]}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Details and Poetic Reason right */}
@@ -388,20 +460,83 @@ export default function RecommendationsPage() {
                         <span className="text-[9px] uppercase tracking-widest text-gold font-bold font-inter">
                           Oracle Selection
                         </span>
-                        {/* Wishlist button */}
-                        <button
-                          onClick={() => toggleWishlist(rec)}
-                          className={`p-1.5 rounded-full border transition-colors ${
-                            inWishlist
-                              ? 'bg-red-500/20 border-red-500 text-red-400'
-                              : 'bg-white/5 border-white/10 text-cream/40 hover:text-gold hover:border-gold'
-                          }`}
-                          title={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                        >
-                          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                          </svg>
-                        </button>
+                        
+                        <div className="flex items-center gap-2 relative">
+                          {/* Save to List Bookmark Button */}
+                          <button
+                            onClick={(e) => handleDropdownToggle(e, rec.id)}
+                            className={`p-1.5 rounded-full border transition-all duration-300 ${
+                              activeListDropdown === rec.id
+                                ? 'bg-gold/20 border-gold text-gold shadow shadow-gold/25'
+                                : 'bg-white/5 border-white/10 text-cream/40 hover:text-gold hover:border-gold'
+                            }`}
+                            title="Save to List"
+                          >
+                            <svg
+                              className="w-3.5 h-3.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                              />
+                            </svg>
+                          </button>
+
+                          {/* Wishlist button */}
+                          <button
+                            onClick={() => toggleWishlist(rec)}
+                            className={`p-1.5 rounded-full border transition-colors ${
+                              inWishlist
+                                ? 'bg-red-500/20 border-red-500 text-red-400'
+                                : 'bg-white/5 border-white/10 text-cream/40 hover:text-gold hover:border-gold'
+                            }`}
+                            title={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                          >
+                            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>
+                          </button>
+
+                          {/* Dropdown menu */}
+                          {activeListDropdown === rec.id && (
+                            <div 
+                              onClick={(e) => e.stopPropagation()}
+                              className="absolute right-0 top-8 z-20 w-48 glass-card border border-white/10 rounded-xl py-2 shadow-2xl text-left"
+                            >
+                              <div className="px-3 py-1 border-b border-white/5 mb-1 text-[9px] uppercase tracking-wider text-gold font-bold">
+                                Save to List
+                              </div>
+                              {readingLists.length === 0 ? (
+                                <div className="px-3 py-2 text-[10px] text-cream/50 italic flex flex-col gap-1">
+                                  <span>Create a list first</span>
+                                  <span 
+                                    onClick={() => router.push('/reading-lists')}
+                                    className="text-gold hover:underline font-semibold font-inter cursor-pointer"
+                                  >
+                                    Create List →
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="max-h-36 overflow-y-auto">
+                                  {readingLists.map((list) => (
+                                    <button
+                                      key={list.id}
+                                      onClick={(e) => handleSaveToReadingList(e, list.id, rec)}
+                                      className="w-full text-left px-3 py-1.5 hover:bg-white/5 text-xs text-cream/80 hover:text-gold transition-colors font-inter truncate"
+                                    >
+                                      📁 {list.name}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <h3 className="font-playfair text-xl font-bold text-cream group-hover:text-gold transition-colors line-clamp-2">

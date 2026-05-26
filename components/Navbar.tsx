@@ -313,6 +313,13 @@ export default function Navbar() {
                     ❤️ Wishlist
                   </Link>
                   <Link
+                    href="/reading-lists"
+                    onClick={() => setActiveDropdown(null)}
+                    className="flex items-center gap-2 px-4 py-2 hover:bg-white/5 text-xs text-[#f5f0e8]/80 hover:text-gold transition-colors"
+                  >
+                    📚 Reading Lists
+                  </Link>
+                  <Link
                     href="/profile?tab=preferences"
                     onClick={() => setActiveDropdown(null)}
                     className="flex items-center gap-2 px-4 py-2 hover:bg-white/5 text-xs text-[#f5f0e8]/80 hover:text-gold transition-colors"
