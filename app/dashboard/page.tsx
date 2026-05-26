@@ -37,7 +37,7 @@ const defaultTeasers: BookTeaser[] = [
     title: 'The Picture of Dorian Gray',
     author: 'Oscar Wilde',
     thumbnail: 'https://books.google.com/books/content?id=bV5dAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api',
-    poeticReason: 'A dark Victorian mirror reflecting the delicate tragedy of aesthetic obsession and the decay of an untamed soul.',
+    poeticReason: 'A dark Victorian mirror reflecting the tragedy of aesthetic obsession and the decay of an untamed soul.',
     infoLink: 'https://books.google.com/books?id=bV5dAAAAMAAJ',
   },
   {
@@ -162,167 +162,413 @@ export default function DashboardPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-navy flex items-center justify-center relative z-10">
+      <div className="min-h-screen bg-[#F8F4E9] flex items-center justify-center relative z-10">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-t-2 border-gold border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-gold font-medium italic">Opening sanctuary gates...</span>
+          <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
+          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Opening sanctuary gates...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative z-10 w-full max-w-6xl mx-auto px-6 py-28 flex flex-col gap-12">
-      {/* Welcome Banner */}
+    <div
+      className="relative z-10 w-full max-w-6xl mx-auto px-6 py-28 flex flex-col gap-16 select-none"
+      style={{ animation: 'breathe 22s infinite ease-in-out' }}
+    >
+      {/* Floating Dust Particles Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="dust-particle w-1.5 h-1.5 top-[15%] left-[20%]" style={{ animationDelay: '0s', animationDuration: '18s' }} />
+        <div className="dust-particle w-1 h-1 top-[35%] left-[80%]" style={{ animationDelay: '3s', animationDuration: '24s' }} />
+        <div className="dust-particle w-2 h-2 top-[55%] left-[35%]" style={{ animationDelay: '7s', animationDuration: '28s' }} />
+        <div className="dust-particle w-1 h-1 top-[75%] left-[65%]" style={{ animationDelay: '1s', animationDuration: '16s' }} />
+        <div className="dust-particle w-1.5 h-1.5 top-[10%] left-[88%]" style={{ animationDelay: '9s', animationDuration: '22s' }} />
+        <div className="dust-particle w-1.2 h-1.2 top-[65%] left-[12%]" style={{ animationDelay: '4s', animationDuration: '21s' }} />
+      </div>
+
+      {/* Style Overrides for Child Custom Components */}
+      <style>{`
+        /* Slow breathing parchment background */
+        @keyframes breathe {
+          0% { filter: brightness(1); }
+          50% { filter: brightness(1.006); }
+          100% { filter: brightness(1); }
+        }
+
+        /* Drifting dust particles */
+        @keyframes drift {
+          0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+          10% { opacity: 0.12; }
+          90% { opacity: 0.12; }
+          100% { transform: translateY(-120px) translateX(40px) rotate(360deg); opacity: 0; }
+        }
+
+        .dust-particle {
+          position: absolute;
+          background: rgba(26, 26, 26, 0.08);
+          border-radius: 50%;
+          pointer-events: none;
+          animation: drift 15s infinite linear;
+        }
+
+        /* Overrides for DailyVerse */
+        .daily-verse-paper-override > div {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          padding: 0 !important;
+        }
+        .daily-verse-paper-override p {
+          color: #6b6b6b !important;
+          font-family: var(--font-inter), sans-serif !important;
+        }
+        .daily-verse-paper-override p:first-of-type {
+          text-transform: uppercase !important;
+          letter-spacing: 0.2em !important;
+          font-size: 10px !important;
+          font-weight: 700 !important;
+          color: rgba(26, 26, 26, 0.4) !important;
+        }
+        .daily-verse-paper-override blockquote {
+          color: #1a1a1a !important;
+          font-family: var(--font-playfair), serif !important;
+          font-style: italic !important;
+          font-size: 1.15rem !important;
+          line-height: 1.75 !important;
+          position: relative !important;
+          padding: 1.25rem 0 !important;
+          border-top: 1px dashed rgba(26, 26, 26, 0.12) !important;
+          border-bottom: 1px dashed rgba(26, 26, 26, 0.12) !important;
+          margin: 1rem 0 !important;
+          text-align: center !important;
+        }
+        
+        /* Overrides for LiteraryCalendar */
+        .calendar-paper-override > div {
+          background: rgba(255, 255, 255, 0.35) !important;
+          border-radius: 0px !important;
+          border: none !important;
+          border-left: 2px solid rgba(26, 26, 26, 0.25) !important;
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          padding: 1.5rem !important;
+        }
+        .calendar-paper-override .absolute.top-0.left-0.bottom-0.w-\[4px\].bg-gold {
+          display: none !important;
+        }
+        .calendar-paper-override svg.text-gold {
+          color: #1a1a1a !important;
+        }
+        .calendar-paper-override span.text-gold {
+          color: #6b6b6b !important;
+          letter-spacing: 0.15em !important;
+        }
+        .calendar-paper-override h2.text-cream {
+          color: #1a1a1a !important;
+          font-family: var(--font-playfair), serif !important;
+          font-size: 1.35rem !important;
+          font-weight: 700 !important;
+        }
+        .calendar-paper-override p.text-cream\/70 {
+          color: #2d2d2d !important;
+          font-family: var(--font-inter), sans-serif !important;
+          font-size: 0.85rem !important;
+          line-height: 1.6 !important;
+        }
+        .calendar-paper-override span.text-gold.text-4xl {
+          color: #1a1a1a !important;
+          font-family: var(--font-playfair), serif !important;
+          font-weight: 200 !important;
+          opacity: 0.65 !important;
+        }
+        .calendar-paper-override .border-t.border-white\/5 {
+          border-top: 1px dashed rgba(26, 26, 26, 0.1) !important;
+          padding-top: 1rem !important;
+        }
+        .calendar-paper-override span.text-gold.uppercase {
+          color: #6b6b6b !important;
+          font-size: 9px !important;
+          letter-spacing: 0.2em !important;
+        }
+        .calendar-paper-override span.text-cream\/80 {
+          color: #1a1a1a !important;
+          font-family: var(--font-playfair), serif !important;
+          font-style: italic !important;
+        }
+        .calendar-paper-override .animate-pulse {
+          background-color: rgba(255, 255, 255, 0.35) !important;
+          border: none !important;
+          border-left: 2px solid rgba(26, 26, 26, 0.2) !important;
+          border-radius: 0px !important;
+        }
+        .calendar-paper-override .animate-pulse span {
+          color: #1a1a1a !important;
+        }
+        .calendar-paper-override .absolute.top-0.left-0.bottom-0.w-\[4px\].bg-gold\/50,
+        .calendar-paper-override .absolute.top-0.left-0.bottom-0.w-\[4px\].bg-gold\/30 {
+          display: none !important;
+        }
+        .calendar-paper-override .bg-rose-500\/10 {
+          background-color: rgba(244, 63, 94, 0.08) !important;
+          border: 1px solid rgba(244, 63, 94, 0.15) !important;
+          color: #b91c1c !important;
+        }
+        .calendar-paper-override .bg-purple-950\/20 {
+          background-color: rgba(147, 51, 234, 0.08) !important;
+          border: 1px solid rgba(147, 51, 234, 0.15) !important;
+          color: #6b21a8 !important;
+        }
+        .calendar-paper-override .bg-\[\#c9a84c\]\/10 {
+          background-color: rgba(212, 175, 55, 0.08) !important;
+          border: 1px solid rgba(212, 175, 55, 0.15) !important;
+          color: #854d0e !important;
+        }
+        .calendar-paper-override .bg-sky-500\/10 {
+          background-color: rgba(14, 165, 233, 0.08) !important;
+          border: 1px solid rgba(14, 165, 233, 0.15) !important;
+          color: #0369a1 !important;
+        }
+
+        /* Overrides for MoodSelector */
+        .mood-paper-override p {
+          color: #6b6b6b !important;
+          letter-spacing: 0.2em !important;
+          font-size: 10px !important;
+          font-weight: 700 !important;
+        }
+        .mood-paper-override button {
+          background-color: #FFFFFF !important;
+          background-image: none !important;
+          border: 1px solid rgba(26, 26, 26, 0.12) !important;
+          border-radius: 0px !important;
+          box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.04) !important;
+          transition: all 0.35s ease !important;
+        }
+        /* scattered parchment cards angles */
+        .mood-paper-override button:nth-child(1) { transform: rotate(-1deg); }
+        .mood-paper-override button:nth-child(2) { transform: rotate(1.2deg); }
+        .mood-paper-override button:nth-child(3) { transform: rotate(-1.8deg); }
+        .mood-paper-override button:nth-child(4) { transform: rotate(0.8deg); }
+        .mood-paper-override button:nth-child(5) { transform: rotate(-0.5deg); }
+        .mood-paper-override button:nth-child(6) { transform: rotate(1.5deg); }
+
+        .mood-paper-override button:hover {
+          background-color: #f0ebe0 !important;
+          border-color: #1a1a1a !important;
+          transform: scale(1.05) rotate(0deg) !important;
+          box-shadow: 3px 3px 6px rgba(26, 26, 26, 0.08) !important;
+          z-index: 10 !important;
+        }
+        .mood-paper-override button span {
+          color: #1a1a1a !important;
+        }
+        .mood-paper-override button span.text-\[\#f5f0e8\]\/40 {
+          color: #6b6b6b !important;
+          font-family: var(--font-playfair), serif !important;
+          font-style: italic !important;
+          font-size: 10px !important;
+        }
+        .mood-paper-override button.border-\[\#c9a84c\] {
+          background-color: #f0ebe0 !important;
+          border-color: #1a1a1a !important;
+          box-shadow: 2px 2px 4px rgba(26, 26, 26, 0.06) !important;
+        }
+      `}</style>
+
+      {/* Welcome & Daily Verse Editorial Composition Block */}
       <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="glass-card p-8 sm:p-10 rounded-3xl border border-white/5 relative overflow-hidden flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6"
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+        className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start relative z-10 border-b border-[#1a1a1a]/10 pb-12"
       >
-        <div className="absolute top-0 left-0 bottom-0 w-[4px] bg-gold" />
-        <div>
-          <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-cream">
-            Welcome back, <span className="text-gold italic gold-glow">{firstName}</span>
+        {/* Welcome Section */}
+        <div className="lg:col-span-7 space-y-5 relative pl-6 flex flex-col justify-center">
+          {/* Vertical left margin indicator */}
+          <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-gradient-to-b from-[#1a1a1a]/25 via-[#1a1a1a]/10 to-transparent" />
+          
+          <p className="text-[10px] tracking-[0.25em] uppercase font-bold text-[#1a1a1a]/40 font-inter">
+            CHAMBER LOGS
+          </p>
+          <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#1a1a1a] leading-tight">
+            Welcome back, <br />
+            <span className="italic font-normal text-[#1a1a1a]/85">{firstName}</span>
           </h1>
-          <p className="font-inter text-sm sm:text-base text-cream/60 mt-3 font-light max-w-xl leading-relaxed">
+          <p className="font-inter text-sm text-[#2d2d2d]/80 leading-relaxed max-w-lg font-light">
             The candles are lit, and the ink is fresh. Which pathway shall your literary curiosity navigate today?
           </p>
+          <div className="pt-2">
+            <Link
+              href="/profile?tab=preferences"
+              className="text-xs uppercase tracking-widest font-bold text-[#1a1a1a]/70 hover:text-[#1a1a1a] transition-all hover:underline decoration-1 underline-offset-4"
+            >
+              Edit Preferences →
+            </Link>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <Link
-            href="/profile?tab=preferences"
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold font-inter transition-all hover:text-gold"
-          >
-            Edit Preferences
-          </Link>
+
+        {/* Daily Verse Section */}
+        <div className="lg:col-span-5 pl-6 lg:pl-12 lg:border-l lg:border-[#1a1a1a]/10 relative">
+          <div className="daily-verse-paper-override">
+            <DailyVerse />
+          </div>
         </div>
       </motion.section>
 
-      <DailyVerse />
+      {/* Literary Calendar Archive Strip */}
+      <motion.section
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 max-w-4xl mx-auto w-full"
+      >
+        <div className="calendar-paper-override">
+          <LiteraryCalendar />
+        </div>
+      </motion.section>
 
-      <LiteraryCalendar />
+      {/* Mood Selector Scattered Notes Block */}
+      <motion.section
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 w-full"
+      >
+        <div className="mood-paper-override">
+          <MoodSelector />
+        </div>
+      </motion.section>
 
-      <MoodSelector />
-
-      {/* Quick Launch Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-        {/* Simple Chat Launch */}
+      {/* Quick Launch Gateways */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
+        {/* Simple Companion */}
         <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          whileHover={{ y: -6 }}
-          className="glass-card rounded-2xl border border-white/5 p-8 relative overflow-hidden group flex flex-col justify-between min-h-[300px]"
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.0, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+          className="relative pl-6 py-6 group flex flex-col justify-between min-h-[260px]"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 via-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 -z-10" />
+          {/* Notebook margin left line */}
+          <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-gradient-to-b from-[#1a1a1a]/30 via-[#1a1a1a]/10 to-transparent" />
           
           <div>
-            <div className="text-4xl mb-6 p-3 bg-white/5 w-fit rounded-xl border border-white/10 group-hover:scale-110 transition-all duration-300">
-              ✒️
-            </div>
-            <h2 className="font-playfair text-2xl font-bold text-cream group-hover:text-gold transition-colors tracking-wide">
+            <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-[#1a1a1a]/40 font-inter">
+              CO-AUTHORS CHAMBER
+            </span>
+            <h2 className="font-playfair text-3xl font-bold text-[#1a1a1a] mt-2 select-none">
               Simple Companion
             </h2>
-            <p className="font-inter text-sm text-cream/60 mt-3 leading-relaxed font-light">
-              Dive into an open-ended literary dialogue. Prompt the companion to craft custom poems, engage in witty verse duels, draft narrative story seeds, analyze prose, or critique your creative work in Judgement Mode.
+            <p className="font-inter text-xs text-[#2d2d2d]/80 mt-4 leading-relaxed max-w-md italic font-light">
+              &ldquo;An open page, a resting pen...&rdquo; Engage in creative dialogue. Prompt the companion to craft custom poems, trade verses in real-time, generate prose seeds, or submit your creative writing to the critiques of Judgement Mode.
             </p>
           </div>
 
           <div className="mt-8">
             <Link
               href="/chat/simple"
-              className="px-5 py-2.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-lg text-xs tracking-wider uppercase font-inter transition-all shadow-md shadow-gold/5 flex items-center justify-center gap-1.5 w-fit"
+              className="group/btn inline-flex items-center gap-2 text-xs uppercase tracking-widest font-bold text-[#1a1a1a] border-b border-[#1a1a1a] pb-1 hover:border-[#1a1a1a]/40 transition-all"
             >
               Launch Chat
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              <span className="inline-block transform group-hover/btn:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
         </motion.div>
 
-        {/* Advanced Chat Launch */}
+        {/* Advanced Chambers */}
         <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          whileHover={{ y: -6 }}
-          className="glass-card rounded-2xl border border-white/5 p-8 relative overflow-hidden group flex flex-col justify-between min-h-[300px]"
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.0, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          className="relative pl-6 py-6 group flex flex-col justify-between min-h-[260px]"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-purple/20 via-purple-light/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 -z-10" />
+          {/* Archival margin left line */}
+          <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-gradient-to-b from-[#1a1a1a]/30 via-[#1a1a1a]/10 to-transparent" />
 
           <div>
-            <div className="text-4xl mb-6 p-3 bg-white/5 w-fit rounded-xl border border-white/10 group-hover:scale-110 transition-all duration-300">
-              🏰
-            </div>
-            <h2 className="font-playfair text-2xl font-bold text-cream group-hover:text-gold transition-colors tracking-wide">
+            <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-[#1a1a1a]/40 font-inter">
+              LITERARY VAULT
+            </span>
+            <h2 className="font-playfair text-3xl font-bold text-[#1a1a1a] mt-2 select-none">
               Advanced Chambers
             </h2>
-            <p className="font-inter text-sm text-cream/60 mt-3 leading-relaxed font-light">
-              Lock your companion into precise historical periods, languages, genres, and author personas. The interface visually transforms, wrapping you in candlestick Victorian fog, geometric Sufi purples, or modernist rainy streets.
+            <p className="font-inter text-xs text-[#2d2d2d]/80 mt-4 leading-relaxed max-w-md font-serif font-light">
+              Lock your dialogue into specific historical styles, languages, and personas. Watch the entire environment change, styling itself to reflect candlelit studies, Victorian shadows, or rain-slicked modern avenues.
             </p>
           </div>
 
           <div className="mt-8">
             <Link
               href="/chat/advanced"
-              className="px-5 py-2.5 bg-purple hover:bg-purple-light border border-white/10 hover:border-transparent text-cream font-bold rounded-lg text-xs tracking-wider uppercase font-inter transition-all shadow-md shadow-purple/10 flex items-center justify-center gap-1.5 w-fit"
+              className="group/btn inline-flex items-center gap-2 text-xs uppercase tracking-widest font-bold text-[#1a1a1a] border-b border-[#1a1a1a] pb-1 hover:border-[#1a1a1a]/40 transition-all"
             >
               Enter Chambers
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              <span className="inline-block transform group-hover/btn:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
         </motion.div>
       </section>
 
       {/* Main Panel grid: Recent Activity vs Recommendations */}
-      <section className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <section className="grid grid-cols-1 lg:grid-cols-5 gap-16 relative z-10 pt-4 border-t border-[#1a1a1a]/10">
         {/* Left Column: Recent Activity (3/5 width) */}
         <div className="lg:col-span-3 space-y-6">
-          <div className="flex justify-between items-center pb-2 border-b border-white/5">
-            <h3 className="font-playfair text-xl font-bold text-cream flex items-center gap-2">
-              <span>⏱️</span> Recent Activity
+          <div className="flex justify-between items-center pb-2 border-b border-[#1a1a1a]/10">
+            <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] flex items-center gap-2">
+              ⏱️ Archived Logs
             </h3>
           </div>
 
           {chatsLoading ? (
             <div className="py-12 flex justify-center">
-              <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : recentChats.length === 0 ? (
-            <div className="glass-card rounded-2xl p-8 border border-white/5 text-center text-cream/40 text-xs">
+            <div className="py-8 pl-6 relative text-[#6b6b6b] text-xs font-light font-inter">
+              <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-[#1a1a1a]/10" />
               📜 No recent sessions found. Launch a chat to begin scribing your anthology.
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2 relative pl-6">
+              {/* Margin margin border line */}
+              <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-[#1a1a1a]/10" />
+
               {recentChats.map((c) => (
                 <Link
                   key={c.id}
                   href={`/chat/${c.type}?id=${c.id}`}
-                  className="block glass-card p-5 rounded-xl border border-white/5 hover:border-gold/30 hover:bg-white/5 transition-all group"
+                  className="block group py-4 relative border-b border-[#1a1a1a]/5 hover:bg-[#1a1a1a]/[0.02] pl-3 -ml-3 transition-colors"
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="inline-block px-2 py-0.5 bg-white/5 border border-white/10 text-[9px] uppercase tracking-wider text-gold rounded font-inter font-bold">
-                        {c.type === 'advanced' ? 'Advanced' : 'Simple'}
-                      </span>
-                      <h4 className="font-playfair text-base font-semibold text-cream group-hover:text-gold transition-colors mt-2">
-                        {modeNames[c.mode] || c.mode}
-                      </h4>
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="min-w-0 flex-grow">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[8px] uppercase tracking-widest font-bold text-[#1a1a1a]/50 border border-[#1a1a1a]/15 px-1.5 py-0.5 rounded-sm bg-white select-none">
+                          {c.type}
+                        </span>
+                        <h4 className="font-playfair text-base font-bold text-[#1a1a1a] group-hover:underline decoration-1 underline-offset-2">
+                          {modeNames[c.mode] || c.mode}
+                        </h4>
+                      </div>
+                      
                       {c.type === 'advanced' && c.filters && (
-                        <p className="text-[10px] text-cream/40 mt-1 font-inter">
-                          Theme: {c.filters.genre} • {c.filters.era} • {c.filters.language}
+                        <p className="text-[10px] text-[#6b6b6b] mt-1 font-inter">
+                          Chamber: {c.filters.genre} • {c.filters.era}
                         </p>
                       )}
-                      <p className="text-xs text-cream/50 mt-2 font-inter max-w-md truncate">
-                        Last line: {c.messages[c.messages.length - 1]?.content || 'Session initialized.'}
+                      
+                      <p className="text-xs text-[#2d2d2d]/80 mt-2 font-inter italic max-w-md truncate">
+                        &ldquo;{c.messages[c.messages.length - 1]?.content || 'Session initialized.'}&rdquo;
                       </p>
                     </div>
 
-                    <div className="text-[10px] text-cream/30 font-inter self-center">
+                    <div className="text-[10px] text-[#6b6b6b]/60 font-inter self-center whitespace-nowrap">
                       {c.createdAt ? new Date(c.createdAt.seconds * 1000).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',
@@ -331,12 +577,12 @@ export default function DashboardPage() {
                   </div>
                 </Link>
               ))}
-              <div className="pt-2">
+              <div className="pt-4">
                 <Link
                   href="/chat/simple?sidebar=open"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-[#c9a84c]/10 border border-[#c9a84c]/30 hover:border-[#c9a84c]/60 rounded-lg text-xs font-semibold font-inter text-[#c9a84c] transition-all shadow shadow-gold/5"
+                  className="text-xs uppercase tracking-widest font-bold text-[#1a1a1a]/70 hover:text-[#1a1a1a] transition-all hover:underline decoration-1 underline-offset-4"
                 >
-                  ⏱️ View All History
+                  ⏱️ View All History →
                 </Link>
               </div>
             </div>
@@ -345,53 +591,50 @@ export default function DashboardPage() {
 
         {/* Right Column: Recommendations Teaser (2/5 width) */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="flex justify-between items-center pb-2 border-b border-white/5">
-            <h3 className="font-playfair text-xl font-bold text-cream flex items-center gap-2">
-              <span>📚</span> Recommended Reads
+          <div className="flex justify-between items-center pb-2 border-b border-[#1a1a1a]/10">
+            <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] flex items-center gap-2">
+              📚 Library Discoveries
             </h3>
             <Link
               href="/recommendations"
-              className="text-xs font-semibold text-gold hover:text-gold-light font-inter flex items-center gap-0.5"
+              className="text-xs font-bold text-[#1a1a1a]/85 hover:underline font-inter flex items-center gap-0.5"
             >
-              Full Page
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              Full Page →
             </Link>
           </div>
 
           {recsLoading ? (
             <div className="py-12 flex justify-center">
-              <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2 relative pl-6">
+              {/* Margin line */}
+              <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-[#1a1a1a]/10" />
+
               {teasers.map((book) => (
                 <div
                   key={book.title}
-                  className="glass-card p-4 rounded-xl border border-white/5 flex gap-4 items-start"
+                  className="py-4 border-b border-[#1a1a1a]/5 flex gap-4 items-start relative pl-3 -ml-3"
                 >
                   <img
                     src={book.thumbnail}
                     alt={book.title}
-                    className="w-14 h-20 rounded border border-white/10 shadow object-cover flex-shrink-0"
+                    className="w-14 h-20 shadow-[2px_2px_4px_rgba(26,26,26,0.15)] object-cover flex-shrink-0 border border-[#1a1a1a]/10"
                   />
                   <div className="flex-grow min-w-0">
-                    <h4 className="font-playfair text-sm font-semibold text-cream truncate">{book.title}</h4>
-                    <p className="font-inter text-[10px] text-gold mt-0.5">{book.author}</p>
-                    <p className="font-inter text-[11px] text-cream/60 leading-relaxed font-light mt-1.5 line-clamp-3">
+                    <h4 className="font-playfair text-sm font-bold text-[#1a1a1a]">{book.title}</h4>
+                    <p className="font-inter text-[10px] text-[#6b6b6b] italic mt-0.5">{book.author}</p>
+                    <p className="font-inter text-[11px] text-[#2d2d2d]/80 leading-relaxed font-light mt-2">
                       {book.poeticReason}
                     </p>
                     <a
                       href={book.infoLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-0.5 text-[10px] font-bold text-gold hover:text-gold-light mt-2 uppercase tracking-wider font-inter"
+                      className="inline-flex items-center gap-1 text-[9px] font-bold text-[#1a1a1a] hover:underline uppercase tracking-wider font-inter mt-3"
                     >
-                      Acquire Link
-                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
+                      Open Volume ↗
                     </a>
                   </div>
                 </div>
