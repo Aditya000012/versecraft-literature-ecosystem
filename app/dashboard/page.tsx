@@ -736,11 +736,14 @@ export default function DashboardPage() {
           font-family: var(--font-inter), sans-serif !important;
         }
         .daily-verse-paper-override p:first-of-type {
-          text-transform: uppercase !important;
-          letter-spacing: 0.25em !important;
-          font-size: 8px !important;
+          font-family: var(--font-playfair), serif !important;
+          font-size: 1.85rem !important;
+          text-transform: none !important;
+          letter-spacing: -0.015em !important;
           font-weight: 700 !important;
-          color: rgba(26, 26, 26, 0.4) !important;
+          color: #1a1a1a !important;
+          margin-bottom: 0.35rem !important;
+          display: block !important;
         }
         .daily-verse-paper-override blockquote {
           color: #1a1a1a !important;
@@ -856,8 +859,12 @@ export default function DashboardPage() {
         }
         .calendar-paper-override span.text-gold.uppercase {
           color: rgba(248, 244, 233, 0.5) !important;
-          font-size: 9px !important;
-          letter-spacing: 0.2em !important;
+          font-family: var(--font-playfair), serif !important;
+          font-size: 1.45rem !important;
+          text-transform: none !important;
+          letter-spacing: -0.01em !important;
+          font-weight: 700 !important;
+          display: inline-block !important;
         }
         .calendar-paper-override span.text-cream\/80 {
           color: #FAF6EC !important;
