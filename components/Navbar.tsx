@@ -231,6 +231,15 @@ export default function Navbar() {
                   <span className="font-semibold block">Translation Chamber</span>
                   <span className="text-[10px] text-[#f5f0e8]/40 block mt-0.5">Carry literature across borders</span>
                 </Link>
+                <div className="border-t border-white/5 my-1" />
+                <Link
+                  href="/write-with-me"
+                  onClick={() => setActiveDropdown(null)}
+                  className="block px-4 py-2 hover:bg-white/5 hover:text-gold text-xs transition-colors"
+                >
+                  <span className="font-semibold block">Write With Me</span>
+                  <span className="text-[10px] text-[#f5f0e8]/40 block mt-0.5">Co-compose flowing prose</span>
+                </Link>
               </div>
             </div>
 
