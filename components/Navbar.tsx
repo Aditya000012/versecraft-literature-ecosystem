@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, updateDoc, increment } from 'firebase/firestore';
@@ -21,8 +21,6 @@ const genres = [
 export default function Navbar() {
   const { user, signOut } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
-  const isLandingPage = pathname === '/';
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<'library' | 'chat' | 'profile' | null>(null);
@@ -106,35 +104,25 @@ export default function Navbar() {
   return (
     <nav
       ref={dropdownRef}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isLandingPage
-          ? isScrolled
-            ? 'backdrop-blur-md bg-[#F8F4E9]/95 border-b border-[#1a1a1a]/15 py-3 shadow-sm'
-            : 'bg-transparent py-5 border-b border-transparent'
-          : isScrolled
-            ? 'backdrop-blur-xl bg-black/30 border-b border-white/10 py-3 shadow-lg'
-            : 'bg-transparent py-5 border-b border-transparent'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 backdrop-blur-md border-b shadow-sm ${
+        isScrolled
+          ? 'border-[#1a1a1a]/10 py-3'
+          : 'border-[#1a1a1a]/5 py-5'
       }`}
-      style={isLandingPage && isScrolled ? { backgroundColor: 'rgba(248, 244, 233, 0.95)' } : undefined}
+      style={{ backgroundColor: isScrolled ? 'rgba(248, 244, 233, 0.98)' : 'rgba(248, 244, 233, 0.95)' }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-10">
           {/* Logo */}
           <Link
             href="/"
-            className={`font-playfair text-2xl font-bold tracking-wide transition-colors ${
-              isLandingPage 
-                ? 'text-[#1a1a1a] hover:text-[#1a1a1a]/80' 
-                : 'text-gold hover:text-gold-light'
-            }`}
+            className="font-playfair text-2xl font-bold tracking-wide transition-colors text-[#1a1a1a] hover:text-[#1a1a1a]/80"
           >
             Versecraft
           </Link>
 
           {/* Center Links */}
-          <div className={`hidden md:flex items-center space-x-8 font-inter font-medium text-sm ${
-            isLandingPage ? 'text-[#1a1a1a]/85' : 'text-[#f5f0e8]/80'
-          }`}>
+          <div className="hidden md:flex items-center space-x-8 font-inter font-medium text-sm text-[#1a1a1a]/85">
             
             {/* Library Dropdown Trigger */}
             <div 
@@ -144,9 +132,7 @@ export default function Navbar() {
             >
               <button
                 className={`transition-colors flex items-center gap-1 ${
-                  isLandingPage
-                    ? activeDropdown === 'library' ? 'text-[#1a1a1a] font-bold' : 'hover:text-[#1a1a1a]'
-                    : activeDropdown === 'library' ? 'text-gold' : 'hover:text-gold'
+                  activeDropdown === 'library' ? 'text-[#1a1a1a] font-bold' : 'hover:text-[#1a1a1a]'
                 }`}
               >
                 Library
@@ -163,11 +149,7 @@ export default function Navbar() {
               </button>
 
               {/* Library Dropdown Content */}
-              <div className={`absolute left-1/2 -translate-x-1/2 mt-2 w-72 rounded-xl p-4 transition-all duration-300 ${
-                isLandingPage
-                  ? 'bg-[#F8F4E9] border border-[#1a1a1a] shadow-lg text-[#1a1a1a]'
-                  : 'glass-card shadow-2xl text-[#f5f0e8]/80'
-              } ${
+              <div className={`absolute left-1/2 -translate-x-1/2 mt-2 w-72 rounded-xl p-4 transition-all duration-300 bg-[#F8F4E9] border border-[#1a1a1a]/15 shadow-lg text-[#1a1a1a] ${
                 activeDropdown === 'library' 
                   ? 'opacity-100 translate-y-0 pointer-events-auto' 
                   : 'opacity-0 -translate-y-2 pointer-events-none'
@@ -179,16 +161,10 @@ export default function Navbar() {
                       placeholder="Search books or authors..."
                       value={librarySearch}
                       onChange={(e) => setLibrarySearch(e.target.value)}
-                      className={`w-full px-3 py-1.5 pl-8 text-xs rounded-lg focus:outline-none ${
-                        isLandingPage
-                          ? 'bg-white border border-[#1a1a1a]/25 text-[#1a1a1a] placeholder-[#1a1a1a]/30 focus:border-[#1a1a1a]/55'
-                          : 'glass-input'
-                      }`}
+                      className="w-full px-3 py-1.5 pl-8 text-xs rounded-lg focus:outline-none bg-white border border-[#1a1a1a]/25 text-[#1a1a1a] placeholder-[#1a1a1a]/30 focus:border-[#1a1a1a]/55"
                     />
                     <svg 
-                      className={`absolute left-2.5 top-2.5 w-3.5 h-3.5 ${
-                        isLandingPage ? 'text-[#1a1a1a]/40' : 'text-[#f5f0e8]/40'
-                      }`} 
+                      className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-[#1a1a1a]/40" 
                       fill="none" 
                       viewBox="0 0 24 24" 
                       stroke="currentColor"
@@ -197,21 +173,15 @@ export default function Navbar() {
                     </svg>
                   </div>
                 </form>
-                <div className={`border-t pt-2 ${isLandingPage ? 'border-black/5' : 'border-white/5'}`}>
-                  <p className={`text-[10px] uppercase tracking-wider font-bold mb-2 px-2 ${
-                    isLandingPage ? 'text-[#1a1a1a]/50' : 'text-gold'
-                  }`}>Browse Genres</p>
+                <div className="border-t pt-2 border-black/5">
+                  <p className="text-[10px] uppercase tracking-wider font-bold mb-2 px-2 text-[#1a1a1a]/50">Browse Genres</p>
                   <div className="grid grid-cols-2 gap-1">
                     {genres.map((g) => (
                       <Link
                         key={g.id}
                         href={`/library?genre=${g.id}`}
                         onClick={() => setActiveDropdown(null)}
-                        className={`px-2 py-1 rounded text-xs transition-colors ${
-                          isLandingPage
-                            ? 'hover:bg-black/10 text-[#1a1a1a]'
-                            : 'hover:bg-white/5 hover:text-gold text-[#f5f0e8]/70'
-                        }`}
+                        className="px-2 py-1 rounded text-xs transition-colors hover:bg-black/10 text-[#1a1a1a]"
                       >
                         {g.name}
                       </Link>
@@ -224,9 +194,7 @@ export default function Navbar() {
             {/* Authors Link */}
             <Link 
               href="/authors" 
-              className={`transition-colors ${
-                isLandingPage ? 'hover:text-[#1a1a1a] font-medium' : 'hover:text-gold'
-              }`}
+              className="transition-colors hover:text-[#1a1a1a] font-medium"
             >
               Authors
             </Link>
@@ -234,9 +202,7 @@ export default function Navbar() {
             {/* Movements Link */}
             <Link 
               href="/movements" 
-              className={`transition-colors ${
-                isLandingPage ? 'hover:text-[#1a1a1a] font-medium' : 'hover:text-gold'
-              }`}
+              className="transition-colors hover:text-[#1a1a1a] font-medium"
             >
               Movements
             </Link>
@@ -244,9 +210,7 @@ export default function Navbar() {
             {/* Community Link */}
             <Link 
               href="/community" 
-              className={`transition-colors ${
-                isLandingPage ? 'hover:text-[#1a1a1a] font-medium' : 'hover:text-gold'
-              }`}
+              className="transition-colors hover:text-[#1a1a1a] font-medium"
             >
               Community
             </Link>
@@ -259,9 +223,7 @@ export default function Navbar() {
             >
               <button
                 className={`transition-colors flex items-center gap-1 ${
-                  isLandingPage
-                    ? activeDropdown === 'chat' ? 'text-[#1a1a1a] font-bold' : 'hover:text-[#1a1a1a]'
-                    : activeDropdown === 'chat' ? 'text-gold' : 'hover:text-gold'
+                  activeDropdown === 'chat' ? 'text-[#1a1a1a] font-bold' : 'hover:text-[#1a1a1a]'
                 }`}
               >
                 Companion Chat
@@ -278,11 +240,7 @@ export default function Navbar() {
               </button>
 
               {/* Chat Dropdown Content */}
-              <div className={`absolute left-0 mt-2 w-52 rounded-xl py-2 transition-all duration-300 ${
-                isLandingPage
-                  ? 'bg-[#F8F4E9] border border-[#1a1a1a] shadow-lg text-[#1a1a1a]'
-                  : 'glass-card shadow-2xl text-[#f5f0e8]/80'
-              } ${
+              <div className={`absolute left-0 mt-2 w-52 rounded-xl py-2 transition-all duration-300 bg-[#F8F4E9] border border-[#1a1a1a]/15 shadow-lg text-[#1a1a1a] ${
                 activeDropdown === 'chat' 
                   ? 'opacity-100 translate-y-0 pointer-events-auto' 
                   : 'opacity-0 -translate-y-2 pointer-events-none'
@@ -290,61 +248,37 @@ export default function Navbar() {
                 <Link
                   href="/chat/simple"
                   onClick={() => setActiveDropdown(null)}
-                  className={`block px-4 py-2 text-xs transition-colors ${
-                    isLandingPage
-                      ? 'hover:bg-black/10 text-[#1a1a1a]'
-                      : 'hover:bg-white/5 hover:text-gold'
-                  }`}
+                  className="block px-4 py-2 text-xs transition-colors hover:bg-black/10 text-[#1a1a1a]"
                 >
                   <span className="font-semibold block">Simple Chat</span>
-                  <span className={`text-[10px] block mt-0.5 ${
-                    isLandingPage ? 'text-[#1a1a1a]/55' : 'text-[#f5f0e8]/40'
-                  }`}>Open creative dialogue</span>
+                  <span className="text-[10px] block mt-0.5 text-[#1a1a1a]/55">Open creative dialogue</span>
                 </Link>
-                <div className={`border-t my-1 ${isLandingPage ? 'border-black/5' : 'border-white/5'}`} />
+                <div className="border-t my-1 border-black/5" />
                 <Link
                   href="/chat/advanced"
                   onClick={() => setActiveDropdown(null)}
-                  className={`block px-4 py-2 text-xs transition-colors ${
-                    isLandingPage
-                      ? 'hover:bg-black/10 text-[#1a1a1a]'
-                      : 'hover:bg-white/5 hover:text-gold'
-                  }`}
+                  className="block px-4 py-2 text-xs transition-colors hover:bg-black/10 text-[#1a1a1a]"
                 >
                   <span className="font-semibold block">Advanced Chat</span>
-                  <span className={`text-[10px] block mt-0.5 ${
-                    isLandingPage ? 'text-[#1a1a1a]/55' : 'text-[#f5f0e8]/40'
-                  }`}>Genre & Era-locked filters</span>
+                  <span className="text-[10px] block mt-0.5 text-[#1a1a1a]/55">Genre & Era-locked filters</span>
                 </Link>
-                <div className={`border-t my-1 ${isLandingPage ? 'border-black/5' : 'border-white/5'}`} />
+                <div className="border-t my-1 border-black/5" />
                 <Link
                   href="/translation"
                   onClick={() => setActiveDropdown(null)}
-                  className={`block px-4 py-2 text-xs transition-colors ${
-                    isLandingPage
-                      ? 'hover:bg-black/10 text-[#1a1a1a]'
-                      : 'hover:bg-white/5 hover:text-gold'
-                  }`}
+                  className="block px-4 py-2 text-xs transition-colors hover:bg-black/10 text-[#1a1a1a]"
                 >
                   <span className="font-semibold block">Translation Chamber</span>
-                  <span className={`text-[10px] block mt-0.5 ${
-                    isLandingPage ? 'text-[#1a1a1a]/55' : 'text-[#f5f0e8]/40'
-                  }`}>Carry literature across borders</span>
+                  <span className="text-[10px] block mt-0.5 text-[#1a1a1a]/55">Carry literature across borders</span>
                 </Link>
-                <div className={`border-t my-1 ${isLandingPage ? 'border-black/5' : 'border-white/5'}`} />
+                <div className="border-t my-1 border-black/5" />
                 <Link
                   href="/write-with-me"
                   onClick={() => setActiveDropdown(null)}
-                  className={`block px-4 py-2 text-xs transition-colors ${
-                    isLandingPage
-                      ? 'hover:bg-black/10 text-[#1a1a1a]'
-                      : 'hover:bg-white/5 hover:text-gold'
-                  }`}
+                  className="block px-4 py-2 text-xs transition-colors hover:bg-black/10 text-[#1a1a1a]"
                 >
                   <span className="font-semibold block">Write With Me</span>
-                  <span className={`text-[10px] block mt-0.5 ${
-                    isLandingPage ? 'text-[#1a1a1a]/55' : 'text-[#f5f0e8]/40'
-                  }`}>Co-compose flowing prose</span>
+                  <span className="text-[10px] block mt-0.5 text-[#1a1a1a]/55">Co-compose flowing prose</span>
                 </Link>
               </div>
             </div>
@@ -352,9 +286,7 @@ export default function Navbar() {
             {/* Recommendations Link */}
             <Link 
               href="/recommendations" 
-              className={`transition-colors ${
-                isLandingPage ? 'hover:text-[#1a1a1a] font-medium' : 'hover:text-gold'
-              }`}
+              className="transition-colors hover:text-[#1a1a1a] font-medium"
             >
               Recommendations
             </Link>
@@ -370,30 +302,18 @@ export default function Navbar() {
                 onMouseLeave={() => setActiveDropdown(null)}
               >
                 <button
-                  className={`flex items-center gap-2 transition-all duration-300 font-inter font-medium text-sm ${
-                    isLandingPage ? 'hover:text-[#1a1a1a]' : 'hover:text-gold'
-                  }`}
+                  className="flex items-center gap-2 transition-all duration-300 font-inter font-medium text-sm hover:text-[#1a1a1a]"
                 >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-playfair font-bold text-sm tracking-wider shadow ${
-                    isLandingPage
-                      ? 'border border-[#1a1a1a]/40 bg-white text-[#1a1a1a]'
-                      : 'border border-gold/40 bg-white/5 text-gold'
-                  }`}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center font-playfair font-bold text-sm tracking-wider shadow border border-[#1a1a1a]/40 bg-white text-[#1a1a1a]">
                     {profileData?.displayName?.charAt(0).toUpperCase() || 'R'}
                   </div>
-                  <span className={`max-w-[120px] truncate hidden sm:inline transition-colors ${
-                    isLandingPage
-                      ? 'text-[#1a1a1a] hover:text-[#1a1a1a]'
-                      : 'text-[#f5f0e8]/90 group-hover:text-gold'
-                  }`}>
+                  <span className="max-w-[120px] truncate hidden sm:inline transition-colors text-[#1a1a1a] hover:text-[#1a1a1a]">
                     {profileData?.displayName}
                   </span>
                   <svg 
-                    className={`w-4 h-4 transition-transform duration-200 ${
-                      isLandingPage
-                        ? 'text-[#1a1a1a]/60 hover:text-[#1a1a1a]'
-                        : 'text-[#f5f0e8]/60 group-hover:text-gold'
-                    } ${activeDropdown === 'profile' ? 'rotate-180' : ''}`} 
+                    className={`w-4 h-4 transition-transform duration-200 text-[#1a1a1a]/60 hover:text-[#1a1a1a] ${
+                      activeDropdown === 'profile' ? 'rotate-180' : ''
+                    }`} 
                     fill="none" 
                     viewBox="0 0 24 24" 
                     stroke="currentColor"
@@ -403,27 +323,15 @@ export default function Navbar() {
                 </button>
 
                 {/* Profile Dropdown Content */}
-                <div className={`absolute right-0 mt-2 w-56 rounded-xl py-2 transition-all duration-300 ${
-                  isLandingPage
-                    ? 'bg-[#F8F4E9] border border-[#1a1a1a] shadow-lg text-[#1a1a1a]'
-                    : 'glass-card shadow-2xl text-[#f5f0e8]/80'
-                } ${
+                <div className={`absolute right-0 mt-2 w-56 rounded-xl py-2 transition-all duration-300 bg-[#F8F4E9] border border-[#1a1a1a]/15 shadow-lg text-[#1a1a1a] ${
                   activeDropdown === 'profile' 
                     ? 'opacity-100 translate-y-0 pointer-events-auto' 
                     : 'opacity-0 -translate-y-2 pointer-events-none'
                 }`}>
-                  <div className={`px-4 py-2 mx-2 my-1 rounded-lg border ${
-                    isLandingPage
-                      ? 'bg-white border-[#1a1a1a]/10'
-                      : 'bg-white/5 border-white/5'
-                  }`}>
-                    <span className={`text-[9px] uppercase tracking-wider block font-bold ${
-                      isLandingPage ? 'text-[#1a1a1a]/45' : 'text-[#f5f0e8]/40'
-                    }`}>Time Explored</span>
-                    <span className={`text-xs font-semibold mt-0.5 flex items-center gap-1.5 ${
-                      isLandingPage ? 'text-[#1a1a1a]' : 'text-gold'
-                    }`}>
-                      <svg className={`w-3.5 h-3.5 ${isLandingPage ? 'text-[#1a1a1a]' : 'text-gold'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="px-4 py-2 mx-2 my-1 rounded-lg border bg-white border-[#1a1a1a]/10">
+                    <span className="text-[9px] uppercase tracking-wider block font-bold text-[#1a1a1a]/45">Time Explored</span>
+                    <span className="text-xs font-semibold mt-0.5 flex items-center gap-1.5 text-[#1a1a1a]">
+                      <svg className="w-3.5 h-3.5 text-[#1a1a1a]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       {profileData ? `${profileData.timeSpent} mins` : '0 mins'}
@@ -433,44 +341,28 @@ export default function Navbar() {
                   <Link
                     href="/profile?tab=anthology"
                     onClick={() => setActiveDropdown(null)}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
-                      isLandingPage
-                        ? 'hover:bg-black/10 text-[#1a1a1a]'
-                        : 'hover:bg-white/5 text-[#f5f0e8]/80 hover:text-gold'
-                    }`}
+                    className="flex items-center gap-2 px-4 py-2 text-xs transition-colors hover:bg-black/10 text-[#1a1a1a]"
                   >
                     📜 Personal Anthology
                   </Link>
                   <Link
                     href="/profile?tab=wishlist"
                     onClick={() => setActiveDropdown(null)}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
-                      isLandingPage
-                        ? 'hover:bg-black/10 text-[#1a1a1a]'
-                        : 'hover:bg-white/5 text-[#f5f0e8]/80 hover:text-gold'
-                    }`}
+                    className="flex items-center gap-2 px-4 py-2 text-xs transition-colors hover:bg-black/10 text-[#1a1a1a]"
                   >
                     ❤️ Wishlist
                   </Link>
                   <Link
                     href="/reading-lists"
                     onClick={() => setActiveDropdown(null)}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
-                      isLandingPage
-                        ? 'hover:bg-black/10 text-[#1a1a1a]'
-                        : 'hover:bg-white/5 text-[#f5f0e8]/80 hover:text-gold'
-                    }`}
+                    className="flex items-center gap-2 px-4 py-2 text-xs transition-colors hover:bg-black/10 text-[#1a1a1a]"
                   >
                     📚 Reading Lists
                   </Link>
                   <Link
                     href="/profile?tab=preferences"
                     onClick={() => setActiveDropdown(null)}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
-                      isLandingPage
-                        ? 'hover:bg-black/10 text-[#1a1a1a]'
-                        : 'hover:bg-white/5 text-[#f5f0e8]/80 hover:text-gold'
-                    }`}
+                    className="flex items-center gap-2 px-4 py-2 text-xs transition-colors hover:bg-black/10 text-[#1a1a1a]"
                   >
                     ⚙️ Preferences
                   </Link>
@@ -479,25 +371,17 @@ export default function Navbar() {
                     <Link
                       href="/admin"
                       onClick={() => setActiveDropdown(null)}
-                      className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold transition-colors ${
-                        isLandingPage
-                          ? 'hover:bg-black/10 text-[#1a1a1a]'
-                          : 'hover:bg-white/5 text-[#f5f0e8]/80 hover:text-gold'
-                      }`}
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-semibold transition-colors hover:bg-black/10 text-[#1a1a1a]"
                     >
                       🛡️ Admin Panel
                     </Link>
                   )}
 
-                  <div className={`border-t my-2 ${isLandingPage ? 'border-black/5' : 'border-white/5'}`} />
+                  <div className="border-t my-2 border-black/5" />
                   
                   <button
                     onClick={handleSignOut}
-                    className={`w-full text-left px-4 py-2 text-xs font-medium transition-colors flex items-center gap-2 ${
-                      isLandingPage
-                        ? 'hover:bg-red-50 text-red-600'
-                        : 'hover:bg-red-950/20 text-red-400 hover:text-red-300'
-                    }`}
+                    className="w-full text-left px-4 py-2 text-xs font-medium transition-colors flex items-center gap-2 hover:bg-red-50 text-red-600"
                   >
                     🚪 Sign Out
                   </button>
@@ -508,21 +392,13 @@ export default function Navbar() {
               <div className="flex items-center gap-2 sm:gap-4">
                 <Link
                   href="/auth?mode=login"
-                  className={`px-4 py-1.5 rounded-lg border transition-all text-xs font-semibold font-inter ${
-                    isLandingPage
-                      ? 'border-[#1a1a1a]/40 text-[#1a1a1a] hover:border-[#1a1a1a] hover:bg-[#1a1a1a]/5'
-                      : 'border border-gold/40 text-gold hover:border-gold hover:bg-gold/5'
-                  }`}
+                  className="px-4 py-1.5 rounded-lg border transition-all text-xs font-semibold font-inter border-[#1a1a1a]/40 text-[#1a1a1a] hover:border-[#1a1a1a] hover:bg-[#1a1a1a]/5"
                 >
                   Login
                 </Link>
                 <Link
                   href="/auth?mode=signup"
-                  className={`px-4 py-1.5 rounded-lg transition-all text-xs font-semibold font-inter ${
-                    isLandingPage
-                      ? 'bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] shadow-md shadow-black/10'
-                      : 'bg-gold hover:bg-gold-light text-[#0a0a1a] shadow-md shadow-gold/10'
-                  }`}
+                  className="px-4 py-1.5 rounded-lg transition-all text-xs font-semibold font-inter bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] shadow-md shadow-black/10"
                 >
                   Sign Up
                 </Link>
