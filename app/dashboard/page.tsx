@@ -9,6 +9,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
 import DailyVerse from '@/components/DailyVerse';
 import MoodSelector from '@/components/MoodSelector';
+import LiteraryCalendar from '@/components/LiteraryCalendar';
 
 interface ChatSession {
   id: string;
@@ -199,6 +200,8 @@ export default function DashboardPage() {
       </motion.section>
 
       <DailyVerse />
+
+      <LiteraryCalendar />
 
       <MoodSelector />
 
