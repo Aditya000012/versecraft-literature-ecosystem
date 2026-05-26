@@ -37,28 +37,28 @@ const defaultTeasers: BookTeaser[] = [
   {
     title: 'The Picture of Dorian Gray',
     author: 'Oscar Wilde',
-    thumbnail: 'https://books.google.com/books/content?id=bV5dAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api',
+    thumbnail: 'https://covers.openlibrary.org/b/title/The%20Picture%20of%20Dorian%20Gray-M.jpg',
     poeticReason: 'A dark Victorian mirror reflecting the tragedy of aesthetic obsession and the decay of an untamed soul.',
     infoLink: 'https://books.google.com/books?id=bV5dAAAAMAAJ',
   },
   {
     title: 'Divan of Hafiz',
     author: 'Hafiz',
-    thumbnail: 'https://books.google.com/books/content?id=h395DwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api',
+    thumbnail: 'https://covers.openlibrary.org/b/title/Divan%20of%20Hafiz-M.jpg',
     poeticReason: 'Ancient Sufi verses where divine ecstasy and longing intertwine like shadows dancing in a moonlit courtyard.',
     infoLink: 'https://books.google.com/books?id=h395DwAAQBAJ',
   },
   {
     title: 'Frankenstein',
     author: 'Mary Shelley',
-    thumbnail: 'https://books.google.com/books/content?id=sz18AAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api',
+    thumbnail: 'https://covers.openlibrary.org/b/title/Frankenstein-M.jpg',
     poeticReason: 'A chilling gothic inquiry into the hubris of creation, painted with the melancholic brush of romantic isolation.',
     infoLink: 'https://books.google.com/books?id=sz18AAAAMAAJ',
   },
   {
     title: 'The Waste Land',
     author: 'T.S. Eliot',
-    thumbnail: 'https://books.google.com/books/content?id=O4VdAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api',
+    thumbnail: 'https://covers.openlibrary.org/b/title/The%20Waste%20Land-M.jpg',
     poeticReason: 'A fractured modernist masterpiece traversing dry stone and shadow, seeking rain in a disillusioned post-war world.',
     infoLink: 'https://books.google.com/books?id=O4VdAAAAMAAJ',
   },
@@ -119,12 +119,6 @@ export default function DashboardPage() {
           if (dispName) {
             setFirstName(dispName.split(' ')[0]);
           }
-          
-          // If they have interested genres, try to fetch fresh teasers
-          const genres = profileData.interestedGenres || [];
-          if (genres.length > 0) {
-            fetchTeasersFromAPI(genres[0]);
-          }
         }
 
         // 2. Fetch Last 3 Chat Sessions
@@ -152,37 +146,142 @@ export default function DashboardPage() {
     };
 
     fetchProfileAndChats();
+    inferUserTasteAndFetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const fetchTeasersFromAPI = async (favoriteGenre: string) => {
+  const inferUserTasteAndFetch = async () => {
+    if (!user) return;
     setRecsLoading(true);
     try {
+      // Step 1 — Read the user's Firestore document at users/{uid}
+      const profileRef = doc(db, 'users', user.uid);
+      const profileSnap = await getDoc(profileRef);
+      if (!profileSnap.exists()) {
+        setTeasers(defaultTeasers);
+        return;
+      }
+
+      const profileData = profileSnap.data();
+      const interestedGenres = profileData.interestedGenres || [];
+      const wishlist = profileData.wishlist || [];
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const anthology = profileData.anthology || []; // Extracted as requested
+
+      let determinedGenre: string | null = null;
+
+      // Step 2 — Determine the best genre using priority order
+
+      interface WishlistItem {
+        categories?: string | string[];
+        category?: string | string[];
+        genre?: string | string[];
+      }
+
+      // First priority: If wishlist has 3 or more items, look at categories and find the most common genre
+      if (wishlist.length >= 3) {
+        const genreCounts: Record<string, number> = {};
+        wishlist.forEach((book: WishlistItem) => {
+          const cats = book.categories || book.category || book.genre;
+          if (cats) {
+            const catList = Array.isArray(cats) ? cats : [cats];
+            catList.forEach((c: string) => {
+              if (c && typeof c === 'string') {
+                const cleaned = c.trim();
+                if (cleaned) {
+                  genreCounts[cleaned] = (genreCounts[cleaned] || 0) + 1;
+                }
+              }
+            });
+          }
+        });
+
+        let maxCount = 0;
+        let mostCommonGenre: string | null = null;
+        Object.entries(genreCounts).forEach(([genre, count]) => {
+          if (count > maxCount) {
+            maxCount = count;
+            mostCommonGenre = genre;
+          }
+        });
+        if (mostCommonGenre) {
+          determinedGenre = mostCommonGenre;
+        }
+      }
+
+      // Second priority: If interestedGenres array has at least one item, use interestedGenres[0]
+      if (!determinedGenre && interestedGenres.length > 0 && interestedGenres[0]) {
+        determinedGenre = interestedGenres[0];
+      }
+
+      // Third priority: Read the last 3 chats and find if any are type 'advanced' with filters.genre
+      if (!determinedGenre) {
+        const chatsRef = collection(db, 'users', user.uid, 'chats');
+        const q = query(chatsRef, orderBy('createdAt', 'desc'), limit(3));
+        const querySnap = await getDocs(q);
+        for (let i = 0; i < querySnap.docs.length; i++) {
+          const chatData = querySnap.docs[i].data();
+          if (chatData.type === 'advanced' && chatData.filters?.genre) {
+            determinedGenre = chatData.filters.genre;
+            break;
+          }
+        }
+      }
+
+      // If none of the above yield a genre, silently fallback to defaultTeasers
+      if (!determinedGenre) {
+        setTeasers(defaultTeasers);
+        return;
+      }
+
+      // Step 3 — If a genre was determined, call POST /api/recommendations
       const response = await fetch('/api/recommendations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ genre: favoriteGenre }),
+        body: JSON.stringify({
+          genre: determinedGenre,
+          era: '',
+          author: '',
+          language: 'English'
+        }),
       });
+
       if (response.ok) {
         const data = await response.json();
         const apiRecs = data.recommendations || [];
-        if (apiRecs.length >= 3) {
-          // Format exactly 4 books side-by-side by filling from defaults if API returns fewer than 4
-          const apiMapped = apiRecs.map((item: { title: string; author?: string; authors?: string[]; thumbnail: string; poeticReason: string; infoLink: string }) => ({
+        if (apiRecs.length > 0) {
+          interface ApiBookItem {
+            title: string;
+            author?: string;
+            authors?: string[];
+            thumbnail?: string;
+            poeticReason?: string;
+            infoLink?: string;
+          }
+
+          const apiMapped: BookTeaser[] = apiRecs.map((item: ApiBookItem) => ({
             title: item.title,
             author: item.author || item.authors?.join(', ') || 'Unknown Author',
-            thumbnail: item.thumbnail,
-            poeticReason: item.poeticReason,
-            infoLink: item.infoLink,
+            thumbnail: item.thumbnail || `https://covers.openlibrary.org/b/title/${encodeURIComponent(item.title)}-M.jpg`,
+            poeticReason: item.poeticReason || '',
+            infoLink: item.infoLink || ''
           }));
+
           const filled = [...apiMapped];
+          // If fewer than 4 fill remaining slots with defaultTeasers
           while (filled.length < 4) {
             filled.push(defaultTeasers[filled.length]);
           }
           setTeasers(filled.slice(0, 4));
+        } else {
+          setTeasers(defaultTeasers);
         }
+      } else {
+        setTeasers(defaultTeasers);
       }
     } catch (err) {
-      console.error('Error fetching teasers from API:', err);
+      console.error('Error in inferUserTasteAndFetch:', err);
+      setTeasers(defaultTeasers);
     } finally {
       setRecsLoading(false);
     }
@@ -924,6 +1023,9 @@ export default function DashboardPage() {
                           src={book.thumbnail}
                           alt={book.title}
                           className="w-24 h-36 shadow-[4px_6px_12px_rgba(26,26,26,0.14)] object-cover border border-[#1a1a1a]/10 rounded-sm"
+                          onError={(e) => {
+                            e.currentTarget.src = `https://covers.openlibrary.org/b/title/${encodeURIComponent(book.title)}-M.jpg`;
+                          }}
                         />
                       </div>
                       <div className="space-y-1 text-center">
