@@ -105,22 +105,17 @@ export default function DashboardPage() {
   // 2. Ruled Lines Scroll Tracking
   useEffect(() => {
     const handleScroll = () => {
-      const totalHeight = document.body.scrollHeight - window.innerHeight;
-      const progress = totalHeight > 0 ? window.scrollY / totalHeight : 0;
-      setRuledLineProgress(Math.min(Math.max(progress, 0), 1));
+      const scrolled = window.scrollY;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      setRuledLineProgress(maxScroll > 0 ? scrolled / maxScroll : 0);
     };
-
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // 3. Ink Droplet Fall Animation Loop
   useEffect(() => {
-    if (isMobile) return;
+    if (typeof window === 'undefined' || window.innerWidth < 768) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -150,7 +145,7 @@ export default function DashboardPage() {
         x,
         y,
         radius: 2.5,
-        opacity: 0.12,
+        opacity: 0.18,
         speed: 0.4,
         state: 'falling',
       };
@@ -160,9 +155,16 @@ export default function DashboardPage() {
       droplets.push(createDroplet(true, i));
     }
 
+    let loggedFirstFrame = false;
     let animationFrameId: number;
+
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (!loggedFirstFrame && droplets.length > 0) {
+        console.log('First droplet position:', droplets[0].x, droplets[0].y);
+        loggedFirstFrame = true;
+      }
 
       droplets.forEach((d, idx) => {
         ctx.beginPath();
@@ -173,7 +175,7 @@ export default function DashboardPage() {
         if (d.state === 'falling') {
           d.y += d.speed;
           d.speed += 0.008;
-          d.opacity = 0.12;
+          d.opacity = 0.18;
 
           if (d.y > canvas.height * 0.65) {
             d.state = 'dissolving';
@@ -197,36 +199,22 @@ export default function DashboardPage() {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
     };
-  }, [isMobile]);
+  }, []);
 
   // 4. Cursor Ink Bloom Mouse Tracking
   useEffect(() => {
-    if (isMobile) return;
-    const container = dashboardContainerRef.current;
-    if (!container) return;
-
+    if (typeof window === 'undefined' || window.innerWidth < 768) return;
     const handleMouseMove = (e: MouseEvent) => {
       setCursorPos({ x: e.clientX, y: e.clientY });
       setBloomActive(true);
-
       if (bloomTimeoutRef.current) {
         clearTimeout(bloomTimeoutRef.current);
       }
-
-      bloomTimeoutRef.current = setTimeout(() => {
-        setBloomActive(false);
-      }, 400);
+      bloomTimeoutRef.current = setTimeout(() => setBloomActive(false), 500);
     };
-
-    container.addEventListener('mousemove', handleMouseMove);
-
-    return () => {
-      container.removeEventListener('mousemove', handleMouseMove);
-      if (bloomTimeoutRef.current) {
-        clearTimeout(bloomTimeoutRef.current);
-      }
-    };
-  }, [isMobile]);
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   // High-performance Framer Motion scroll tracking
   const { scrollY } = useScroll();
@@ -466,8 +454,15 @@ export default function DashboardPage() {
       {!isMobile && (
         <canvas
           ref={canvasRef}
-          className="fixed inset-0 pointer-events-none z-0"
-          style={{ mixBlendMode: 'multiply' }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 1,
+            pointerEvents: 'none',
+          }}
         />
       )}
 
@@ -491,21 +486,11 @@ export default function DashboardPage() {
           style={{ y: fragmentY, x: fragmentX }}
           className="manuscript-background-layer absolute inset-0 pointer-events-none z-0"
         >
-          <div className="absolute top-[14%] right-[12%] font-playfair text-[#1a1a1a] text-sm italic tracking-widest fragment-breathe-1">
-            *silentium est templum*
-          </div>
-          <div className="absolute top-[32%] left-[10%] font-playfair text-[#1a1a1a] text-[10px] tracking-[0.35em] fragment-breathe-2">
-            N° 48.209 — CO-AUTHORS SANCTUARY
-          </div>
-          <div className="absolute top-[52%] right-[16%] font-playfair text-[#1a1a1a] text-xs italic fragment-breathe-3">
-            “ad infinitum...”
-          </div>
-          <div className="absolute top-[75%] left-[8%] font-playfair text-[#1a1a1a] text-sm italic fragment-breathe-4">
-            ex libris versecraft
-          </div>
-          <div className="absolute top-[92%] right-[10%] font-playfair text-[#1a1a1a] text-xs fragment-breathe-5">
-            *codex manuscriptum*
-          </div>
+          <div style={{ position: 'absolute', top: '14%', right: '12%', animation: 'fragmentBreathe 8s ease-in-out infinite 0s' }} className="font-playfair text-[#1a1a1a] text-sm italic tracking-widest">*silentium est templum*</div>
+          <div style={{ position: 'absolute', top: '32%', left: '10%', animation: 'fragmentBreathe 8s ease-in-out infinite 2s' }} className="font-playfair text-[#1a1a1a] text-[10px] tracking-[0.35em]">N° 48.209 — CO-AUTHORS SANCTUARY</div>
+          <div style={{ position: 'absolute', top: '52%', right: '16%', animation: 'fragmentBreathe 8s ease-in-out infinite 4s' }} className="font-playfair text-[#1a1a1a] text-xs italic">&ldquo;ad infinitum...&rdquo;</div>
+          <div style={{ position: 'absolute', top: '75%', left: '8%', animation: 'fragmentBreathe 8s ease-in-out infinite 1.5s' }} className="font-playfair text-[#1a1a1a] text-sm italic">ex libris versecraft</div>
+          <div style={{ position: 'absolute', top: '92%', right: '10%', animation: 'fragmentBreathe 8s ease-in-out infinite 3s' }} className="font-playfair text-[#1a1a1a] text-xs">*codex manuscriptum*</div>
         </motion.div>
 
         {/* 3. Atmospheric Dust Layer (Paper fibers) */}
@@ -520,16 +505,11 @@ export default function DashboardPage() {
 
         {/* Overrides for Nested Children Components & Full-Width Custom Aesthetics */}
         <style>{`
-          /* fragmentBreathe keyframe and breathing classes */
+          /* fragmentBreathe keyframe */
           @keyframes fragmentBreathe {
-            0%, 100% { opacity: 0.015; }
-            50% { opacity: 0.04; }
+            0%, 100% { opacity: 0.06; }
+            50% { opacity: 0.14; }
           }
-          .fragment-breathe-1 { animation: fragmentBreathe 8s infinite ease-in-out; animation-delay: 0s; opacity: 0.015; }
-          .fragment-breathe-2 { animation: fragmentBreathe 8s infinite ease-in-out; animation-delay: 2s; opacity: 0.015; }
-          .fragment-breathe-3 { animation: fragmentBreathe 8s infinite ease-in-out; animation-delay: 4s; opacity: 0.015; }
-          .fragment-breathe-4 { animation: fragmentBreathe 8s infinite ease-in-out; animation-delay: 1.5s; opacity: 0.015; }
-          .fragment-breathe-5 { animation: fragmentBreathe 8s infinite ease-in-out; animation-delay: 3s; opacity: 0.015; }
 
           /* Slow breathing candlelight ambient background illumination */
           @keyframes candlelight-ambience {
@@ -929,12 +909,13 @@ export default function DashboardPage() {
             <div
               key={i}
               style={{
-                position: 'absolute',
+                position: 'fixed',
                 left: 0,
+                right: 0,
                 width: active ? '100%' : '0%',
                 height: '1px',
-                background: 'rgba(26, 26, 26, 0.04)',
-                top: `${((i + 1) / 9) * 100}%`,
+                background: 'rgba(26, 26, 26, 0.08)',
+                top: `${((i + 1) / 9) * 100}vh`,
                 zIndex: 1,
                 pointerEvents: 'none',
                 transition: 'width 0.8s ease',
@@ -1252,15 +1233,15 @@ export default function DashboardPage() {
             position: 'fixed',
             left: cursorPos.x,
             top: cursorPos.y,
-            transform: bloomActive ? 'translate(-50%, -50%) scale(28)' : 'translate(-50%, -50%) scale(1)',
-            opacity: bloomActive ? 1 : 0,
+            transform: bloomActive ? 'translate(-50%, -50%) scale(32)' : 'translate(-50%, -50%) scale(1)',
+            opacity: bloomActive ? 0.8 : 0,
             width: '1px',
             height: '1px',
             borderRadius: '50%',
             background: 'rgba(26, 26, 26, 0.06)',
             pointerEvents: 'none',
             zIndex: 0,
-            transition: 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.4s ease',
+            transition: 'all 0.5s cubic-bezier(0.19, 1, 0.22, 1)',
           }}
         />
       )}
