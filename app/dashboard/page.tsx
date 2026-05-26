@@ -261,39 +261,29 @@ export default function DashboardPage() {
       cContext.translate(cx, cy);
       cContext.rotate(rot);
 
-      // 1. Draw bottle body (enlarged for beautiful high visibility, sitting above pivot (0,0))
+      // 1. Draw bottle body (upright and normal, mouth at top (0,0), body extending downwards)
       cContext.beginPath();
-      cContext.moveTo(-5, 0); // bottom left of neck
-      cContext.lineTo(-5, -6); // top left of neck
-      cContext.lineTo(-10, -6); // left shoulder
-      cContext.bezierCurveTo(-16, -6, -16, -12, -16, -12); // left upper shoulder curve
-      cContext.lineTo(-16, -28); // left side bottom
-      cContext.bezierCurveTo(-16, -31, -13, -31, -13, -31); // bottom-left corner curve
-      cContext.lineTo(13, -31); // bottom edge
-      cContext.bezierCurveTo(13, -31, 16, -31, 16, -28); // bottom-right corner curve
-      cContext.lineTo(16, -12); // right side
-      cContext.bezierCurveTo(16, -6, 10, -6, 10, -6); // right upper shoulder curve
-      cContext.lineTo(5, -6); // top right of neck
-      cContext.lineTo(5, 0); // bottom right of neck
+      cContext.moveTo(-5, 0); // top left of mouth
+      cContext.lineTo(-5, 6); // bottom left of neck
+      cContext.lineTo(-10, 6); // left shoulder
+      cContext.bezierCurveTo(-16, 6, -16, 12, -16, 12); // left shoulder curve
+      cContext.lineTo(-16, 28); // left side bottom
+      cContext.bezierCurveTo(-16, 31, -13, 31, -13, 31); // bottom-left corner curve
+      cContext.lineTo(13, 31); // bottom edge
+      cContext.bezierCurveTo(13, 31, 16, 31, 16, 28); // bottom-right corner curve
+      cContext.lineTo(16, 12); // right side
+      cContext.bezierCurveTo(16, 6, 10, 6, 10, 6); // right shoulder curve
+      cContext.lineTo(5, 6); // bottom right of neck
+      cContext.lineTo(5, 0); // top right of mouth
       cContext.closePath();
       cContext.fillStyle = '#121212';
       cContext.fill();
 
-      // 2. Draw cap on top of the neck
+      // 2. Draw a premium glass highlight / sheen on the left shoulder/body
       cContext.beginPath();
-      if (cContext.roundRect) {
-        cContext.roundRect(-8, -11, 16, 5, 2);
-      } else {
-        cContext.rect(-8, -11, 16, 5);
-      }
-      cContext.fillStyle = '#2d2d2d';
-      cContext.fill();
-
-      // 3. Draw a premium glass highlight / sheen on the left shoulder/body
-      cContext.beginPath();
-      cContext.moveTo(-11, -13);
-      cContext.lineTo(-11, -26);
-      cContext.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+      cContext.moveTo(-11, 10);
+      cContext.lineTo(-11, 24);
+      cContext.strokeStyle = 'rgba(255, 255, 255, 0.25)';
       cContext.lineWidth = 1.5;
       cContext.stroke();
 
@@ -306,15 +296,18 @@ export default function DashboardPage() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const currentScrollY = window.scrollY;
 
-      // Find the logo and set starting viewport position (perfectly in the blank space under logo text)
+      // Find the logo and set starting viewport position
       const logoEl = document.querySelector('a[href="/"]');
       const logoX = getLogoX();
-      let logoY_viewport = 75; // default under logo text
+      let logoY_viewport = 75; 
       if (logoEl) {
         const rect = logoEl.getBoundingClientRect();
-        logoY_viewport = rect.bottom + 35; // centered horizontally, sitting 35px below logo bottom
+        logoY_viewport = rect.bottom + 35;
       }
-      const logoY_page = logoY_viewport + currentScrollY;
+      
+      // The bottle is pinned to this page coordinate (logoY_viewport when scrollY is 0)
+      const bottleY_page = logoY_viewport; // Fixed absolute Y of bottle mouth
+      const logoY_page = bottleY_page;
 
       // Find last divider page Y to limit the line length
       let maxLineY = 10000;
@@ -348,10 +341,11 @@ export default function DashboardPage() {
 
       // 1. Draw Growing Wobbly Parchment Line (only if scrolling started)
       const startX = getWobblyLineX(logoY_page, logoX);
+      const startY_viewport = logoY_page - currentScrollY;
       
       if (activeTipY > logoY_page) {
         ctx.beginPath();
-        ctx.moveTo(startX, logoY_viewport);
+        ctx.moveTo(startX, startY_viewport);
 
         for (let tempY = logoY_page + 4; tempY <= activeTipY; tempY += 4) {
           const x = getWobblyLineX(tempY, logoX);
@@ -371,8 +365,11 @@ export default function DashboardPage() {
         drawTeardrop(ctx, endX, endY_viewport, 14, 20);
       }
 
-      // 3. Draw Ink Bottle at the origin (layered on top of the line start for seamless flow)
-      drawInkBottle(ctx, startX, logoY_viewport, rotation);
+      // 3. Draw Ink Bottle in page space (so it scrolls naturally off-screen)
+      const bottleY_viewport = bottleY_page - currentScrollY;
+      if (bottleY_viewport > -100 && bottleY_viewport < canvas.height + 100) {
+        drawInkBottle(ctx, startX, bottleY_viewport, rotation);
+      }
 
       // 4. Check Divider Crossings and trigger unroll & blot spawn using activeTipY
       dividerRefs.current.forEach((el, idx) => {
