@@ -1201,9 +1201,9 @@ export default function DashboardPage() {
           transition={{ duration: 1.4, delay: 0.3, ease: [0.19, 1, 0.22, 1] }}
           className="w-full py-2 border-b border-[#1a1a1a]/5 pb-12"
         >
-          <p className="text-center font-inter text-[9px] uppercase tracking-[0.25em] text-[#1a1a1a]/40 mb-10 select-none">
-            ✦ How are you feeling today? ✦
-          </p>
+          <h2 className="text-center font-playfair text-2xl sm:text-3xl font-bold tracking-tight text-[#1a1a1a] mb-10 select-none">
+            How are you feeling today?
+          </h2>
           <div className="mood-paper-override">
             <MoodSelector />
           </div>
