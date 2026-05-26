@@ -187,6 +187,11 @@ export default function Navbar() {
               Movements
             </Link>
 
+            {/* Community Link */}
+            <Link href="/community" className="hover:text-gold transition-colors">
+              Community
+            </Link>
+
             {/* Chat Dropdown Trigger */}
             <div 
               className="relative py-2 group"
@@ -314,6 +319,16 @@ export default function Navbar() {
                   >
                     ⚙️ Preferences
                   </Link>
+
+                  {user?.uid === 'AGUsKuZPq7YFBydMnnOnUcFhvdx1' && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setActiveDropdown(null)}
+                      className="flex items-center gap-2 px-4 py-2 hover:bg-white/5 text-xs text-[#f5f0e8]/80 hover:text-gold transition-colors font-semibold"
+                    >
+                      🛡️ Admin Panel
+                    </Link>
+                  )}
 
                   <div className="border-t border-white/5 my-2" />
                   
