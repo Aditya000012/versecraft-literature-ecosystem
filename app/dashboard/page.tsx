@@ -82,6 +82,152 @@ export default function DashboardPage() {
   const [recsLoading, setRecsLoading] = useState(false);
   const [activeTransition, setActiveTransition] = useState<'simple' | 'advanced' | null>(null);
 
+  // Animation states & refs
+  const [isMobile, setIsMobile] = useState(false);
+  const [ruledLineProgress, setRuledLineProgress] = useState(0);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const [bloomActive, setBloomActive] = useState(false);
+
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const bloomTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const dashboardContainerRef = React.useRef<HTMLDivElement | null>(null);
+
+  // 1. Mobile screen check
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // 2. Ruled Lines Scroll Tracking
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.body.scrollHeight - window.innerHeight;
+      const progress = totalHeight > 0 ? window.scrollY / totalHeight : 0;
+      setRuledLineProgress(Math.min(Math.max(progress, 0), 1));
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // 3. Ink Droplet Fall Animation Loop
+  useEffect(() => {
+    if (isMobile) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    interface Droplet {
+      x: number;
+      y: number;
+      radius: number;
+      opacity: number;
+      speed: number;
+      state: 'falling' | 'dissolving';
+    }
+
+    const droplets: Droplet[] = [];
+    const createDroplet = (staggerHeight = false, index = 0): Droplet => {
+      const x = Math.random() * (canvas.width * 0.9) + canvas.width * 0.05;
+      const y = staggerHeight ? (canvas.height * 0.65 * (index / 5)) : -10;
+      return {
+        x,
+        y,
+        radius: 2.5,
+        opacity: 0.12,
+        speed: 0.4,
+        state: 'falling',
+      };
+    };
+
+    for (let i = 0; i < 5; i++) {
+      droplets.push(createDroplet(true, i));
+    }
+
+    let animationFrameId: number;
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      droplets.forEach((d, idx) => {
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(26, 26, 26, ${d.opacity})`;
+        ctx.fill();
+
+        if (d.state === 'falling') {
+          d.y += d.speed;
+          d.speed += 0.008;
+          d.opacity = 0.12;
+
+          if (d.y > canvas.height * 0.65) {
+            d.state = 'dissolving';
+          }
+        } else {
+          d.radius += 0.3;
+          d.opacity -= 0.004;
+
+          if (d.opacity <= 0) {
+            droplets[idx] = createDroplet(false);
+          }
+        }
+      });
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isMobile]);
+
+  // 4. Cursor Ink Bloom Mouse Tracking
+  useEffect(() => {
+    if (isMobile) return;
+    const container = dashboardContainerRef.current;
+    if (!container) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setCursorPos({ x: e.clientX, y: e.clientY });
+      setBloomActive(true);
+
+      if (bloomTimeoutRef.current) {
+        clearTimeout(bloomTimeoutRef.current);
+      }
+
+      bloomTimeoutRef.current = setTimeout(() => {
+        setBloomActive(false);
+      }, 400);
+    };
+
+    container.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      container.removeEventListener('mousemove', handleMouseMove);
+      if (bloomTimeoutRef.current) {
+        clearTimeout(bloomTimeoutRef.current);
+      }
+    };
+  }, [isMobile]);
+
   // High-performance Framer Motion scroll tracking
   const { scrollY } = useScroll();
 
@@ -315,60 +461,82 @@ export default function DashboardPage() {
   const overlayText = isAdvanced ? 'text-[#FAF6EC]/60' : 'text-[#1a1a1a]/60';
 
   return (
-    <div
-      className="relative z-10 w-full flex flex-col gap-24 select-none overflow-hidden pb-20"
-      style={{ animation: 'candlelight-ambience 28s infinite ease-in-out' }}
-    >
-      {/* Scroll-Responsive "Living Manuscript Drift" System (Background Layers) */}
-      {/* 1. Deep Parchment Shadow Layer */}
-      <motion.div 
-        style={{ y: parchmentY, x: parchmentX }}
-        className="manuscript-background-layer absolute inset-0 pointer-events-none z-0"
-      >
-        <div className="absolute top-[8%] left-[-10%] w-[1000px] h-[700px] bg-gradient-to-tr from-[#dcd1b8]/15 to-transparent rounded-full filter blur-[120px]" />
-        <div className="absolute top-[48%] right-[-15%] w-[1100px] h-[800px] bg-gradient-to-bl from-[#dcd1b8]/12 to-transparent rounded-full filter blur-[150px]" />
-      </motion.div>
+    <>
+      {/* Ink droplet canvas */}
+      {!isMobile && (
+        <canvas
+          ref={canvasRef}
+          className="fixed inset-0 pointer-events-none z-0"
+          style={{ mixBlendMode: 'multiply' }}
+        />
+      )}
 
-      {/* 2. Literary Fragment Layer (Sparse, barely readable annotations) */}
-      <motion.div 
-        style={{ y: fragmentY, x: fragmentX }}
-        className="manuscript-background-layer absolute inset-0 pointer-events-none z-0"
+      <div
+        ref={dashboardContainerRef}
+        className="relative z-10 w-full flex flex-col gap-24 select-none overflow-hidden pb-20"
+        style={{ animation: 'candlelight-ambience 28s infinite ease-in-out' }}
       >
-        <div className="absolute top-[14%] right-[12%] font-playfair text-[#1a1a1a]/3 text-sm italic tracking-widest">
-          *silentium est templum*
-        </div>
-        <div className="absolute top-[32%] left-[10%] font-playfair text-[#1a1a1a]/2 text-[10px] tracking-[0.35em]">
-          N° 48.209 — CO-AUTHORS SANCTUARY
-        </div>
-        <div className="absolute top-[52%] right-[16%] font-playfair text-[#1a1a1a]/3 text-xs italic">
-          “ad infinitum...”
-        </div>
-        <div className="absolute top-[75%] left-[8%] font-playfair text-[#1a1a1a]/2 text-sm italic">
-          ex libris versecraft
-        </div>
-        <div className="absolute top-[92%] right-[10%] font-playfair text-[#1a1a1a]/3 text-xs">
-          *codex manuscriptum*
-        </div>
-      </motion.div>
+        {/* Scroll-Responsive "Living Manuscript Drift" System (Background Layers) */}
+        {/* 1. Deep Parchment Shadow Layer */}
+        <motion.div 
+          style={{ y: parchmentY, x: parchmentX }}
+          className="manuscript-background-layer absolute inset-0 pointer-events-none z-0"
+        >
+          <div className="absolute top-[8%] left-[-10%] w-[1000px] h-[700px] bg-gradient-to-tr from-[#dcd1b8]/15 to-transparent rounded-full filter blur-[120px]" />
+          <div className="absolute top-[48%] right-[-15%] w-[1100px] h-[800px] bg-gradient-to-bl from-[#dcd1b8]/12 to-transparent rounded-full filter blur-[150px]" />
+        </motion.div>
 
-      {/* 3. Atmospheric Dust Layer (Paper fibers) */}
-      <motion.div 
-        style={{ y: dustY, x: dustX }}
-        className="manuscript-background-layer absolute inset-0 pointer-events-none z-0"
-      >
-        <div className="absolute top-[28%] left-[18%] w-[1px] h-10 bg-[#1a1a1a]/15 rotate-[32deg] rounded-full filter blur-[0.5px]" />
-        <div className="absolute top-[58%] left-[78%] w-[1px] h-12 bg-[#1a1a1a]/12 rotate-[-48deg] rounded-full filter blur-[0.5px]" />
-        <div className="absolute top-[82%] left-[42%] w-[1px] h-8 bg-[#1a1a1a]/15 rotate-[20deg] rounded-full filter blur-[0.5px]" />
-      </motion.div>
+        {/* 2. Literary Fragment Layer (Sparse, barely readable annotations with breathing animation) */}
+        <motion.div 
+          style={{ y: fragmentY, x: fragmentX }}
+          className="manuscript-background-layer absolute inset-0 pointer-events-none z-0"
+        >
+          <div className="absolute top-[14%] right-[12%] font-playfair text-[#1a1a1a] text-sm italic tracking-widest fragment-breathe-1">
+            *silentium est templum*
+          </div>
+          <div className="absolute top-[32%] left-[10%] font-playfair text-[#1a1a1a] text-[10px] tracking-[0.35em] fragment-breathe-2">
+            N° 48.209 — CO-AUTHORS SANCTUARY
+          </div>
+          <div className="absolute top-[52%] right-[16%] font-playfair text-[#1a1a1a] text-xs italic fragment-breathe-3">
+            “ad infinitum...”
+          </div>
+          <div className="absolute top-[75%] left-[8%] font-playfair text-[#1a1a1a] text-sm italic fragment-breathe-4">
+            ex libris versecraft
+          </div>
+          <div className="absolute top-[92%] right-[10%] font-playfair text-[#1a1a1a] text-xs fragment-breathe-5">
+            *codex manuscriptum*
+          </div>
+        </motion.div>
 
-      {/* Overrides for Nested Children Components & Full-Width Custom Aesthetics */}
-      <style>{`
-        /* Slow breathing candlelight ambient background illumination */
-        @keyframes candlelight-ambience {
-          0%, 100% { filter: brightness(1) contrast(1); background-color: #F8F4E9; }
-          33% { filter: brightness(1.002) contrast(0.998); background-color: #FAF7EF; }
-          66% { filter: brightness(0.998) contrast(1.002); background-color: #F6F2E7; }
-        }
+        {/* 3. Atmospheric Dust Layer (Paper fibers) */}
+        <motion.div 
+          style={{ y: dustY, x: dustX }}
+          className="manuscript-background-layer absolute inset-0 pointer-events-none z-0"
+        >
+          <div className="absolute top-[28%] left-[18%] w-[1px] h-10 bg-[#1a1a1a]/15 rotate-[32deg] rounded-full filter blur-[0.5px]" />
+          <div className="absolute top-[58%] left-[78%] w-[1px] h-12 bg-[#1a1a1a]/12 rotate-[-48deg] rounded-full filter blur-[0.5px]" />
+          <div className="absolute top-[82%] left-[42%] w-[1px] h-8 bg-[#1a1a1a]/15 rotate-[20deg] rounded-full filter blur-[0.5px]" />
+        </motion.div>
+
+        {/* Overrides for Nested Children Components & Full-Width Custom Aesthetics */}
+        <style>{`
+          /* fragmentBreathe keyframe and breathing classes */
+          @keyframes fragmentBreathe {
+            0%, 100% { opacity: 0.015; }
+            50% { opacity: 0.04; }
+          }
+          .fragment-breathe-1 { animation: fragmentBreathe 8s infinite ease-in-out; animation-delay: 0s; opacity: 0.015; }
+          .fragment-breathe-2 { animation: fragmentBreathe 8s infinite ease-in-out; animation-delay: 2s; opacity: 0.015; }
+          .fragment-breathe-3 { animation: fragmentBreathe 8s infinite ease-in-out; animation-delay: 4s; opacity: 0.015; }
+          .fragment-breathe-4 { animation: fragmentBreathe 8s infinite ease-in-out; animation-delay: 1.5s; opacity: 0.015; }
+          .fragment-breathe-5 { animation: fragmentBreathe 8s infinite ease-in-out; animation-delay: 3s; opacity: 0.015; }
+
+          /* Slow breathing candlelight ambient background illumination */
+          @keyframes candlelight-ambience {
+            0%, 100% { filter: brightness(1) contrast(1); background-color: #F8F4E9; }
+            33% { filter: brightness(1.002) contrast(0.998); background-color: #FAF7EF; }
+            66% { filter: brightness(0.998) contrast(1.002); background-color: #F6F2E7; }
+          }
 
         /* Hide heavy animations on mobile screen widths to prioritize performance */
         @media (max-width: 768px) {
@@ -753,6 +921,27 @@ export default function DashboardPage() {
 
       {/* Main Workspace Frame container */}
       <div className="w-full max-w-5xl mx-auto px-6 flex flex-col gap-24 relative z-10">
+        {/* Scroll-Revealed Ruled Lines */}
+        {Array.from({ length: 8 }).map((_, i) => {
+          const threshold = i / 12;
+          const active = ruledLineProgress >= threshold;
+          return (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                left: 0,
+                width: active ? '100%' : '0%',
+                height: '1px',
+                background: 'rgba(26, 26, 26, 0.04)',
+                top: `${((i + 1) / 9) * 100}%`,
+                zIndex: 1,
+                pointerEvents: 'none',
+                transition: 'width 0.8s ease',
+              }}
+            />
+          );
+        })}
         
         {/* 1. Welcome Section (Expansive, asymmetrical full-width journal layout) */}
         <motion.section
@@ -1055,6 +1244,27 @@ export default function DashboardPage() {
         </motion.section>
 
       </div>
+
+      {/* Cursor bloom element */}
+      {!isMobile && (
+        <div
+          style={{
+            position: 'fixed',
+            left: cursorPos.x,
+            top: cursorPos.y,
+            transform: bloomActive ? 'translate(-50%, -50%) scale(28)' : 'translate(-50%, -50%) scale(1)',
+            opacity: bloomActive ? 1 : 0,
+            width: '1px',
+            height: '1px',
+            borderRadius: '50%',
+            background: 'rgba(26, 26, 26, 0.06)',
+            pointerEvents: 'none',
+            zIndex: 0,
+            transition: 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.4s ease',
+          }}
+        />
+      )}
     </div>
+    </>
   );
 }
