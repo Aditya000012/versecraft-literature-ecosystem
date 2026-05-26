@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${playfair.variable} ${inter.variable} bg-[#0a0a1a] text-[#f5f0e8] antialiased`}>
+      <body className={`${playfair.variable} ${inter.variable} bg-[#F8F4E9] text-[#1a1a1a] antialiased`}>
         <AuthProvider>
           <InkCanvas />
           <Navbar />
