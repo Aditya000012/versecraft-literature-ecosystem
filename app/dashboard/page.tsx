@@ -84,13 +84,56 @@ export default function DashboardPage() {
 
   // Animation states & refs
   const [isMobile, setIsMobile] = useState(false);
-  const [ruledLineProgress, setRuledLineProgress] = useState(0);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [bloomActive, setBloomActive] = useState(false);
+  const [unrolledDividers, setUnrolledDividers] = useState<boolean[]>([false, false, false, false, false, false]);
 
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const bloomTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const dashboardContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const dividerRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+
+  // Ink Droplet Queue interface definition
+  interface CanvasDroplet {
+    x: number;
+    pageY: number;
+    currentPageY: number;
+    radius: number;
+    opacity: number;
+    speed: number;
+    state: 'falling' | 'blotting';
+  }
+
+  interface CanvasBlot {
+    x: number;
+    pageY: number;
+    maxCoreRadius: number;
+    maxBleedRadius: number;
+    progress: number;
+  }
+
+  const activeDropletsRef = React.useRef<CanvasDroplet[]>([]);
+  const activeBlotsRef = React.useRef<CanvasBlot[]>([]);
+
+  // Dynamic ink droplet spawning trigger
+  const spawnDroplet = (targetPageY: number) => {
+    if (typeof window === 'undefined' || window.innerWidth < 768) return;
+    const container = dashboardContainerRef.current;
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+    const leftMarginX = containerRect.left + 24;
+
+    const startPageY = window.scrollY - 10;
+    activeDropletsRef.current.push({
+      x: leftMarginX,
+      pageY: targetPageY,
+      currentPageY: startPageY,
+      radius: 2.2,
+      opacity: 0.85,
+      speed: 10,
+      state: 'falling',
+    });
+  };
 
   // 1. Mobile screen check
   useEffect(() => {
@@ -102,13 +145,34 @@ export default function DashboardPage() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 2. Ruled Lines Scroll Tracking
+  // 2. Unrolling Dividers and Scroll Tracking
   useEffect(() => {
     const handleScroll = () => {
-      const scrolled = window.scrollY;
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      setRuledLineProgress(maxScroll > 0 ? scrolled / maxScroll : 0);
+      // Check dividers scroll thresholds
+      let triggeredIndex = -1;
+      let triggeredPageY = 0;
+
+      dividerRefs.current.forEach((el, idx) => {
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        // If the top of the divider enters the lower portion of the viewport (75% height threshold)
+        if (rect.top < window.innerHeight * 0.75 && !unrolledDividers[idx]) {
+          triggeredIndex = idx;
+          triggeredPageY = rect.top + window.scrollY;
+        }
+      });
+
+      if (triggeredIndex !== -1) {
+        setUnrolledDividers((prev) => {
+          if (prev[triggeredIndex]) return prev;
+          const next = [...prev];
+          next[triggeredIndex] = true;
+          return next;
+        });
+        spawnDroplet(triggeredPageY);
+      }
     };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     const t = setTimeout(handleScroll, 300);
@@ -116,7 +180,7 @@ export default function DashboardPage() {
       window.removeEventListener('scroll', handleScroll);
       clearTimeout(t);
     };
-  }, []);
+  }, [unrolledDividers]);
 
   // 3. Ink Droplet Fall Animation Loop
   useEffect(() => {
@@ -133,67 +197,93 @@ export default function DashboardPage() {
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    interface Droplet {
-      x: number;
-      y: number;
-      radius: number;
-      opacity: number;
-      speed: number;
-      state: 'falling' | 'dissolving';
-    }
-
-    const droplets: Droplet[] = [];
-    const createDroplet = (staggerHeight = false, index = 0): Droplet => {
-      const x = Math.random() * (canvas.width * 0.9) + canvas.width * 0.05;
-      const y = staggerHeight ? (canvas.height * 0.65 * (index / 5)) : -10;
-      return {
-        x,
-        y,
-        radius: 2.5,
-        opacity: 0.18,
-        speed: 0.4,
-        state: 'falling',
-      };
+    const getLeftMarginX = () => {
+      const container = dashboardContainerRef.current;
+      if (!container) return 32;
+      const rect = container.getBoundingClientRect();
+      return rect.left + 24;
     };
 
-    for (let i = 0; i < 5; i++) {
-      droplets.push(createDroplet(true, i));
-    }
-
-    let loggedFirstFrame = false;
     let animationFrameId: number;
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const leftMarginX = getLeftMarginX();
+      const currentScrollY = window.scrollY;
 
-      if (!loggedFirstFrame && droplets.length > 0) {
-        console.log('First droplet position:', droplets[0].x, droplets[0].y);
-        loggedFirstFrame = true;
-      }
+      // Draw the static vertical guide line in the left margin
+      ctx.beginPath();
+      ctx.moveTo(leftMarginX, 0);
+      ctx.lineTo(leftMarginX, canvas.height);
+      ctx.strokeStyle = 'rgba(26, 26, 26, 0.08)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
 
-      droplets.forEach((d, idx) => {
+      // Update and draw active falling droplets
+      const droplets = activeDropletsRef.current;
+      for (let i = droplets.length - 1; i >= 0; i--) {
+        const d = droplets[i];
+        
+        // Translate dynamic coordinate for scrolling
+        const viewportY = d.currentPageY - currentScrollY;
+
+        // Draw droplet
         ctx.beginPath();
-        ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(26, 26, 26, ${d.opacity})`;
+        ctx.arc(leftMarginX, viewportY, d.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(18, 18, 18, ${d.opacity})`;
         ctx.fill();
 
         if (d.state === 'falling') {
-          d.y += d.speed;
-          d.speed += 0.008;
-          d.opacity = 0.18;
+          d.currentPageY += d.speed;
+          d.speed += 0.55; // acceleration
 
-          if (d.y > canvas.height * 0.65) {
-            d.state = 'dissolving';
-          }
-        } else {
-          d.radius += 0.3;
-          d.opacity -= 0.004;
-
-          if (d.opacity <= 0) {
-            droplets[idx] = createDroplet(false);
+          if (d.currentPageY >= d.pageY) {
+            d.currentPageY = d.pageY;
+            d.state = 'blotting';
+            
+            // Add a static blot on the parchment
+            activeBlotsRef.current.push({
+              x: leftMarginX,
+              pageY: d.pageY,
+              maxCoreRadius: 3.2,
+              maxBleedRadius: 8.0,
+              progress: 0,
+            });
+            
+            droplets.splice(i, 1);
           }
         }
-      });
+      }
+
+      // Update and draw active blots
+      const blots = activeBlotsRef.current;
+      for (let i = blots.length - 1; i >= 0; i--) {
+        const b = blots[i];
+        const viewportY = b.pageY - currentScrollY;
+
+        // Only render if visible in viewport
+        if (viewportY >= -50 && viewportY <= canvas.height + 50) {
+          if (b.progress < 1) {
+            b.progress += 0.035; // blot expansion speed
+            if (b.progress > 1) b.progress = 1;
+          }
+
+          const coreRadius = b.maxCoreRadius * b.progress;
+          const bleedRadius = b.maxBleedRadius * b.progress;
+
+          // Double concentric circular bleed
+          const bleedOpacity = 0.28 * (1 - b.progress * 0.45);
+          ctx.beginPath();
+          ctx.arc(leftMarginX, viewportY, bleedRadius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(18, 18, 18, ${bleedOpacity})`;
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(leftMarginX, viewportY, coreRadius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(18, 18, 18, ${0.85})`;
+          ctx.fill();
+        }
+      }
 
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -486,16 +576,40 @@ export default function DashboardPage() {
           <div className="absolute top-[48%] right-[-15%] w-[1100px] h-[800px] bg-gradient-to-bl from-[#dcd1b8]/12 to-transparent rounded-full filter blur-[150px]" />
         </motion.div>
 
-        {/* 2. Literary Fragment Layer (Sparse, barely readable annotations with breathing animation) */}
+        {/* 2. Literary Fragment Layer (Sparse margin side notes with tilt & border styling) */}
         <motion.div 
           style={{ y: fragmentY, x: fragmentX }}
           className="manuscript-background-layer absolute inset-0 pointer-events-none z-0"
         >
-          <div style={{ position: 'absolute', top: '14%', right: '12%', animation: 'fragmentBreathe 8s ease-in-out infinite 0s' }} className="font-playfair text-[#1a1a1a] text-sm italic tracking-widest fragment-breathe-1">*silentium est templum*</div>
-          <div style={{ position: 'absolute', top: '32%', left: '10%', animation: 'fragmentBreathe 8s ease-in-out infinite 2s' }} className="font-playfair text-[#1a1a1a] text-[10px] tracking-[0.35em] fragment-breathe-2">N° 48.209 — CO-AUTHORS SANCTUARY</div>
-          <div style={{ position: 'absolute', top: '52%', right: '16%', animation: 'fragmentBreathe 8s ease-in-out infinite 4s' }} className="font-playfair text-[#1a1a1a] text-xs italic fragment-breathe-3">&ldquo;ad infinitum...&rdquo;</div>
-          <div style={{ position: 'absolute', top: '75%', left: '8%', animation: 'fragmentBreathe 8s ease-in-out infinite 1.5s' }} className="font-playfair text-[#1a1a1a] text-sm italic fragment-breathe-4">ex libris versecraft</div>
-          <div style={{ position: 'absolute', top: '92%', right: '10%', animation: 'fragmentBreathe 8s ease-in-out infinite 3s' }} className="font-playfair text-[#1a1a1a] text-xs fragment-breathe-5">*codex manuscriptum*</div>
+          {/* Note 1 (Top-Right): Near Welcome */}
+          <div style={{ position: 'absolute', top: '14%', right: '8%', transform: 'rotate(1deg)' }} className="scholastic-side-note side-note-right fragment-breathe-1">
+            <span className="side-note-index">§ I. silentium</span>
+            <span className="side-note-text">silentium est templum</span>
+          </div>
+
+          {/* Note 2 (Upper-Left): Near Daily Verse */}
+          <div style={{ position: 'absolute', top: '32%', left: '6%', transform: 'rotate(-1.5deg)' }} className="scholastic-side-note side-note-left fragment-breathe-2">
+            <span className="side-note-index">§ II. sanctuary</span>
+            <span className="side-note-text">N° 48.209 — CO-AUTHORS SANCTUARY</span>
+          </div>
+
+          {/* Note 3 (Middle-Right): Near Calendar/Mood */}
+          <div style={{ position: 'absolute', top: '52%', right: '10%', transform: 'rotate(1.2deg)' }} className="scholastic-side-note side-note-right fragment-breathe-3">
+            <span className="side-note-index">§ III. glossae</span>
+            <span className="side-note-text">ad infinitum...</span>
+          </div>
+
+          {/* Note 4 (Lower-Left): Near Chat Gateways */}
+          <div style={{ position: 'absolute', top: '75%', left: '5%', transform: 'rotate(-1deg)' }} className="scholastic-side-note side-note-left fragment-breathe-4">
+            <span className="side-note-index">§ IV. catalogus</span>
+            <span className="side-note-text">ex libris versecraft</span>
+          </div>
+
+          {/* Note 5 (Bottom-Right): Near Recommended Reads */}
+          <div style={{ position: 'absolute', top: '92%', right: '7%', transform: 'rotate(0.8deg)' }} className="scholastic-side-note side-note-right fragment-breathe-5">
+            <span className="side-note-index">§ V. colophon</span>
+            <span className="side-note-text">codex manuscriptum</span>
+          </div>
         </motion.div>
 
         {/* 3. Atmospheric Dust Layer (Paper fibers) */}
@@ -528,9 +642,56 @@ export default function DashboardPage() {
             66% { filter: brightness(0.998) contrast(1.002); background-color: #F6F2E7; }
           }
 
-        /* Hide heavy animations on mobile screen widths to prioritize performance */
+        /* Scholastic margin side notes */
+        .scholastic-side-note {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          font-family: var(--font-playfair), serif;
+          color: rgba(26, 26, 26, 0.65);
+          max-width: 170px;
+          pointer-events: none;
+          user-select: none;
+          transition: opacity 0.4s ease;
+          z-index: 5;
+        }
+        
+        .side-note-left {
+          border-left: 1px solid rgba(153, 27, 27, 0.15); /* light crimson border */
+          text-align: left;
+          align-items: flex-start;
+          padding-left: 10px;
+          padding-right: 0px;
+        }
+        
+        .side-note-right {
+          border-right: 1px solid rgba(153, 27, 27, 0.15); /* light crimson border */
+          text-align: right;
+          align-items: flex-end;
+          padding-right: 10px;
+          padding-left: 0px;
+        }
+        
+        .side-note-index {
+          font-family: var(--font-inter), sans-serif;
+          font-size: 7.5px;
+          text-transform: uppercase;
+          letter-spacing: 0.18em;
+          color: rgba(153, 27, 27, 0.65); /* dark crimson ink tag */
+          font-weight: 700;
+        }
+        
+        .side-note-text {
+          font-size: 11px;
+          font-style: italic;
+          line-height: 1.45;
+          color: #1a1a1a;
+        }
+
+        /* Hide heavy animations and side notes on mobile screen widths */
         @media (max-width: 768px) {
-          .manuscript-background-layer {
+          .manuscript-background-layer,
+          .scholastic-side-note {
             display: none !important;
           }
         }
@@ -664,8 +825,11 @@ export default function DashboardPage() {
           line-height: 1.6 !important;
           font-weight: 300 !important;
         }
+        
+        /* SPECIFICITY OVERRIDE FOR Watermark and Calendar Year display */
         .calendar-paper-override span.text-gold.text-4xl,
-        .calendar-paper-override span.text-gold.text-5xl {
+        .calendar-paper-override span.text-gold.text-5xl,
+        .calendar-paper-override .flex-shrink-0 span.text-gold {
           color: #ffffff !important;
           font-family: var(--font-playfair), serif !important;
           font-weight: 800 !important;
@@ -680,10 +844,12 @@ export default function DashboardPage() {
           transition: transform 0.4s ease, color 0.4s ease !important;
         }
         .calendar-paper-override:hover span.text-gold.text-4xl,
-        .calendar-paper-override:hover span.text-gold.text-5xl {
+        .calendar-paper-override:hover span.text-gold.text-5xl,
+        .calendar-paper-override:hover .flex-shrink-0 span.text-gold {
           color: #ffffff !important;
           transform: translateY(-2px) scale(1.02) !important;
         }
+        
         .calendar-paper-override .border-t.border-white\/5 {
           border-top: 1px dashed rgba(248, 244, 233, 0.15) !important;
           padding-top: 1rem !important;
@@ -911,28 +1077,6 @@ export default function DashboardPage() {
 
       {/* Main Workspace Frame container */}
       <div className="w-full max-w-5xl mx-auto px-6 flex flex-col gap-24 relative z-10">
-        {/* Scroll-Revealed Ruled Lines */}
-        {Array.from({ length: 8 }).map((_, i) => {
-          const threshold = i / 12;
-          const active = ruledLineProgress >= threshold;
-          return (
-            <div
-              key={i}
-              style={{
-                position: 'fixed',
-                left: 0,
-                right: 0,
-                width: active ? '100%' : '0%',
-                height: '1px',
-                background: 'rgba(26, 26, 26, 0.08)',
-                top: `${((i + 1) / 9) * 100}vh`,
-                zIndex: 1,
-                pointerEvents: 'none',
-                transition: 'width 0.8s ease',
-              }}
-            />
-          );
-        })}
         
         {/* 1. Welcome Section (Expansive, asymmetrical full-width journal layout) */}
         <motion.section
@@ -940,7 +1084,7 @@ export default function DashboardPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 1.4, ease: [0.19, 1, 0.22, 1] }}
-          className="w-full space-y-8 relative pl-8 py-4"
+          className="w-full space-y-8 relative pl-8 py-4 animate-first-load"
         >
           {/* Crimson ledger vertical rule */}
           <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-gradient-to-b from-red-800/15 via-red-800/8 to-transparent" />
@@ -968,6 +1112,22 @@ export default function DashboardPage() {
           </div>
         </motion.section>
 
+        {/* Divider 1 */}
+        <div 
+          ref={(el) => { dividerRefs.current[0] = el; }} 
+          className="relative w-full h-[1px]"
+        >
+          <div 
+            className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-[#1a1a1a]/15 to-transparent transition-all duration-[1200ms]"
+            style={{
+              transformOrigin: 'left',
+              transform: unrolledDividers[0] ? 'scaleX(1)' : 'scaleX(0)',
+              opacity: unrolledDividers[0] ? 1 : 0,
+              transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
+            }}
+          />
+        </div>
+
         {/* 2. Verse of the Day (Naturally embedded centered manuscript flow) */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -981,6 +1141,22 @@ export default function DashboardPage() {
           </div>
         </motion.section>
 
+        {/* Divider 2 */}
+        <div 
+          ref={(el) => { dividerRefs.current[1] = el; }} 
+          className="relative w-full h-[1px]"
+        >
+          <div 
+            className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-[#1a1a1a]/15 to-transparent transition-all duration-[1200ms]"
+            style={{
+              transformOrigin: 'left',
+              transform: unrolledDividers[1] ? 'scaleX(1)' : 'scaleX(0)',
+              opacity: unrolledDividers[1] ? 1 : 0,
+              transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
+            }}
+          />
+        </div>
+
         {/* 3. Literary Calendar Archive Strip (Full-width edge-to-edge dark band) */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -993,6 +1169,22 @@ export default function DashboardPage() {
             <LiteraryCalendar />
           </div>
         </motion.section>
+
+        {/* Divider 3 */}
+        <div 
+          ref={(el) => { dividerRefs.current[2] = el; }} 
+          className="relative w-full h-[1px]"
+        >
+          <div 
+            className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-[#1a1a1a]/15 to-transparent transition-all duration-[1200ms]"
+            style={{
+              transformOrigin: 'left',
+              transform: unrolledDividers[2] ? 'scaleX(1)' : 'scaleX(0)',
+              opacity: unrolledDividers[2] ? 1 : 0,
+              transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
+            }}
+          />
+        </div>
 
         {/* 4. Mood Selector (Scattered manuscript annotation thoughts) */}
         <motion.section
@@ -1009,6 +1201,22 @@ export default function DashboardPage() {
             <MoodSelector />
           </div>
         </motion.section>
+
+        {/* Divider 4 */}
+        <div 
+          ref={(el) => { dividerRefs.current[3] = el; }} 
+          className="relative w-full h-[1px]"
+        >
+          <div 
+            className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-[#1a1a1a]/15 to-transparent transition-all duration-[1200ms]"
+            style={{
+              transformOrigin: 'left',
+              transform: unrolledDividers[3] ? 'scaleX(1)' : 'scaleX(0)',
+              opacity: unrolledDividers[3] ? 1 : 0,
+              transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
+            }}
+          />
+        </div>
 
         {/* 5. Chat Modes gateways (Book-style split page elevations) */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -1082,6 +1290,22 @@ export default function DashboardPage() {
             </div>
           </motion.div>
         </section>
+
+        {/* Divider 5 */}
+        <div 
+          ref={(el) => { dividerRefs.current[4] = el; }} 
+          className="relative w-full h-[1px]"
+        >
+          <div 
+            className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-[#1a1a1a]/15 to-transparent transition-all duration-[1200ms]"
+            style={{
+              transformOrigin: 'left',
+              transform: unrolledDividers[4] ? 'scaleX(1)' : 'scaleX(0)',
+              opacity: unrolledDividers[4] ? 1 : 0,
+              transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
+            }}
+          />
+        </div>
 
         {/* 6. Archived Correspondence (Dynamic vertical timeline ledger) */}
         <motion.section
@@ -1162,13 +1386,29 @@ export default function DashboardPage() {
           )}
         </motion.section>
 
+        {/* Divider 6 */}
+        <div 
+          ref={(el) => { dividerRefs.current[5] = el; }} 
+          className="relative w-full h-[1px]"
+        >
+          <div 
+            className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-[#1a1a1a]/15 to-transparent transition-all duration-[1200ms]"
+            style={{
+              transformOrigin: 'left',
+              transform: unrolledDividers[5] ? 'scaleX(1)' : 'scaleX(0)',
+              opacity: unrolledDividers[5] ? 1 : 0,
+              transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
+            }}
+          />
+        </div>
+
         {/* 7. Recommended Reads (Curated Reading-Table portfolio) */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 1.4, delay: 0.5, ease: [0.19, 1, 0.22, 1] }}
-          className="w-full space-y-8 pt-6 border-t border-[#1a1a1a]/10"
+          className="w-full space-y-8"
         >
           <div className="flex justify-between items-center pb-2 border-b border-[#1a1a1a]/10">
             <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] flex items-center gap-2">
