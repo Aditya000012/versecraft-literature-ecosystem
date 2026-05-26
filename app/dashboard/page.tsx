@@ -174,51 +174,79 @@ export default function DashboardPage() {
   return (
     <div
       className="relative z-10 w-full max-w-5xl mx-auto px-6 py-28 flex flex-col gap-20 select-none"
-      style={{ animation: 'candlelight-breathe 24s infinite ease-in-out' }}
+      style={{ animation: 'candlelight-ambience 28s infinite ease-in-out' }}
     >
-      {/* Floating Dust Particles Background - Extremely Sparse and Low Opacity */}
+      {/* Floating Dust Particles Background - Extremely Sparse and Cinematic Offset Floats */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="dust-particle w-1.5 h-1.5 top-[18%] left-[15%]" style={{ animationDelay: '0s', animationDuration: '24s' }} />
-        <div className="dust-particle w-1 h-1 top-[40%] left-[85%]" style={{ animationDelay: '4s', animationDuration: '30s' }} />
-        <div className="dust-particle w-1.2 h-1.2 top-[62%] left-[30%]" style={{ animationDelay: '9s', animationDuration: '36s' }} />
-        <div className="dust-particle w-1 h-1 top-[80%] left-[70%]" style={{ animationDelay: '2s', animationDuration: '22s' }} />
+        <div className="dust-particle w-1.5 h-1.5 top-[20%] left-[10%]" style={{ animationName: 'dust-float-1', animationDuration: '26s', animationDelay: '0s' }} />
+        <div className="dust-particle w-1 h-1 top-[42%] left-[80%]" style={{ animationName: 'dust-float-2', animationDuration: '32s', animationDelay: '3s' }} />
+        <div className="dust-particle w-1.2 h-1.2 top-[68%] left-[25%]" style={{ animationName: 'dust-float-3', animationDuration: '38s', animationDelay: '7s' }} />
+        <div className="dust-particle w-1 h-1 top-[82%] left-[65%]" style={{ animationName: 'dust-float-1', animationDuration: '24s', animationDelay: '12s' }} />
+        <div className="dust-particle w-1.5 h-1.5 top-[15%] left-[88%]" style={{ animationName: 'dust-float-2', animationDuration: '30s', animationDelay: '5s' }} />
       </div>
 
       {/* Style Overrides for Child Custom Components & Special Atmospheric Animations */}
       <style>{`
-        /* Slow breathing candlelight glow */
-        @keyframes candlelight-breathe {
-          0%, 100% { filter: brightness(1); }
-          50% { filter: brightness(1.005) contrast(0.995); }
+        /* Slow breathing candlelight ambient background illumination */
+        @keyframes candlelight-ambience {
+          0%, 100% { filter: brightness(1) contrast(1); background-color: #F8F4E9; }
+          33% { filter: brightness(1.002) contrast(0.998); background-color: #FAF7EF; }
+          66% { filter: brightness(0.998) contrast(1.002); background-color: #F6F2E7; }
         }
 
-        /* Faint drifting dust particles */
-        @keyframes dust-drift {
+        /* Faint drifting library dust particles - Diagonal unique drift patterns */
+        @keyframes dust-float-1 {
           0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
-          15% { opacity: 0.035; }
-          85% { opacity: 0.035; }
-          100% { transform: translateY(-80px) translateX(25px) rotate(180deg); opacity: 0; }
+          12% { opacity: 0.035; }
+          88% { opacity: 0.035; }
+          100% { transform: translateY(-90px) translateX(30px) rotate(180deg); opacity: 0; }
+        }
+        @keyframes dust-float-2 {
+          0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+          15% { opacity: 0.03; }
+          85% { opacity: 0.03; }
+          100% { transform: translateY(-70px) translateX(-25px) rotate(-120deg); opacity: 0; }
+        }
+        @keyframes dust-float-3 {
+          0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+          20% { opacity: 0.04; }
+          80% { opacity: 0.04; }
+          100% { transform: translateY(-110px) translateX(35px) rotate(240deg); opacity: 0; }
         }
 
         .dust-particle {
           position: absolute;
-          background: rgba(26, 26, 26, 0.4);
+          background: rgba(26, 26, 26, 0.45);
           border-radius: 50%;
           pointer-events: none;
-          animation: dust-drift 20s infinite linear;
+          animation-iteration-count: infinite;
+          animation-timing-function: ease-in-out;
         }
 
-        /* Ink text gradient shine */
+        /* Ink text gradient shine & Ambient text opacity breathe */
+        @keyframes textShine {
+          to { background-position: 200% center; }
+        }
+        @keyframes ink-breathe {
+          0%, 100% { opacity: 0.95; }
+          50% { opacity: 1; }
+        }
         .heading-ink-shine {
-          background: linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 45%, #1a1a1a 90%);
+          background: linear-gradient(135deg, #1a1a1a 0%, #444444 50%, #1a1a1a 100%);
           background-size: 200% auto;
           background-clip: text;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
-          animation: textShine 16s linear infinite;
+          animation: textShine 16s linear infinite, ink-breathe 10s infinite ease-in-out;
         }
-        @keyframes textShine {
-          to { background-position: 200% center; }
+
+        /* Faint illumination drift and starlight shadow over elements */
+        @keyframes light-drift {
+          0%, 100% { text-shadow: 0 0 0px transparent; opacity: 0.8; }
+          50% { text-shadow: 0 0 1px rgba(26, 26, 26, 0.08); opacity: 0.95; }
+        }
+        .meta-breathe {
+          animation: light-drift 12s infinite ease-in-out;
         }
 
         /* Overrides for DailyVerse */
@@ -253,6 +281,10 @@ export default function DashboardPage() {
           border-bottom: 1px dashed rgba(26, 26, 26, 0.08) !important;
           margin: 1.25rem 0 !important;
           text-align: center !important;
+          transition: border-color 0.4s ease;
+        }
+        .daily-verse-paper-override:hover blockquote {
+          border-color: rgba(26, 26, 26, 0.2) !important;
         }
         
         /* Overrides for LiteraryCalendar */
@@ -260,19 +292,30 @@ export default function DashboardPage() {
           background: rgba(255, 255, 255, 0.35) !important;
           border-radius: 4px !important;
           border: 1px solid rgba(26, 26, 26, 0.06) !important;
-          border-left: 3px solid rgba(26, 26, 26, 0.6) !important;
+          border-left: 3px solid rgba(26, 26, 26, 0.5) !important;
           box-shadow: 0 4px 20px -2px rgba(26, 26, 26, 0.01) !important;
           backdrop-filter: none !important;
           -webkit-backdrop-filter: none !important;
           padding: 1.75rem !important;
           position: relative !important;
+          transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1) !important;
+        }
+        .calendar-paper-override:hover > div {
+          background: rgba(255, 255, 255, 0.5) !important;
+          border-color: rgba(26, 26, 26, 0.12) !important;
+          border-left-color: rgba(26, 26, 26, 0.8) !important;
+          box-shadow: 0 6px 24px -2px rgba(26, 26, 26, 0.02) !important;
         }
         .calendar-paper-override .absolute.top-0.left-0.bottom-0.w-\[4px\].bg-gold {
           display: none !important;
         }
         .calendar-paper-override svg.text-gold {
           color: #1a1a1a !important;
-          opacity: 0.6;
+          opacity: 0.5;
+          transition: opacity 0.3s ease;
+        }
+        .calendar-paper-override:hover svg.text-gold {
+          opacity: 0.9;
         }
         .calendar-paper-override span.text-gold {
           color: rgba(26, 26, 26, 0.5) !important;
@@ -307,6 +350,12 @@ export default function DashboardPage() {
           user-select: none !important;
           font-style: italic !important;
           letter-spacing: -0.05em !important;
+          transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), color 0.4s ease !important;
+        }
+        .calendar-paper-override:hover span.text-gold.text-4xl,
+        .calendar-paper-override:hover span.text-gold.text-5xl {
+          color: rgba(26, 26, 26, 0.06) !important;
+          transform: translateY(-2px) scale(1.02) !important;
         }
         
         .calendar-paper-override .border-t.border-white\/5 {
@@ -376,7 +425,7 @@ export default function DashboardPage() {
           border: 1px solid rgba(26, 26, 26, 0.08) !important;
           border-radius: 4px !important;
           box-shadow: 0 1px 4px rgba(0, 0, 0, 0.01) !important;
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+          transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1) !important;
         }
         
         /* Subtle, controlled scattered rotations */
@@ -387,11 +436,12 @@ export default function DashboardPage() {
         .mood-paper-override button:nth-child(5) { transform: rotate(-0.3deg); background-color: #FAF8F5 !important; }
         .mood-paper-override button:nth-child(6) { transform: rotate(0.7deg); background-color: #FFFFFF !important; }
 
+        /* Rotate back to 0deg (stabilize) and shift shadow drift on hover */
         .mood-paper-override button:hover {
           background-color: #F3EFEB !important;
           border-color: rgba(26, 26, 26, 0.2) !important;
           transform: scale(1.02) rotate(0deg) !important;
-          box-shadow: 0 4px 12px rgba(26, 26, 26, 0.04) !important;
+          box-shadow: 0 6px 16px rgba(26, 26, 26, 0.04) !important;
           z-index: 10 !important;
         }
         .mood-paper-override button span {
@@ -409,10 +459,11 @@ export default function DashboardPage() {
           box-shadow: 0 3px 8px rgba(26, 26, 26, 0.03) !important;
         }
 
-        /* Ruled item indicator rules */
+        /* Ruled item indicator rules - pulling forward slightly on hover */
         .ruled-item {
           border-bottom: 1px dashed rgba(26, 26, 26, 0.06);
           position: relative;
+          transition: border-bottom-color 0.3s ease, background-color 0.3s ease, padding-left 0.3s cubic-bezier(0.19, 1, 0.22, 1);
         }
         .ruled-item::before {
           content: '•';
@@ -420,11 +471,16 @@ export default function DashboardPage() {
           left: -12px;
           color: rgba(26, 26, 26, 0.15);
           font-size: 12px;
-          transition: color 0.2s ease, transform 0.2s ease;
+          transition: color 0.3s ease, transform 0.3s ease;
+        }
+        .ruled-item:hover {
+          border-bottom-color: rgba(26, 26, 26, 0.15);
+          background-color: rgba(26, 26, 26, 0.01);
+          padding-left: 12px !important;
         }
         .ruled-item:hover::before {
           color: rgba(26, 26, 26, 0.7);
-          transform: translateX(2px);
+          transform: translateX(3px);
         }
 
         /* Slowly expanding ink underlines on gateways */
@@ -439,11 +495,33 @@ export default function DashboardPage() {
           width: 0;
           height: 1px;
           background: #1a1a1a;
-          transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: width 0.35s cubic-bezier(0.19, 1, 0.22, 1), left 0.35s cubic-bezier(0.19, 1, 0.22, 1);
         }
         .gateway-btn:hover::after {
           width: 100%;
           left: 0;
+        }
+        
+        /* Tactical elevation and shadow drifts for gateways */
+        .gateway-card {
+          transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), 
+                      box-shadow 0.4s cubic-bezier(0.19, 1, 0.22, 1), 
+                      background-color 0.4s cubic-bezier(0.19, 1, 0.22, 1), 
+                      border-color 0.4s cubic-bezier(0.19, 1, 0.22, 1) !important;
+        }
+        .gateway-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px -4px rgba(26, 26, 26, 0.04) !important;
+          border-color: rgba(26, 26, 26, 0.12) !important;
+        }
+        
+        /* Book cover lift on curations list */
+        .book-item-container img {
+          transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), box-shadow 0.4s cubic-bezier(0.19, 1, 0.22, 1) !important;
+        }
+        .book-item-container:hover img {
+          transform: translateY(-3px) scale(1.03);
+          box-shadow: 4px 6px 14px rgba(26, 26, 26, 0.16) !important;
         }
       `}</style>
 
@@ -452,7 +530,7 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 1.4, ease: [0.19, 1, 0.22, 1] }}
         className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start relative z-10 border-b border-[#1a1a1a]/10 pb-14"
       >
         {/* Welcome Section */}
@@ -460,10 +538,10 @@ export default function DashboardPage() {
           {/* Vertical left ledger margin line */}
           <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-gradient-to-b from-red-800/12 via-red-800/8 to-transparent" />
           
-          <p className="text-[9px] tracking-[0.25em] uppercase font-bold text-[#1a1a1a]/40 font-inter">
+          <p className="text-[9px] tracking-[0.25em] uppercase font-bold text-[#1a1a1a]/40 font-inter meta-breathe">
             CHAMBER LOGS
           </p>
-          <h1 className="font-playfair text-4xl sm:text-5xl font-bold tracking-tight leading-tight">
+          <h1 className="font-playfair text-4xl sm:text-5xl font-bold tracking-tight leading-tight select-none">
             <span className="heading-ink-shine">Welcome back,</span> <br />
             <span className="italic font-normal text-[#1a1a1a]/85">{firstName}</span>
           </h1>
@@ -493,7 +571,7 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 1.4, delay: 0.15, ease: [0.19, 1, 0.22, 1] }}
         className="relative z-10 max-w-4xl mx-auto w-full"
       >
         <div className="calendar-paper-override">
@@ -506,7 +584,7 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 1.4, delay: 0.3, ease: [0.19, 1, 0.22, 1] }}
         className="relative z-10 w-full"
       >
         <div className="mood-paper-override">
@@ -521,8 +599,8 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 1.2, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-white/45 border border-[#1a1a1a]/5 p-8 rounded-sm shadow-[0_4px_16px_rgba(26,26,26,0.005)] relative group min-h-[260px] flex flex-col justify-between transition-all duration-300 hover:bg-white/70 hover:border-[#1a1a1a]/12 hover:shadow-[0_6px_20px_rgba(26,26,26,0.015)]"
+          transition={{ duration: 1.4, delay: 0.4, ease: [0.19, 1, 0.22, 1] }}
+          className="gateway-card bg-white/45 border border-[#1a1a1a]/5 p-8 rounded-sm shadow-[0_4px_16px_rgba(26,26,26,0.005)] relative group min-h-[260px] flex flex-col justify-between hover:bg-white/70"
         >
           {/* Crimson notebook margin indicator */}
           <div className="absolute left-3 top-0 bottom-0 w-[1px] bg-red-800/10" />
@@ -531,10 +609,10 @@ export default function DashboardPage() {
             <span className="text-[9px] tracking-[0.2em] uppercase font-bold text-[#1a1a1a]/40 font-inter">
               CO-AUTHORS CHAMBER
             </span>
-            <h2 className="font-playfair text-2xl sm:text-3xl font-bold text-[#1a1a1a] mt-2 select-none">
+            <h2 className="font-playfair text-2xl sm:text-3xl font-bold text-[#1a1a1a] mt-2 select-none group-hover:text-black transition-colors duration-300">
               Simple Companion
             </h2>
-            <p className="font-inter text-xs text-[#2d2d2d]/75 mt-4 leading-relaxed max-w-sm italic font-light">
+            <p className="font-inter text-xs text-[#2d2d2d]/75 mt-4 leading-relaxed max-w-sm italic font-light group-hover:text-black transition-colors duration-300">
               &ldquo;An open page, a resting pen...&rdquo; Engage in warm creative dialogue. Prompt the companion to craft custom poems, trade verses in real-time, generate seeds, or submit writing to the critiques of Judgement Mode.
             </p>
           </div>
@@ -555,8 +633,8 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 1.2, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-[#F5F2EA]/50 border border-[#1a1a1a]/5 p-8 rounded-sm shadow-[0_4px_16px_rgba(26,26,26,0.005)] relative group min-h-[260px] flex flex-col justify-between transition-all duration-300 hover:bg-[#F5F2EA]/75 hover:border-[#1a1a1a]/12 hover:shadow-[0_6px_20px_rgba(26,26,26,0.015)]"
+          transition={{ duration: 1.4, delay: 0.45, ease: [0.19, 1, 0.22, 1] }}
+          className="gateway-card bg-[#F5F2EA]/50 border border-[#1a1a1a]/5 p-8 rounded-sm shadow-[0_4px_16px_rgba(26,26,26,0.005)] relative group min-h-[260px] flex flex-col justify-between hover:bg-[#F5F2EA]/75"
         >
           {/* Archival ink margin indicator */}
           <div className="absolute left-3 top-0 bottom-0 w-[1px] bg-[#1a1a1a]/8" />
@@ -565,10 +643,10 @@ export default function DashboardPage() {
             <span className="text-[9px] tracking-[0.2em] uppercase font-bold text-[#1a1a1a]/40 font-inter">
               LITERARY VAULT
             </span>
-            <h2 className="font-playfair text-2xl sm:text-3xl font-bold text-[#1a1a1a] mt-2 select-none">
+            <h2 className="font-playfair text-2xl sm:text-3xl font-bold text-[#1a1a1a] mt-2 select-none group-hover:text-black transition-colors duration-300">
               Advanced Chambers
             </h2>
-            <p className="font-inter text-xs text-[#2d2d2d]/75 mt-4 leading-relaxed max-w-sm font-serif font-light">
+            <p className="font-inter text-xs text-[#2d2d2d]/75 mt-4 leading-relaxed max-w-sm font-serif font-light group-hover:text-black transition-colors duration-300">
               Lock your dialogue into specific historical styles, eras, and scholars. Watch the entire interface settle into reflecting candlelit studies, Victorian shadows, or rain-slicked modern avenues.
             </p>
           </div>
@@ -588,7 +666,13 @@ export default function DashboardPage() {
       {/* Main Panel grid: Recent Activity vs Recommendations */}
       <section className="grid grid-cols-1 lg:grid-cols-5 gap-16 relative z-10 pt-4 border-t border-[#1a1a1a]/10">
         {/* Left Column: Recent Activity (3/5 width) */}
-        <div className="lg:col-span-3 space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.4, delay: 0.5, ease: [0.19, 1, 0.22, 1] }}
+          className="lg:col-span-3 space-y-6"
+        >
           <div className="flex justify-between items-center pb-2 border-b border-[#1a1a1a]/10">
             <h3 className="font-playfair text-lg font-bold text-[#1a1a1a] flex items-center gap-2">
               📜 Archived Correspondence
@@ -618,21 +702,21 @@ export default function DashboardPage() {
                   <div className="flex justify-between items-start gap-4">
                     <div className="min-w-0 flex-grow">
                       <div className="flex items-center gap-3">
-                        <span className="text-[7px] uppercase tracking-widest font-bold text-[#1a1a1a]/55 border border-[#1a1a1a]/10 px-1.5 py-0.5 rounded-sm bg-white select-none">
+                        <span className="text-[7px] uppercase tracking-widest font-bold text-[#1a1a1a]/55 border border-[#1a1a1a]/10 px-1.5 py-0.5 rounded-sm bg-white select-none transition-colors group-hover:border-[#1a1a1a]/25 group-hover:text-black">
                           {c.type}
                         </span>
-                        <h4 className="font-playfair text-base font-bold text-[#1a1a1a] group-hover:underline decoration-1 underline-offset-2">
+                        <h4 className="font-playfair text-base font-bold text-[#1a1a1a] group-hover:underline decoration-1 underline-offset-2 transition-colors group-hover:text-black">
                           {modeNames[c.mode] || c.mode}
                         </h4>
                       </div>
                       
                       {c.type === 'advanced' && c.filters && (
-                        <p className="text-[10px] text-[#6b6b6b] mt-0.5 font-inter">
+                        <p className="text-[10px] text-[#6b6b6b] mt-0.5 font-inter transition-colors group-hover:text-black/60">
                           Chamber: {c.filters.genre} • {c.filters.era}
                         </p>
                       )}
                       
-                      <p className="text-xs text-[#2d2d2d]/70 mt-1.5 font-inter italic max-w-md truncate">
+                      <p className="text-xs text-[#2d2d2d]/70 mt-1.5 font-inter italic max-w-md truncate transition-colors group-hover:text-black">
                         &ldquo;{c.messages[c.messages.length - 1]?.content || 'Session initialized.'}&rdquo;
                       </p>
                     </div>
@@ -656,10 +740,16 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Right Column: Recommendations Teaser (2/5 width) */}
-        <div className="lg:col-span-2 space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.4, delay: 0.55, ease: [0.19, 1, 0.22, 1] }}
+          className="lg:col-span-2 space-y-6"
+        >
           <div className="flex justify-between items-center pb-2 border-b border-[#1a1a1a]/10">
             <h3 className="font-playfair text-lg font-bold text-[#1a1a1a] flex items-center gap-2">
               📚 Library Discoveries
@@ -687,17 +777,17 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={book.title}
-                    className="py-4 border-b border-[#1a1a1a]/5 flex gap-4 items-start relative pl-3 -ml-3 group"
+                    className="py-4 border-b border-[#1a1a1a]/5 flex gap-4 items-start relative pl-3 -ml-3 group book-item-container"
                   >
                     <img
                       src={book.thumbnail}
                       alt={book.title}
-                      className="w-14 h-20 shadow-[3px_3px_8px_rgba(26,26,26,0.12)] object-cover flex-shrink-0 border border-[#1a1a1a]/10 transition-transform duration-300 group-hover:scale-105 rounded-sm"
+                      className="w-14 h-20 shadow-[3px_3px_8px_rgba(26,26,26,0.12)] object-cover flex-shrink-0 border border-[#1a1a1a]/10 rounded-sm"
                     />
                     <div className="flex-grow min-w-0">
-                      <h4 className="font-playfair text-sm font-bold text-[#1a1a1a] leading-snug">{book.title}</h4>
+                      <h4 className="font-playfair text-sm font-bold text-[#1a1a1a] leading-snug group-hover:text-black transition-colors duration-300">{book.title}</h4>
                       <p className="font-inter text-[10px] text-[#6b6b6b] italic mt-0.5">{book.author}</p>
-                      <p className="font-inter text-[11px] text-[#2d2d2d]/75 leading-relaxed font-light mt-2 max-w-xs">
+                      <p className="font-inter text-[11px] text-[#2d2d2d]/75 leading-relaxed font-light mt-2 max-w-xs transition-colors duration-300 group-hover:text-black">
                         {book.poeticReason}
                       </p>
                       <a
@@ -714,7 +804,7 @@ export default function DashboardPage() {
               })}
             </div>
           )}
-        </div>
+        </motion.div>
       </section>
     </div>
   );
