@@ -261,20 +261,20 @@ export default function DashboardPage() {
       cContext.translate(cx, cy);
       cContext.rotate(rot);
 
-      // 1. Draw bottle body
+      // 1. Draw bottle body (enlarged for beautiful high visibility, sitting above pivot (0,0))
       cContext.beginPath();
-      cContext.moveTo(-4, 0); // bottom left of neck
-      cContext.lineTo(-4, -4); // top left of neck
-      cContext.lineTo(-7, -4); // left shoulder
-      cContext.bezierCurveTo(-11, -4, -11, -8, -11, -8); // left upper shoulder curve
-      cContext.lineTo(-11, -19); // left side bottom
-      cContext.bezierCurveTo(-11, -21, -9, -21, -9, -21); // bottom-left corner curve
-      cContext.lineTo(9, -21); // bottom edge
-      cContext.bezierCurveTo(11, -21, 11, -19, 11, -19); // bottom-right corner curve
-      cContext.lineTo(11, -8); // right side
-      cContext.bezierCurveTo(11, -4, 7, -4, 7, -4); // right upper shoulder curve
-      cContext.lineTo(4, -4); // top right of neck
-      cContext.lineTo(4, 0); // bottom right of neck
+      cContext.moveTo(-5, 0); // bottom left of neck
+      cContext.lineTo(-5, -6); // top left of neck
+      cContext.lineTo(-10, -6); // left shoulder
+      cContext.bezierCurveTo(-16, -6, -16, -12, -16, -12); // left upper shoulder curve
+      cContext.lineTo(-16, -28); // left side bottom
+      cContext.bezierCurveTo(-16, -31, -13, -31, -13, -31); // bottom-left corner curve
+      cContext.lineTo(13, -31); // bottom edge
+      cContext.bezierCurveTo(13, -31, 16, -31, 16, -28); // bottom-right corner curve
+      cContext.lineTo(16, -12); // right side
+      cContext.bezierCurveTo(16, -6, 10, -6, 10, -6); // right upper shoulder curve
+      cContext.lineTo(5, -6); // top right of neck
+      cContext.lineTo(5, 0); // bottom right of neck
       cContext.closePath();
       cContext.fillStyle = '#121212';
       cContext.fill();
@@ -282,19 +282,19 @@ export default function DashboardPage() {
       // 2. Draw cap on top of the neck
       cContext.beginPath();
       if (cContext.roundRect) {
-        cContext.roundRect(-6, -7, 12, 3, 1);
+        cContext.roundRect(-8, -11, 16, 5, 2);
       } else {
-        cContext.rect(-6, -7, 12, 3);
+        cContext.rect(-8, -11, 16, 5);
       }
-      cContext.fillStyle = '#262626';
+      cContext.fillStyle = '#2d2d2d';
       cContext.fill();
 
       // 3. Draw a premium glass highlight / sheen on the left shoulder/body
       cContext.beginPath();
-      cContext.moveTo(-8, -9);
-      cContext.lineTo(-8, -17);
-      cContext.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-      cContext.lineWidth = 1;
+      cContext.moveTo(-11, -13);
+      cContext.lineTo(-11, -26);
+      cContext.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+      cContext.lineWidth = 1.5;
       cContext.stroke();
 
       cContext.restore();
@@ -306,13 +306,13 @@ export default function DashboardPage() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const currentScrollY = window.scrollY;
 
-      // Find the logo and set start Y position
+      // Find the logo and set starting viewport position (perfectly in the blank space under logo text)
       const logoEl = document.querySelector('a[href="/"]');
       const logoX = getLogoX();
-      let logoY_viewport = 40;
+      let logoY_viewport = 75; // default under logo text
       if (logoEl) {
         const rect = logoEl.getBoundingClientRect();
-        logoY_viewport = rect.bottom;
+        logoY_viewport = rect.bottom + 35; // centered horizontally, sitting 35px below logo bottom
       }
       const logoY_page = logoY_viewport + currentScrollY;
 
@@ -342,38 +342,45 @@ export default function DashboardPage() {
       currentRotationRef.current += (targetRotation - currentRotationRef.current) * 0.08;
       const rotation = currentRotationRef.current;
 
-      // 1. Draw Growing Wobbly Parchment Line
-      ctx.beginPath();
+      // Calculate emergence progress (line is 0 length when scrollY = 0, fully emerges after 150px scrolling)
+      const startProgress = Math.min(1, currentScrollY / 150);
+      const activeTipY = logoY_page + (tipY - logoY_page) * startProgress;
+
+      // 1. Draw Growing Wobbly Parchment Line (only if scrolling started)
       const startX = getWobblyLineX(logoY_page, logoX);
-      ctx.moveTo(startX, logoY_viewport);
+      
+      if (activeTipY > logoY_page) {
+        ctx.beginPath();
+        ctx.moveTo(startX, logoY_viewport);
 
-      for (let tempY = logoY_page + 4; tempY <= tipY; tempY += 4) {
-        const x = getWobblyLineX(tempY, logoX);
-        const y_viewport = tempY - currentScrollY;
-        ctx.lineTo(x, y_viewport);
+        for (let tempY = logoY_page + 4; tempY <= activeTipY; tempY += 4) {
+          const x = getWobblyLineX(tempY, logoX);
+          const y_viewport = tempY - currentScrollY;
+          ctx.lineTo(x, y_viewport);
+        }
+
+        const endX = getWobblyLineX(activeTipY, logoX);
+        const endY_viewport = activeTipY - currentScrollY;
+        ctx.lineTo(endX, endY_viewport);
+
+        ctx.strokeStyle = 'rgba(26, 26, 26, 0.18)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // 2. Draw Teardrop Droplet at the tip (only when emerged from the bottle)
+        drawTeardrop(ctx, endX, endY_viewport, 14, 20);
       }
-
-      const endX = getWobblyLineX(tipY, logoX);
-      const endY_viewport = tipY - currentScrollY;
-      ctx.lineTo(endX, endY_viewport);
-
-      ctx.strokeStyle = 'rgba(26, 26, 26, 0.18)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      // 2. Draw Teardrop Droplet at the tip
-      drawTeardrop(ctx, endX, endY_viewport, 14, 20);
 
       // 3. Draw Ink Bottle at the origin (layered on top of the line start for seamless flow)
       drawInkBottle(ctx, startX, logoY_viewport, rotation);
 
-      // 4. Check Divider Crossings and trigger unroll & blot spawn
+      // 4. Check Divider Crossings and trigger unroll & blot spawn using activeTipY
       dividerRefs.current.forEach((el, idx) => {
         if (!el) return;
         const rect = el.getBoundingClientRect();
         const dividerPageY = rect.top + currentScrollY;
 
-        if (tipY >= dividerPageY && !unrolledDividersRef.current[idx]) {
+        if (activeTipY >= dividerPageY && !unrolledDividersRef.current[idx]) {
           triggerUnroll(idx, dividerPageY);
         }
       });
@@ -700,7 +707,7 @@ export default function DashboardPage() {
             left: 0,
             width: '100vw',
             height: '100vh',
-            zIndex: 50,
+            zIndex: 60,
             pointerEvents: 'none',
           }}
         />
