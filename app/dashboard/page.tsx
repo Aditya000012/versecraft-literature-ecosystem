@@ -576,39 +576,59 @@ export default function DashboardPage() {
           <div className="absolute top-[48%] right-[-15%] w-[1100px] h-[800px] bg-gradient-to-bl from-[#dcd1b8]/12 to-transparent rounded-full filter blur-[150px]" />
         </motion.div>
 
-        {/* 2. Literary Fragment Layer (Sparse margin side notes with tilt & border styling) */}
+        {/* 2. Literary Fragment Layer (Parchment hanging notes pinned with metallic nails in the margin channels) */}
         <motion.div 
           style={{ y: fragmentY, x: fragmentX }}
           className="manuscript-background-layer absolute inset-0 pointer-events-none z-0"
         >
           {/* Note 1 (Top-Right): Near Welcome */}
-          <div style={{ position: 'absolute', top: '14%', right: '8%', transform: 'rotate(1deg)' }} className="scholastic-side-note side-note-right fragment-breathe-1">
-            <span className="side-note-index">§ I. silentium</span>
-            <span className="side-note-text">silentium est templum</span>
+          <div style={{ position: 'absolute', top: '14%', right: '8%' }} className="scholastic-side-note tag-sway-1">
+            <div className="manuscript-tag">
+              <div className="tag-nail" />
+              <div className="tag-hole" />
+              <span className="side-note-index">§ I. silentium</span>
+              <span className="side-note-text">silentium est templum</span>
+            </div>
           </div>
 
           {/* Note 2 (Upper-Left): Near Daily Verse */}
-          <div style={{ position: 'absolute', top: '32%', left: '6%', transform: 'rotate(-1.5deg)' }} className="scholastic-side-note side-note-left fragment-breathe-2">
-            <span className="side-note-index">§ II. sanctuary</span>
-            <span className="side-note-text">N° 48.209 — CO-AUTHORS SANCTUARY</span>
+          <div style={{ position: 'absolute', top: '32%', left: '6%' }} className="scholastic-side-note tag-sway-2">
+            <div className="manuscript-tag">
+              <div className="tag-nail" />
+              <div className="tag-hole" />
+              <span className="side-note-index">§ II. sanctuary</span>
+              <span className="side-note-text">N° 48.209 — CO-AUTHORS SANCTUARY</span>
+            </div>
           </div>
 
           {/* Note 3 (Middle-Right): Near Calendar/Mood */}
-          <div style={{ position: 'absolute', top: '52%', right: '10%', transform: 'rotate(1.2deg)' }} className="scholastic-side-note side-note-right fragment-breathe-3">
-            <span className="side-note-index">§ III. glossae</span>
-            <span className="side-note-text">ad infinitum...</span>
+          <div style={{ position: 'absolute', top: '52%', right: '10%' }} className="scholastic-side-note tag-sway-3">
+            <div className="manuscript-tag">
+              <div className="tag-nail" />
+              <div className="tag-hole" />
+              <span className="side-note-index">§ III. glossae</span>
+              <span className="side-note-text">ad infinitum...</span>
+            </div>
           </div>
 
           {/* Note 4 (Lower-Left): Near Chat Gateways */}
-          <div style={{ position: 'absolute', top: '75%', left: '5%', transform: 'rotate(-1deg)' }} className="scholastic-side-note side-note-left fragment-breathe-4">
-            <span className="side-note-index">§ IV. catalogus</span>
-            <span className="side-note-text">ex libris versecraft</span>
+          <div style={{ position: 'absolute', top: '75%', left: '5%' }} className="scholastic-side-note tag-sway-4">
+            <div className="manuscript-tag">
+              <div className="tag-nail" />
+              <div className="tag-hole" />
+              <span className="side-note-index">§ IV. catalogus</span>
+              <span className="side-note-text">ex libris versecraft</span>
+            </div>
           </div>
 
           {/* Note 5 (Bottom-Right): Near Recommended Reads */}
-          <div style={{ position: 'absolute', top: '92%', right: '7%', transform: 'rotate(0.8deg)' }} className="scholastic-side-note side-note-right fragment-breathe-5">
-            <span className="side-note-index">§ V. colophon</span>
-            <span className="side-note-text">codex manuscriptum</span>
+          <div style={{ position: 'absolute', top: '92%', right: '7%' }} className="scholastic-side-note tag-sway-5">
+            <div className="manuscript-tag">
+              <div className="tag-nail" />
+              <div className="tag-hole" />
+              <span className="side-note-index">§ V. colophon</span>
+              <span className="side-note-text">codex manuscriptum</span>
+            </div>
           </div>
         </motion.div>
 
@@ -624,16 +644,21 @@ export default function DashboardPage() {
 
         {/* Overrides for Nested Children Components & Full-Width Custom Aesthetics */}
         <style>{`
-          /* fragmentBreathe keyframe */
-          @keyframes fragmentBreathe {
-            0%, 100% { opacity: 0.06; }
-            50% { opacity: 0.14; }
+          /* tagSway keyframe animations for organic suspended sways */
+          @keyframes tagSwayRight {
+            0%, 100% { transform: rotate(1deg); }
+            50% { transform: rotate(2.5deg); }
           }
-          .fragment-breathe-1 { animation: fragmentBreathe 8s ease-in-out infinite 0s !important; }
-          .fragment-breathe-2 { animation: fragmentBreathe 8s ease-in-out infinite 2s !important; }
-          .fragment-breathe-3 { animation: fragmentBreathe 8s ease-in-out infinite 4s !important; }
-          .fragment-breathe-4 { animation: fragmentBreathe 8s ease-in-out infinite 1.5s !important; }
-          .fragment-breathe-5 { animation: fragmentBreathe 8s ease-in-out infinite 3s !important; }
+          @keyframes tagSwayLeft {
+            0%, 100% { transform: rotate(-1.5deg); }
+            50% { transform: rotate(-3deg); }
+          }
+          
+          .tag-sway-1 { animation: tagSwayRight 10s ease-in-out infinite; }
+          .tag-sway-2 { animation: tagSwayLeft 12s ease-in-out infinite; }
+          .tag-sway-3 { animation: tagSwayRight 13s ease-in-out infinite; }
+          .tag-sway-4 { animation: tagSwayLeft 11s ease-in-out infinite; }
+          .tag-sway-5 { animation: tagSwayRight 14s ease-in-out infinite; }
 
           /* Slow breathing candlelight ambient background illumination */
           @keyframes candlelight-ambience {
@@ -642,50 +667,74 @@ export default function DashboardPage() {
             66% { filter: brightness(0.998) contrast(1.002); background-color: #F6F2E7; }
           }
 
-        /* Scholastic margin side notes */
+        /* Scholastic margin hanging side notes */
         .scholastic-side-note {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-          font-family: var(--font-playfair), serif;
-          color: rgba(26, 26, 26, 0.65);
-          max-width: 170px;
+          display: block;
+          position: absolute;
           pointer-events: none;
           user-select: none;
-          transition: opacity 0.4s ease;
           z-index: 5;
+          max-width: 170px;
+          transition: transform 0.4s ease;
         }
-        
-        .side-note-left {
-          border-left: 1px solid rgba(153, 27, 27, 0.15); /* light crimson border */
-          text-align: left;
-          align-items: flex-start;
-          padding-left: 10px;
-          padding-right: 0px;
+
+        .manuscript-tag {
+          position: relative;
+          background-color: #e2d7c0; /* beautiful light brown parchment */
+          border: 1px solid #c8baa1; /* soft brown border */
+          padding: 16px 14px 12px 14px;
+          border-radius: 2px;
+          box-shadow: 2px 5px 12px rgba(26, 26, 26, 0.16); /* realistic paper shadow */
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          transform-origin: top center;
         }
-        
-        .side-note-right {
-          border-right: 1px solid rgba(153, 27, 27, 0.15); /* light crimson border */
-          text-align: right;
-          align-items: flex-end;
-          padding-right: 10px;
-          padding-left: 0px;
+
+        /* Metallic hanging pin / nail head */
+        .tag-nail {
+          position: absolute;
+          top: -4px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 9px;
+          height: 9px;
+          background: radial-gradient(circle at 35% 35%, #777 0%, #444 70%, #1a1a1a 100%);
+          border-radius: 50%;
+          border: 1px solid rgba(0, 0, 0, 0.45);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), inset -1px -1px 2px rgba(0, 0, 0, 0.7);
+          z-index: 10;
         }
-        
+
+        /* Hole punched in the parchment tag driven through by nail */
+        .tag-hole {
+          width: 5px;
+          height: 5px;
+          background-color: #F8F4E9; /* hole punches through card exposing parchment background color! */
+          border: 1px solid rgba(26, 26, 26, 0.25);
+          border-radius: 50%;
+          margin-bottom: 2px;
+          box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.15);
+        }
+
         .side-note-index {
           font-family: var(--font-inter), sans-serif;
           font-size: 7.5px;
           text-transform: uppercase;
           letter-spacing: 0.18em;
-          color: rgba(153, 27, 27, 0.65); /* dark crimson ink tag */
+          color: rgba(153, 27, 27, 0.75); /* dark crimson ink tag */
           font-weight: 700;
         }
         
         .side-note-text {
-          font-size: 11px;
+          font-family: var(--font-playfair), serif;
+          font-size: 11.5px;
           font-style: italic;
           line-height: 1.45;
-          color: #1a1a1a;
+          color: #1a1a1a !important; /* solid black as headings */
+          font-weight: 600;
         }
 
         /* Hide heavy animations and side notes on mobile screen widths */
