@@ -108,6 +108,7 @@ export default function DashboardPage() {
 
   const activeBlotsRef = React.useRef<CanvasBlot[]>([]);
   const currentTipYRef = React.useRef<number>(0);
+  const currentRotationRef = React.useRef<number>(0);
   const unrolledDividersRef = React.useRef<boolean[]>([false, false, false, false, false, false]);
 
   // Sync ref with state
@@ -255,6 +256,50 @@ export default function DashboardPage() {
       cContext.fill();
     };
 
+    const drawInkBottle = (cContext: CanvasRenderingContext2D, cx: number, cy: number, rot: number) => {
+      cContext.save();
+      cContext.translate(cx, cy);
+      cContext.rotate(rot);
+
+      // 1. Draw bottle body
+      cContext.beginPath();
+      cContext.moveTo(-4, 0); // bottom left of neck
+      cContext.lineTo(-4, -4); // top left of neck
+      cContext.lineTo(-7, -4); // left shoulder
+      cContext.bezierCurveTo(-11, -4, -11, -8, -11, -8); // left upper shoulder curve
+      cContext.lineTo(-11, -19); // left side bottom
+      cContext.bezierCurveTo(-11, -21, -9, -21, -9, -21); // bottom-left corner curve
+      cContext.lineTo(9, -21); // bottom edge
+      cContext.bezierCurveTo(11, -21, 11, -19, 11, -19); // bottom-right corner curve
+      cContext.lineTo(11, -8); // right side
+      cContext.bezierCurveTo(11, -4, 7, -4, 7, -4); // right upper shoulder curve
+      cContext.lineTo(4, -4); // top right of neck
+      cContext.lineTo(4, 0); // bottom right of neck
+      cContext.closePath();
+      cContext.fillStyle = '#121212';
+      cContext.fill();
+
+      // 2. Draw cap on top of the neck
+      cContext.beginPath();
+      if (cContext.roundRect) {
+        cContext.roundRect(-6, -7, 12, 3, 1);
+      } else {
+        cContext.rect(-6, -7, 12, 3);
+      }
+      cContext.fillStyle = '#262626';
+      cContext.fill();
+
+      // 3. Draw a premium glass highlight / sheen on the left shoulder/body
+      cContext.beginPath();
+      cContext.moveTo(-8, -9);
+      cContext.lineTo(-8, -17);
+      cContext.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      cContext.lineWidth = 1;
+      cContext.stroke();
+
+      cContext.restore();
+    };
+
     let animationFrameId: number;
 
     const animate = () => {
@@ -290,6 +335,13 @@ export default function DashboardPage() {
       }
       const tipY = currentTipYRef.current;
 
+      // Calculate smooth tilt rotation for the bottle based on scroll (inwards pour)
+      const maxTilt = 0.55; // ~31 degrees
+      const tiltScrollRange = 120; // Tilts fully by 120px scroll
+      const targetRotation = -Math.min(maxTilt, (currentScrollY / tiltScrollRange) * maxTilt);
+      currentRotationRef.current += (targetRotation - currentRotationRef.current) * 0.08;
+      const rotation = currentRotationRef.current;
+
       // 1. Draw Growing Wobbly Parchment Line
       ctx.beginPath();
       const startX = getWobblyLineX(logoY_page, logoX);
@@ -312,7 +364,10 @@ export default function DashboardPage() {
       // 2. Draw Teardrop Droplet at the tip
       drawTeardrop(ctx, endX, endY_viewport, 14, 20);
 
-      // 3. Check Divider Crossings and trigger unroll & blot spawn
+      // 3. Draw Ink Bottle at the origin (layered on top of the line start for seamless flow)
+      drawInkBottle(ctx, startX, logoY_viewport, rotation);
+
+      // 4. Check Divider Crossings and trigger unroll & blot spawn
       dividerRefs.current.forEach((el, idx) => {
         if (!el) return;
         const rect = el.getBoundingClientRect();
@@ -323,7 +378,7 @@ export default function DashboardPage() {
         }
       });
 
-      // 4. Update and draw active wobbly organic blots
+      // 5. Update and draw active wobbly organic blots
       const blots = activeBlotsRef.current;
       for (let i = blots.length - 1; i >= 0; i--) {
         const b = blots[i];
