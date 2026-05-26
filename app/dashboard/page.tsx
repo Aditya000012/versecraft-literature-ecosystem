@@ -110,7 +110,12 @@ export default function DashboardPage() {
       setRuledLineProgress(maxScroll > 0 ? scrolled / maxScroll : 0);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    handleScroll();
+    const t = setTimeout(handleScroll, 300);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(t);
+    };
   }, []);
 
   // 3. Ink Droplet Fall Animation Loop
@@ -460,7 +465,7 @@ export default function DashboardPage() {
             left: 0,
             width: '100vw',
             height: '100vh',
-            zIndex: 1,
+            zIndex: 50,
             pointerEvents: 'none',
           }}
         />
@@ -486,11 +491,11 @@ export default function DashboardPage() {
           style={{ y: fragmentY, x: fragmentX }}
           className="manuscript-background-layer absolute inset-0 pointer-events-none z-0"
         >
-          <div style={{ position: 'absolute', top: '14%', right: '12%', animation: 'fragmentBreathe 8s ease-in-out infinite 0s' }} className="font-playfair text-[#1a1a1a] text-sm italic tracking-widest">*silentium est templum*</div>
-          <div style={{ position: 'absolute', top: '32%', left: '10%', animation: 'fragmentBreathe 8s ease-in-out infinite 2s' }} className="font-playfair text-[#1a1a1a] text-[10px] tracking-[0.35em]">N° 48.209 — CO-AUTHORS SANCTUARY</div>
-          <div style={{ position: 'absolute', top: '52%', right: '16%', animation: 'fragmentBreathe 8s ease-in-out infinite 4s' }} className="font-playfair text-[#1a1a1a] text-xs italic">&ldquo;ad infinitum...&rdquo;</div>
-          <div style={{ position: 'absolute', top: '75%', left: '8%', animation: 'fragmentBreathe 8s ease-in-out infinite 1.5s' }} className="font-playfair text-[#1a1a1a] text-sm italic">ex libris versecraft</div>
-          <div style={{ position: 'absolute', top: '92%', right: '10%', animation: 'fragmentBreathe 8s ease-in-out infinite 3s' }} className="font-playfair text-[#1a1a1a] text-xs">*codex manuscriptum*</div>
+          <div style={{ position: 'absolute', top: '14%', right: '12%', animation: 'fragmentBreathe 8s ease-in-out infinite 0s' }} className="font-playfair text-[#1a1a1a] text-sm italic tracking-widest fragment-breathe-1">*silentium est templum*</div>
+          <div style={{ position: 'absolute', top: '32%', left: '10%', animation: 'fragmentBreathe 8s ease-in-out infinite 2s' }} className="font-playfair text-[#1a1a1a] text-[10px] tracking-[0.35em] fragment-breathe-2">N° 48.209 — CO-AUTHORS SANCTUARY</div>
+          <div style={{ position: 'absolute', top: '52%', right: '16%', animation: 'fragmentBreathe 8s ease-in-out infinite 4s' }} className="font-playfair text-[#1a1a1a] text-xs italic fragment-breathe-3">&ldquo;ad infinitum...&rdquo;</div>
+          <div style={{ position: 'absolute', top: '75%', left: '8%', animation: 'fragmentBreathe 8s ease-in-out infinite 1.5s' }} className="font-playfair text-[#1a1a1a] text-sm italic fragment-breathe-4">ex libris versecraft</div>
+          <div style={{ position: 'absolute', top: '92%', right: '10%', animation: 'fragmentBreathe 8s ease-in-out infinite 3s' }} className="font-playfair text-[#1a1a1a] text-xs fragment-breathe-5">*codex manuscriptum*</div>
         </motion.div>
 
         {/* 3. Atmospheric Dust Layer (Paper fibers) */}
@@ -510,6 +515,11 @@ export default function DashboardPage() {
             0%, 100% { opacity: 0.06; }
             50% { opacity: 0.14; }
           }
+          .fragment-breathe-1 { animation: fragmentBreathe 8s ease-in-out infinite 0s !important; }
+          .fragment-breathe-2 { animation: fragmentBreathe 8s ease-in-out infinite 2s !important; }
+          .fragment-breathe-3 { animation: fragmentBreathe 8s ease-in-out infinite 4s !important; }
+          .fragment-breathe-4 { animation: fragmentBreathe 8s ease-in-out infinite 1.5s !important; }
+          .fragment-breathe-5 { animation: fragmentBreathe 8s ease-in-out infinite 3s !important; }
 
           /* Slow breathing candlelight ambient background illumination */
           @keyframes candlelight-ambience {
@@ -656,7 +666,7 @@ export default function DashboardPage() {
         }
         .calendar-paper-override span.text-gold.text-4xl,
         .calendar-paper-override span.text-gold.text-5xl {
-          color: rgba(248, 244, 233, 0.045) !important;
+          color: #ffffff !important;
           font-family: var(--font-playfair), serif !important;
           font-weight: 800 !important;
           font-size: 5rem !important;
@@ -671,7 +681,7 @@ export default function DashboardPage() {
         }
         .calendar-paper-override:hover span.text-gold.text-4xl,
         .calendar-paper-override:hover span.text-gold.text-5xl {
-          color: rgba(248, 244, 233, 0.08) !important;
+          color: #ffffff !important;
           transform: translateY(-2px) scale(1.02) !important;
         }
         .calendar-paper-override .border-t.border-white\/5 {
@@ -1240,7 +1250,7 @@ export default function DashboardPage() {
             borderRadius: '50%',
             background: 'rgba(26, 26, 26, 0.06)',
             pointerEvents: 'none',
-            zIndex: 0,
+            zIndex: 50,
             transition: 'all 0.5s cubic-bezier(0.19, 1, 0.22, 1)',
           }}
         />
