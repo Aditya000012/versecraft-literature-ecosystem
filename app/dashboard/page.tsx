@@ -592,7 +592,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Note 2 (Upper-Left): Near Daily Verse */}
-          <div style={{ position: 'absolute', top: '32%', left: '6%' }} className="scholastic-side-note tag-sway-2">
+          <div style={{ position: 'absolute', top: '26%', left: '6%' }} className="scholastic-side-note tag-sway-2">
             <div className="manuscript-tag">
               <div className="tag-nail" />
               <div className="tag-hole" />
