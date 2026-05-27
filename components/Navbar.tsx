@@ -339,6 +339,13 @@ export default function Navbar() {
                   </div>
 
                   <Link
+                    href="/profile?tab=my-profile"
+                    onClick={() => setActiveDropdown(null)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs transition-colors hover:bg-black/10 text-[#1a1a1a]"
+                  >
+                    👤 My Profile
+                  </Link>
+                  <Link
                     href="/profile?tab=anthology"
                     onClick={() => setActiveDropdown(null)}
                     className="flex items-center gap-2 px-4 py-2 text-xs transition-colors hover:bg-black/10 text-[#1a1a1a]"
