@@ -5,10 +5,10 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp, collection, getDocs, deleteDoc, orderBy, query } from 'firebase/firestore';
 import html2canvas from 'html2canvas';
-import ChatSidebar from '@/components/ChatSidebar';
 
 interface Message {
   role: 'user' | 'model' | 'system';
@@ -58,6 +58,208 @@ const moodConfigs: Record<string, { genre: string; era: string; style: string }>
   }
 };
 
+interface SidebarChatSession {
+  id: string;
+  type: 'simple' | 'advanced';
+  mode: string;
+  createdAt?: { seconds: number; nanoseconds: number } | null;
+  messages: { role: string; content: string; timestamp?: Date | string | number | null }[];
+}
+
+interface LocalChatSidebarProps {
+  currentChatId: string | null;
+  chatType: 'simple' | 'advanced';
+}
+
+function LocalChatSidebar({ currentChatId, chatType }: LocalChatSidebarProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const sidebarParam = searchParams.get('sidebar') === 'open';
+
+  const [isHovered, setIsHovered] = useState(false);
+  const [sessions, setSessions] = useState<SidebarChatSession[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (sidebarParam) {
+      setIsHovered(true);
+    }
+  }, [sidebarParam]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const chatsRef = collection(db, 'users', user.uid, 'chats');
+          const q = query(chatsRef, orderBy('createdAt', 'desc'));
+          const querySnap = await getDocs(q);
+          const chatsList: SidebarChatSession[] = [];
+          querySnap.forEach((docSnap) => {
+            const data = docSnap.data();
+            chatsList.push({
+              id: docSnap.id,
+              type: data.type || 'simple',
+              mode: data.mode || 'poetry',
+              createdAt: data.createdAt,
+              messages: data.messages || [],
+            });
+          });
+          setSessions(chatsList);
+        } catch (err) {
+          console.error('Error fetching sessions in sidebar:', err);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setSessions([]);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    try {
+      const docRef = doc(db, 'users', currentUser.uid, 'chats', sessionId);
+      await deleteDoc(docRef);
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    } catch (err) {
+      console.error('Error deleting session:', err);
+    }
+  };
+
+  return (
+    <motion.div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      animate={{ width: isHovered ? 280 : 28 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="fixed left-0 bottom-0 z-40 select-none overflow-hidden flex flex-col justify-between"
+      style={{
+        top: '80px',
+        height: 'calc(100vh - 80px)',
+        background: isHovered ? '#F8F4E9' : 'rgba(248,244,233,0.95)',
+        borderRight: isHovered ? '1px solid rgba(26,26,26,0.1)' : '1px solid rgba(26,26,26,0.15)',
+      }}
+    >
+      {!isHovered ? (
+        <div 
+          className="w-full h-full flex flex-col justify-center items-center cursor-pointer"
+        >
+          <span 
+            style={{
+              writingMode: 'vertical-rl',
+              transform: 'rotate(180deg)',
+              color: '#1a1a1a',
+              fontSize: '9px',
+              textTransform: 'uppercase',
+              letterSpacing: '2px',
+              fontWeight: 'bold',
+              fontFamily: 'Inter, sans-serif',
+            }}
+          >
+            HISTORY
+          </span>
+        </div>
+      ) : (
+        <div className="flex-grow flex flex-col min-w-[280px] p-5 overflow-hidden h-full">
+          {/* Header */}
+          <div className="mb-6 flex-shrink-0">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[#1a1a1a] font-playfair">
+              Chat History
+            </h3>
+            <p className="font-inter text-[10px] text-[#6b6b6b] mt-1 font-light">
+              Your literary sessions
+            </p>
+          </div>
+
+          {/* Session List */}
+          <div className="flex-grow overflow-y-auto pr-1 space-y-2 no-scrollbar">
+            {loading ? (
+              <div className="py-8 flex justify-center items-center">
+                <div className="w-4 h-4 border border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : sessions.length === 0 ? (
+              <p className="text-[11px] text-[#6b6b6b] font-inter italic text-center py-6">
+                No sessions recorded
+              </p>
+            ) : (
+              sessions.map((s) => {
+                const isActive = s.id === currentChatId;
+                const firstUserMsg = s.messages.find(m => m.role === 'user');
+                const rawTitle = firstUserMsg?.content || `Session (${s.mode})`;
+                const sessionTitle = rawTitle.length > 40 ? rawTitle.slice(0, 40) + '...' : rawTitle;
+                
+                let sessionDate: Date;
+                if (s.createdAt) {
+                  if ('seconds' in s.createdAt && typeof s.createdAt.seconds === 'number') {
+                    sessionDate = new Date(s.createdAt.seconds * 1000);
+                  } else if (typeof s.createdAt === 'string' || typeof s.createdAt === 'number' || s.createdAt instanceof Date) {
+                    sessionDate = new Date(s.createdAt as string | number | Date);
+                  } else {
+                    sessionDate = new Date();
+                  }
+                } else {
+                  sessionDate = new Date();
+                }
+                const formattedDate = sessionDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+
+                return (
+                  <div
+                    key={s.id}
+                    onClick={() => router.push(`/chat/${s.type}?session=${s.id}`)}
+                    className={`group relative flex justify-between items-center p-3 rounded-lg border border-transparent transition-all cursor-pointer ${
+                      isActive 
+                        ? 'bg-[rgba(26,26,26,0.06)] border-l-2 border-l-[#1a1a1a]' 
+                        : 'hover:bg-[rgba(26,26,26,0.03)]'
+                    }`}
+                  >
+                    <div className="flex-grow min-w-0 pr-6">
+                      <h4 className="font-playfair text-xs text-[#1a1a1a] font-medium truncate">
+                        {sessionTitle}
+                      </h4>
+                      <span className="font-inter text-[9px] text-[#6b6b6b] block mt-1">
+                        {formattedDate} • <span className="capitalize">{s.mode}</span>
+                      </span>
+                    </div>
+
+                    {/* Delete row button */}
+                    <button
+                      onClick={(e) => handleDeleteSession(e, s.id)}
+                      style={{ color: '#cc0000' }}
+                      className="absolute right-2 opacity-0 group-hover:opacity-100 p-1 transition-opacity"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* New Chat Trigger */}
+          <div className="pt-4 border-t border-[rgba(26,26,26,0.1)] flex-shrink-0">
+            <button
+              onClick={() => router.push(`/chat/${chatType}`)}
+              className="w-full py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] rounded-lg text-[10px] uppercase font-bold tracking-wider font-inter text-white transition-all flex items-center justify-center gap-1.5"
+            >
+              <span>✦</span> New Chat
+            </button>
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
 function SimpleChatPageContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -93,15 +295,9 @@ function SimpleChatPageContent() {
     const loadSession = async () => {
       setAiLoading(true);
       
-      let initialFilters: { genre: string; era: string; authorStyle: string } | undefined = undefined;
       if (moodParam && moodConfigs[moodParam]) {
         const config = moodConfigs[moodParam];
         setActiveMood(config);
-        initialFilters = {
-          genre: config.genre,
-          era: config.era,
-          authorStyle: config.style
-        };
       }
 
       const targetChatId = sessionParam || urlChatId;
@@ -132,18 +328,14 @@ function SimpleChatPageContent() {
       const newId = `chat_${Math.random().toString(36).substring(2, 15)}`;
       setChatId(newId);
       try {
-        const messageText = bookParam && authorParam
-          ? `The user wants to discuss the book '${bookParam}' by ${authorParam}. Open the conversation by warmly introducing this book — share something intriguing about it, its themes, its author, or its place in literary history. Then invite the user to share their thoughts or questions about it.`
-          : 'BEGIN_SESSION';
-
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            message: messageText,
-            mode: 'default',
+            message: 'BEGIN_SESSION',
+            mode: currentMode,
             history: [],
-            filters: initialFilters
+            filters: null
           })
         });
         if (res.ok) {
@@ -208,10 +400,12 @@ function SimpleChatPageContent() {
 
     try {
       // Format history matching standard roles
-      const clientHistory = messages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      }));
+      const clientHistory = messages
+        .filter((msg, idx) => !(idx === 0 && msg.role === 'model'))
+        .map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        }));
 
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -249,7 +443,9 @@ function SimpleChatPageContent() {
         ...messages,
         userMessage,
         aiMessage,
-      ].map((msg) => ({
+      ]
+      .filter((msg, idx) => !(idx === 0 && msg.role === 'model'))
+      .map((msg) => ({
         role: msg.role,
         content: msg.content,
         timestamp: msg.timestamp instanceof Date ? msg.timestamp : new Date(),
@@ -376,30 +572,30 @@ function SimpleChatPageContent() {
   }
 
   return (
-    <div className="relative z-10 w-full min-h-screen flex flex-col pt-20">
-      <ChatSidebar currentChatId={chatId || null} chatType="simple" />
+    <div className="relative z-10 w-full min-h-screen bg-[#F8F4E9] flex flex-col pt-20">
+      <LocalChatSidebar currentChatId={chatId || null} chatType="simple" />
       
       {/* Session Header Bar */}
-      <div className="glass-card py-3 px-6 border-b border-white/5 fixed top-20 left-0 right-0 z-30 flex justify-between items-center max-w-7xl mx-auto rounded-b-xl">
+      <div className="py-3 px-6 border-b border-[rgba(26,26,26,0.1)] bg-[#F8F4E9] fixed top-20 left-0 right-0 z-30 flex justify-between items-center max-w-7xl mx-auto rounded-b-xl">
         <div className="flex flex-col items-start gap-1">
           <div className="flex items-center gap-2">
             <Link
               href="/dashboard"
-              className="text-xs text-cream/60 hover:text-gold transition-colors flex items-center gap-1 font-inter font-medium"
+              className="text-xs text-[#6b6b6b] hover:text-[#1a1a1a] transition-colors flex items-center gap-1 font-inter font-medium"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
               </svg>
               Dashboard
             </Link>
-            <span className="text-white/20">|</span>
-            <span className="text-xs font-semibold text-gold font-inter tracking-wide capitalize flex items-center gap-1.5">
+            <span className="text-[rgba(26,26,26,0.2)]">|</span>
+            <span className="text-xs font-semibold text-[#1a1a1a] font-inter tracking-wide capitalize flex items-center gap-1.5">
               <span>{companionModes.find((m) => m.id === currentMode)?.icon}</span>
               {companionModes.find((m) => m.id === currentMode)?.name}
             </span>
           </div>
           {bookParam && authorParam && (
-            <span className="text-[10px] text-gold font-inter font-medium flex items-center gap-1 mt-0.5">
+            <span className="text-[10px] text-[#1a1a1a] font-inter font-medium flex items-center gap-1 mt-0.5">
               📖 Discussing: <span className="italic">{bookParam}</span> by {authorParam}
             </span>
           )}
@@ -419,11 +615,7 @@ function SimpleChatPageContent() {
                   message: 'BEGIN_SESSION',
                   mode: currentMode,
                   history: [],
-                  filters: (activeMood && currentMode === 'default') ? {
-                    genre: activeMood.genre,
-                    era: activeMood.era,
-                    authorStyle: activeMood.style
-                  } : undefined
+                  filters: null
                 })
               });
               if (res.ok) {
@@ -443,7 +635,10 @@ function SimpleChatPageContent() {
             }
             router.replace('/chat/simple');
           }}
-          className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md text-[10px] uppercase font-bold tracking-wider font-inter text-cream transition-colors"
+          style={{
+            border: '1px solid #1a1a1a',
+          }}
+          className="px-3 py-1 bg-white hover:bg-[#f0ebe0] rounded-md text-[10px] uppercase font-bold tracking-wider font-inter text-[#1a1a1a] transition-colors"
         >
           New Scroll
         </button>
@@ -461,36 +656,39 @@ function SimpleChatPageContent() {
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[85%] sm:max-w-xl p-5 rounded-2xl border transition-all ${
+                style={{
+                  border: msg.role === 'user' ? 'none' : '1px solid rgba(26, 26, 26, 0.1)',
+                }}
+                className={`max-w-[85%] sm:max-w-xl p-5 rounded-2xl transition-all ${
                   msg.role === 'user'
-                    ? 'bg-gold/10 border-gold/30 text-cream rounded-br-none'
-                    : 'glass-card border-white/5 text-cream rounded-bl-none'
+                    ? 'bg-[#1a1a1a] text-white rounded-br-none'
+                    : 'bg-white text-[#1a1a1a] rounded-bl-none'
                 }`}
               >
                 {msg.role === 'model' && (
-                  <div className="flex justify-between items-center mb-3 border-b border-white/5 pb-2">
-                    <span className="text-[9px] uppercase tracking-wider text-gold font-bold font-inter">
-                      Companion
+                  <div className="flex justify-between items-center mb-3 border-b border-[rgba(26, 26, 26, 0.1)] pb-2">
+                    <span className="text-[9px] uppercase tracking-widest text-[#6b6b6b] font-bold font-inter">
+                      COMPANION
                     </span>
                   </div>
                 )}
 
-                <p className={`font-inter text-sm leading-relaxed whitespace-pre-wrap font-light ${msg.role === 'model' ? 'italic text-cream-light font-playfair text-base' : ''}`}>
+                <p className={`font-inter text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'model' ? 'italic font-playfair text-base text-[#1a1a1a] font-normal' : 'text-white font-light'}`}>
                   {msg.content}
                 </p>
 
                 {msg.role === 'model' && index > 0 && (
-                  <div className="flex justify-end gap-3 mt-4 border-t border-white/5 pt-2 text-[10px] font-bold font-inter text-cream/40">
+                  <div className="flex justify-end gap-3 mt-4 border-t border-[rgba(26, 26, 26, 0.1)] pt-2 text-[10px] font-bold font-inter text-[#6b6b6b]">
                     <button
                       onClick={() => handleSaveToAnthology(msg.content, index)}
-                      className="hover:text-gold flex items-center gap-1 transition-colors"
+                      className="hover:text-[#1a1a1a] flex items-center gap-1 transition-colors"
                     >
                       {saveSuccessId === `save_${index}` ? '✅ Saved!' : '📜 Save to Anthology'}
                     </button>
                     <span>•</span>
                     <button
                       onClick={() => handleShareCard(msg.content)}
-                      className="hover:text-gold flex items-center gap-1 transition-colors"
+                      className="hover:text-[#1a1a1a] flex items-center gap-1 transition-colors"
                     >
                       🎨 Share Card
                     </button>
@@ -502,10 +700,8 @@ function SimpleChatPageContent() {
           
           {aiLoading && (
             <div className="flex justify-start">
-              <div className="glass-card border-white/5 p-5 rounded-2xl rounded-bl-none flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-gold rounded-full animate-bounce" />
-                <div className="w-1.5 h-1.5 bg-gold rounded-full animate-bounce [animation-delay:0.2s]" />
-                <div className="w-1.5 h-1.5 bg-gold rounded-full animate-bounce [animation-delay:0.4s]" />
+              <div className="bg-white border border-[rgba(26,26,26,0.1)] p-5 rounded-2xl rounded-bl-none flex items-center gap-1.5">
+                <span className="text-[#6b6b6b] text-xl font-bold animate-pulse">...</span>
               </div>
             </div>
           )}
@@ -515,7 +711,7 @@ function SimpleChatPageContent() {
       </div>
 
       {/* Persistent Input Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#05050f]/80 backdrop-blur-xl border-t border-white/5 py-4 px-4 z-20">
+      <div className="fixed bottom-0 left-0 right-0 bg-[#F8F4E9] border-t border-[#1a1a1a]/15 py-4 px-4 z-20">
         <div className="max-w-4xl mx-auto flex flex-col gap-3">
           
           {/* Mode Selector Chips */}
@@ -525,7 +721,7 @@ function SimpleChatPageContent() {
                 key={mode.id}
                 onClick={async () => {
                   setCurrentMode(mode.id);
-                  // Trigger BEGIN_SESSION for the new mode to dynamically greet the user
+                  // Trigger BEGIN_SESSION for the new mode to dynamically greet the user starting completely fresh
                   setAiLoading(true);
                   try {
                     const res = await fetch('/api/chat', {
@@ -534,21 +730,16 @@ function SimpleChatPageContent() {
                       body: JSON.stringify({
                         message: 'BEGIN_SESSION',
                         mode: mode.id,
-                        history: messages.filter(m => m.content !== 'BEGIN_SESSION'),
-                        filters: (activeMood && mode.id === 'default') ? {
-                          genre: activeMood.genre,
-                          era: activeMood.era,
-                          authorStyle: activeMood.style
-                        } : undefined
+                        history: [],
+                        filters: null
                       })
                     });
                     if (res.ok) {
                       const data = await res.json();
-                      setMessages((prev) => [
-                        ...prev,
+                      setMessages([
                         {
                           role: 'model',
-                          content: data.response || 'Chamber mode adjusted.',
+                          content: data.response || 'Welcome. Scribe your thoughts and let us begin.',
                           timestamp: new Date()
                         }
                       ]);
@@ -559,10 +750,13 @@ function SimpleChatPageContent() {
                     setAiLoading(false);
                   }
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-inter border transition-all flex-shrink-0 ${
+                style={{
+                  border: currentMode === mode.id ? '1px solid #1a1a1a' : '1px solid rgba(26,26,26,0.15)',
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-inter transition-all flex-shrink-0 ${
                   currentMode === mode.id
-                    ? 'bg-gold border-transparent text-navy shadow shadow-gold/15'
-                    : 'bg-white/5 border-white/5 text-cream/60 hover:text-gold hover:border-gold/30'
+                    ? 'bg-[#1a1a1a] text-white shadow shadow-black/10'
+                    : 'bg-white text-[#6b6b6b] hover:bg-[#f0ebe0]'
                 }`}
               >
                 <span>{mode.icon}</span>
@@ -580,13 +774,18 @@ function SimpleChatPageContent() {
               onKeyDown={handleKeyPress}
               placeholder={`Scribe your response... (${companionModes.find((m) => m.id === currentMode)?.desc})`}
               rows={1}
-              className="flex-grow px-4 py-3.5 text-sm rounded-xl outline-none glass-input resize-none overflow-y-auto"
+              style={{
+                background: 'white',
+                border: '1px solid rgba(26, 26, 26, 0.2)',
+                color: '#1a1a1a',
+              }}
+              className="flex-grow px-4 py-3.5 text-sm rounded-xl outline-none resize-none overflow-y-auto placeholder-[#9b9b9b] focus:!border-[rgba(26,26,26,0.5)] focus:border-opacity-50 transition-colors"
               disabled={aiLoading}
             />
             <button
               type="submit"
               disabled={aiLoading || !input.trim()}
-              className="px-5 py-3.5 bg-gold hover:bg-gold-light disabled:bg-gray-800 disabled:text-cream/30 text-navy font-bold rounded-xl text-xs uppercase tracking-wider font-inter transition-all flex-shrink-0"
+              className="px-5 py-3.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold rounded-xl text-xs uppercase tracking-wider font-inter transition-all flex-shrink-0"
             >
               Send
             </button>
