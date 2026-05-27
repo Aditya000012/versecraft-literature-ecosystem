@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
+import NextLink from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import html2canvas from 'html2canvas';
+import { db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 interface Comment {
   uid: string;
@@ -50,7 +52,25 @@ export default function CommunityPage() {
   // Report Confirmation Modal states
   const [reportingPostId, setReportingPostId] = useState<string | null>(null);
 
+  // Search author states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<{ uid: string; displayName: string }[]>([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [searching, setSearching] = useState(false);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowSearchDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Auto-resize textarea in creation modal
   useEffect(() => {
@@ -100,13 +120,11 @@ export default function CommunityPage() {
 
       if (!response.ok) throw new Error('Failed to publish post.');
       
-      // Clean up modal states
       setPostTitle('');
       setPostType('original');
       setPostContent('');
       setShowCreateModal(false);
       
-      // Reload posts
       await fetchPosts();
     } catch (err) {
       console.error(err);
@@ -125,7 +143,6 @@ export default function CommunityPage() {
 
     const isLiked = post.likes.includes(user.uid);
     
-    // 1. Update UI Optimistically
     setPosts(
       posts.map((p) => {
         if (p.id === postId) {
@@ -140,7 +157,6 @@ export default function CommunityPage() {
       })
     );
 
-    // 2. Call PATCH API
     try {
       const response = await fetch('/api/community', {
         method: 'PATCH',
@@ -155,7 +171,6 @@ export default function CommunityPage() {
       if (!response.ok) throw new Error('Interaction failed');
     } catch (err) {
       console.error('Error handling like/unlike:', err);
-      // Revert optimism on error
       fetchPosts();
     }
   };
@@ -166,7 +181,6 @@ export default function CommunityPage() {
     const commentText = newCommentTexts[postId] || '';
     if (!commentText.trim()) return;
 
-    // Clear comment input locally
     setNewCommentTexts({
       ...newCommentTexts,
       [postId]: '',
@@ -174,7 +188,6 @@ export default function CommunityPage() {
 
     const displayName = user.displayName || user.email?.split('@')[0] || 'Reader';
 
-    // 1. Optimistic append
     const tempComment: Comment = {
       uid: user.uid,
       displayName,
@@ -194,7 +207,6 @@ export default function CommunityPage() {
       })
     );
 
-    // 2. Call PATCH API
     try {
       const response = await fetch('/api/community', {
         method: 'PATCH',
@@ -211,7 +223,6 @@ export default function CommunityPage() {
       if (!response.ok) throw new Error('Comment failed to post');
     } catch (err) {
       console.error('Error posting comment:', err);
-      // Revert on error
       fetchPosts();
     }
   };
@@ -223,7 +234,6 @@ export default function CommunityPage() {
     const postId = reportingPostId;
     setReportingPostId(null);
 
-    // Optimistically mark as reported
     setPosts(
       posts.map((p) => {
         if (p.id === postId) {
@@ -248,94 +258,84 @@ export default function CommunityPage() {
       });
 
       if (!response.ok) throw new Error('Failed to file report');
-      
-      // Reload in case it triggered the flag & hide limits
-      await fetchPosts();
     } catch (err) {
       console.error('Error reporting post:', err);
       fetchPosts();
     }
   };
 
-  // Download Card as beautiful Multi-page PNG
-  const handleDownloadPostCard = async (post: Post) => {
-    const words = post.content.split(' ');
-    const chunks: string[] = [];
-    let current = '';
-    for (const word of words) {
-      if ((current + ' ' + word).length > 1500) {
-        chunks.push(current.trim());
-        current = word;
-      } else {
-        current += ' ' + word;
-      }
-    }
-    if (current.trim()) chunks.push(current.trim());
+  // User search submit handler
+  const handleSearchSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
 
-    const typeLabels: Record<string, string> = {
-      original: 'Original Poem',
-      poem: 'AI Poem',
-      story: 'Story',
-      analysis: 'Literary Analysis',
-      translation: 'Translation',
-      collaboration: 'Collaboration',
-      other: 'Other',
-    };
-
-    for (let i = 0; i < chunks.length; i++) {
-      const card = document.createElement('div');
-      card.style.cssText = `
-        position: fixed;
-        top: -9999px;
-        left: -9999px;
-        width: 800px;
-        padding: 48px;
-        background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 100%);
-        border: 1px solid rgba(201, 168, 76, 0.3);
-        border-radius: 16px;
-        font-family: Georgia, serif;
-        color: #f5f0e8;
-      `;
-      card.innerHTML = `
-        <div style="color: #c9a84c; font-size: 11px; letter-spacing: 3px; margin-bottom: 24px; text-transform: uppercase; font-family: sans-serif; font-weight: bold;">✦ Versecraft Anthology ${chunks.length > 1 ? `(${i + 1}/${chunks.length})` : ''}</div>
-        <div style="font-size: 26px; font-weight: bold; color: #c9a84c; margin-bottom: 8px; font-family: 'Playfair Display', Georgia, serif; line-height: 1.2;">${post.title}</div>
-        <div style="color: rgba(245, 240, 232, 0.4); font-size: 11px; font-family: sans-serif; margin-bottom: 32px; letter-spacing: 1px; font-weight: bold;">by ${post.displayName} • ${typeLabels[post.type] || post.type}</div>
-        <div style="font-size: 14px; line-height: 1.85; font-style: italic; color: #f5f0e8; margin-bottom: 40px; white-space: pre-wrap; text-align: justify;">${chunks[i]}</div>
-        <div style="color: #c9a84c; font-size: 10px; letter-spacing: 2px; border-top: 1px solid rgba(201, 168, 76, 0.15); padding-top: 16px; font-family: sans-serif;">versecraft.app</div>
-      `;
-      
-      document.body.appendChild(card);
-      try {
-        const canvas = await html2canvas(card, { backgroundColor: null, scale: 2 });
-        const link = document.createElement('a');
-        link.download = chunks.length > 1 
-          ? `versecraft-community-${post.title.toLowerCase().replace(/\s+/g, '-')}-${i + 1}.png` 
-          : `versecraft-community-${post.title.toLowerCase().replace(/\s+/g, '-')}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        await new Promise((resolve) => setTimeout(resolve, 500));
-      } finally {
-        document.body.removeChild(card);
-      }
+    setSearching(true);
+    try {
+      const usersSnap = await getDocs(collection(db, 'users'));
+      const matching: { uid: string; displayName: string }[] = [];
+      usersSnap.forEach((docSnap) => {
+        const data = docSnap.data();
+        const dName = data.displayName || '';
+        if (dName.toLowerCase().includes(searchQuery.toLowerCase().trim())) {
+          matching.push({
+            uid: docSnap.id,
+            displayName: dName,
+          });
+        }
+      });
+      setSearchResults(matching);
+      setShowSearchDropdown(true);
+    } catch (err) {
+      console.error('Error searching authors:', err);
+    } finally {
+      setSearching(false);
     }
+  };
+
+  // Share Card Generation
+  const handleShareCard = (post: Post) => {
+    const card = document.createElement('div');
+    card.style.position = 'fixed';
+    card.style.left = '-9999px';
+    card.style.top = '-9999px';
+    card.style.width = '600px';
+    card.style.padding = '50px';
+    card.style.background = '#F8F4E9';
+    card.style.color = '#1a1a1a';
+    card.style.fontFamily = 'Georgia, serif';
+    card.style.border = '1px solid rgba(26, 26, 26, 0.15)';
+    card.style.boxShadow = '0 15px 35px rgba(0,0,0,0.05)';
+
+    card.innerHTML = `
+      <div style="font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: rgba(26,26,26,0.4); margin-bottom: 25px;">✦ Versecraft Anthology</div>
+      <div style="font-size: 24px; font-weight: bold; color: #1a1a1a; margin-bottom: 8px;">${post.title}</div>
+      <div style="font-size: 11px; font-style: italic; color: rgba(26,26,26,0.5); margin-bottom: 25px;">by ${post.displayName}</div>
+      <div style="font-size: 14px; line-height: 1.8; color: #1a1a1a; margin-bottom: 40px; white-space: pre-wrap;">${post.content}</div>
+      <div style="border-top: 1px solid rgba(26, 26, 26, 0.08); padding-top: 20px; font-size: 10px; color: rgba(26,26,26,0.4); letter-spacing: 2px;">versecraft.app</div>
+    `;
+
+    document.body.appendChild(card);
+    html2canvas(card, { backgroundColor: '#F8F4E9' }).then((canvas) => {
+      const link = document.createElement('a');
+      link.download = `versecraft-card-${post.id}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      document.body.removeChild(card);
+    });
   };
 
   const formatTimeAgo = (dateStr: string) => {
     try {
+      const past = new Date(dateStr);
       const now = new Date();
-      const date = new Date(dateStr);
-      const diffMs = now.getTime() - date.getTime();
-      const diffSec = Math.floor(diffMs / 1000);
-      const diffMin = Math.floor(diffSec / 60);
-      const diffHour = Math.floor(diffMin / 60);
-      const diffDay = Math.floor(diffHour / 24);
-
-      if (isNaN(date.getTime())) return 'Recently';
-      if (diffSec < 60) return 'Just now';
-      if (diffMin < 60) return `${diffMin}m ago`;
-      if (diffHour < 24) return `${diffHour}h ago`;
-      if (diffDay === 1) return 'Yesterday';
-      return `${diffDay}d ago`;
+      const diffMs = now.getTime() - past.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return 'Just now';
+      if (diffMins < 60) return `${diffMins}m ago`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}h ago`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays}d ago`;
     } catch {
       return 'Recently';
     }
@@ -351,95 +351,127 @@ export default function CommunityPage() {
     other: 'Other',
   };
 
-  const typeBadgeStyles: Record<string, string> = {
-    original: 'bg-rose-500/10 text-rose-400 border border-rose-500/20',
-    poem: 'bg-purple-950/20 text-purple-300 border border-purple-500/20',
-    story: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-    analysis: 'bg-sky-500/10 text-sky-400 border border-sky-500/20',
-    translation: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
-    collaboration: 'bg-pink-500/10 text-pink-400 border border-pink-500/20',
-    other: 'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20',
-  };
-
   return (
-    <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-[#F8F4E9] text-[#1a1a1a]">
       {/* Dashboard Back Link */}
       <div className="mb-4 text-left">
-        <Link
+        <NextLink
           href="/dashboard"
-          className="text-xs text-gold hover:text-gold-light transition-colors inline-flex items-center gap-1 font-inter font-medium"
+          className="text-xs text-[#1a1a1a]/60 hover:text-[#1a1a1a] hover:underline transition-all inline-flex items-center gap-1 font-inter font-medium"
         >
           ← Dashboard
-        </Link>
+        </NextLink>
       </div>
 
       {/* Header and top sharing CTA */}
-      <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-6 mb-12 border-b border-white/5 pb-8">
+      <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-6 mb-8 border-b border-[rgba(26,26,26,0.1)] pb-8">
         <div className="text-center md:text-left space-y-2">
-          <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-gold tracking-wide">
+          <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#1a1a1a] tracking-wide">
             The Community Anthology
           </h1>
-          <p className="font-playfair italic text-cream/70 text-sm sm:text-base">
+          <p className="font-playfair italic text-[#1a1a1a]/60 text-sm sm:text-base">
             A living collection of verses, stories, and reflections from our literary community.
           </p>
         </div>
 
-        {/* Share Button (Only visible if logged in, else redirect state shown below) */}
+        {/* Share Button */}
         {!authLoading && user && (
           <button
             onClick={() => setShowCreateModal(true)}
-            className="px-6 py-2.5 bg-gold hover:bg-gold-light text-navy text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-gold/15 font-inter flex items-center gap-1.5"
+            className="px-6 py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm font-inter flex items-center gap-1.5"
           >
             🖋️ Share Your Work
           </button>
         )}
       </div>
 
+      {/* Author Search Bar Section */}
+      <div className="relative max-w-md mb-12" ref={dropdownRef}>
+        <form onSubmit={handleSearchSubmit} className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Search for an author by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-grow px-4 py-2 rounded-xl border border-[rgba(26,26,26,0.1)] bg-white text-xs text-[#1a1a1a] outline-none shadow-sm focus:border-[#1a1a1a]/30"
+          />
+          <button
+            type="submit"
+            disabled={searching}
+            className="px-4 py-2 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white rounded-xl text-xs font-bold uppercase tracking-wider font-inter transition-all shadow-sm"
+          >
+            {searching ? '...' : 'Search'}
+          </button>
+        </form>
+
+        {/* Dropdown list */}
+        <AnimatePresence>
+          {showSearchDropdown && (
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              className="absolute left-0 right-0 mt-2 bg-white border border-[rgba(26,26,26,0.1)] rounded-xl shadow-xl z-40 max-h-[250px] overflow-y-auto pr-1 no-scrollbar p-2"
+            >
+              {searchResults.length === 0 ? (
+                <div className="py-4 text-center text-xs italic text-[#1a1a1a]/40 font-playfair">
+                  No authors found.
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {searchResults.map((item) => (
+                    <NextLink
+                      key={item.uid}
+                      href={`/profile/${item.uid}`}
+                      onClick={() => setShowSearchDropdown(false)}
+                      className="flex items-center gap-3 p-2 hover:bg-[#F8F4E9] rounded-lg transition-all"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-[#1a1a1a]/5 flex items-center justify-center text-[#1a1a1a] font-bold text-[10px] uppercase font-playfair border border-[rgba(26,26,26,0.1)]">
+                        {item.displayName.charAt(0)}
+                      </div>
+                      <span className="font-playfair font-bold text-xs text-[#1a1a1a] hover:underline">
+                        {item.displayName}
+                      </span>
+                    </NextLink>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* Main layout contents */}
       {loading ? (
-        /* SKELETON PLACEHOLDERS */
-        <div className="columns-1 md:columns-2 gap-6 space-y-6">
-          {[1, 2, 3].map((idx) => (
-            <div
-              key={idx}
-              className="glass-card border-white/5 p-6 sm:p-8 rounded-2xl space-y-6 animate-pulse inline-block w-full"
-            >
-              <div className="flex justify-between items-center">
-                <div className="h-4 bg-white/10 rounded w-24" />
-                <div className="h-4 bg-white/10 rounded w-16" />
-              </div>
-              <div className="h-6 bg-white/10 rounded w-3/4" />
-              <div className="space-y-2">
-                <div className="h-4 bg-white/10 rounded w-full" />
-                <div className="h-4 bg-white/10 rounded w-5/6" />
-              </div>
-              <div className="h-8 bg-white/10 rounded w-full" />
-            </div>
-          ))}
+        <div className="min-h-screen bg-[#F8F4E9] flex items-center justify-center relative z-10">
+          <div className="animate-pulse flex flex-col items-center gap-4">
+            <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
+            <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Consulting the archives...</span>
+          </div>
         </div>
       ) : errorMsg ? (
-        <div className="glass-card border-white/5 p-12 text-center rounded-2xl max-w-md mx-auto space-y-6">
+        <div className="bg-white border border-[rgba(26,26,26,0.1)] p-12 text-center rounded-2xl max-w-md mx-auto space-y-6 shadow-sm">
           <span className="text-3xl block">⚠️</span>
-          <p className="font-playfair text-lg text-gold italic">An archival error occurred</p>
-          <p className="text-xs text-cream/40 leading-relaxed font-inter">{errorMsg}</p>
+          <p className="font-playfair text-lg text-[#1a1a1a] italic">An archival error occurred</p>
+          <p className="text-xs text-[#1a1a1a]/60 leading-relaxed font-inter">{errorMsg}</p>
         </div>
       ) : posts.length === 0 ? (
-        /* EMPTY STATE */
-        <div className="py-24 text-center">
-          <p className="font-playfair text-2xl text-gold italic leading-relaxed">
+        <div className="py-24 text-center max-w-md mx-auto">
+          <span className="text-4xl block mb-6 animate-bounce">🕯️</span>
+          <p className="font-playfair text-2xl text-[#1a1a1a] italic leading-relaxed">
             The anthology awaits its first verse.<br />Be the first to share.
           </p>
           {!user && (
-            <div className="mt-8 max-w-sm mx-auto p-6 glass-card border-white/5 rounded-2xl space-y-4">
-              <p className="text-xs text-cream/60 font-inter leading-relaxed">
+            <div className="mt-8 max-w-sm mx-auto p-6 bg-white border border-[rgba(26,26,26,0.1)] rounded-2xl space-y-4 shadow-sm">
+              <p className="text-xs text-[#1a1a1a]/60 font-inter leading-relaxed">
                 Join Versecraft to share your work and engage with the community.
               </p>
-              <Link
+              <NextLink
                 href="/auth?mode=login"
-                className="px-6 py-2 bg-gold hover:bg-gold-light text-navy text-xs font-bold uppercase tracking-wider rounded-xl transition-all font-inter inline-block"
+                className="px-6 py-2 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all font-inter inline-block shadow-sm"
               >
                 Login to Versecraft
-              </Link>
+              </NextLink>
             </div>
           )}
         </div>
@@ -448,19 +480,19 @@ export default function CommunityPage() {
         <div className="space-y-12">
           {/* Unlogged CTA banner */}
           {!user && (
-            <div className="p-5 glass-card border-[#c9a84c]/20 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+            <div className="p-5 bg-white border border-[rgba(26,26,26,0.1)] rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left shadow-sm">
               <div>
-                <h4 className="font-playfair font-bold text-gold text-sm sm:text-base">Join the Conversation</h4>
-                <p className="font-inter text-xs text-cream/60 mt-1 leading-relaxed">
+                <h4 className="font-playfair font-bold text-[#1a1a1a] text-sm sm:text-base">Join the Conversation</h4>
+                <p className="font-inter text-xs text-[#1a1a1a]/60 mt-1 leading-relaxed">
                   Join Versecraft to share your work and engage with the community.
                 </p>
               </div>
-              <Link
+              <NextLink
                 href="/auth?mode=login"
-                className="px-6 py-2 bg-gold hover:bg-gold-light text-navy text-xs font-bold uppercase tracking-wider rounded-xl transition-all font-inter inline-block self-center shadow shadow-gold/5"
+                className="px-6 py-2 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all font-inter inline-block self-center shadow-sm"
               >
                 Login
-              </Link>
+              </NextLink>
             </div>
           )}
 
@@ -479,31 +511,35 @@ export default function CommunityPage() {
                 <motion.div
                   key={post.id}
                   layout="position"
-                  className="glass-card border-white/5 p-6 sm:p-8 rounded-2xl space-y-4 hover:border-white/10 transition-all inline-block w-full break-inside-avoid mb-6"
+                  className="bg-white border border-[rgba(26,26,26,0.1)] p-6 sm:p-8 rounded-2xl space-y-4 hover:border-[rgba(26,26,26,0.2)] transition-all inline-block w-full break-inside-avoid mb-6 shadow-sm"
                 >
                   {/* Card top row */}
                   <div className="flex justify-between items-center w-full">
                     <div className="flex flex-col items-start gap-1">
-                      <span className="font-inter text-xs text-gold font-bold">
+                      {/* Clickable author name */}
+                      <NextLink
+                        href={`/profile/${post.uid}`}
+                        className="font-inter text-xs text-[#1a1a1a] hover:underline font-bold cursor-pointer"
+                      >
                         🖋️ {post.displayName}
-                      </span>
-                      <span className="text-[10px] text-cream/40 font-inter">
+                      </NextLink>
+                      <span className="text-[10px] text-[#1a1a1a]/40 font-inter">
                         {formatTimeAgo(post.createdAt)}
                       </span>
                     </div>
 
-                    <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider font-inter ${typeBadgeStyles[post.type] || typeBadgeStyles.other}`}>
+                    <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider font-inter bg-[#1a1a1a]/5 text-[#1a1a1a]">
                       {typeLabels[post.type] || post.type}
                     </span>
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-playfair text-lg sm:text-xl font-bold text-cream leading-snug">
+                  <h3 className="font-playfair text-lg sm:text-xl font-bold text-[#1a1a1a] leading-snug">
                     {post.title}
                   </h3>
 
                   {/* Content body */}
-                  <div className="font-inter text-xs sm:text-sm text-cream/80 leading-relaxed text-justify whitespace-pre-wrap">
+                  <div className="font-inter text-xs sm:text-sm text-[#1a1a1a]/85 leading-relaxed text-justify whitespace-pre-wrap">
                     {isExpanded || !isLong ? post.content : `${post.content.slice(0, 200)}...`}
                     {isLong && (
                       <button
@@ -513,7 +549,7 @@ export default function CommunityPage() {
                             [post.id]: !isExpanded,
                           })
                         }
-                        className="text-gold font-semibold text-xs ml-1 hover:underline transition-all block mt-2 font-inter"
+                        className="text-[#1a1a1a] font-semibold text-xs ml-1 hover:underline transition-all block mt-2 font-inter"
                       >
                         {isExpanded ? 'Show Less' : 'Read More ✦'}
                       </button>
@@ -521,7 +557,7 @@ export default function CommunityPage() {
                   </div>
 
                   {/* Options row */}
-                  <div className="flex flex-wrap gap-2 items-center justify-between pt-4 border-t border-white/5 w-full">
+                  <div className="flex flex-wrap gap-2 items-center justify-between pt-4 border-t border-[rgba(26,26,26,0.06)] w-full">
                     {/* Likes & Comments triggers */}
                     <div className="flex items-center gap-2">
                       {/* Like Trigger */}
@@ -530,8 +566,8 @@ export default function CommunityPage() {
                         disabled={!user}
                         className={`px-3 py-1.5 rounded-lg border text-xs font-semibold font-inter transition-all flex items-center gap-1.5 ${
                           isLiked
-                            ? 'bg-rose-500/10 border-rose-500/40 text-rose-400'
-                            : 'border-white/5 bg-white/5 text-cream/60 hover:text-rose-400 hover:border-rose-500/20'
+                            ? 'bg-[#1a1a1a] border-transparent text-white shadow-sm'
+                            : 'border-[rgba(26,26,26,0.1)] bg-[#F8F4E9]/50 text-[#1a1a1a]/60 hover:text-[#1a1a1a] hover:border-[#1a1a1a]'
                         } ${!user ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
                         {isLiked ? '❤️' : '🤍'} {likeCount}
@@ -547,111 +583,113 @@ export default function CommunityPage() {
                         }
                         className={`px-3 py-1.5 rounded-lg border text-xs font-semibold font-inter transition-all flex items-center gap-1.5 ${
                           showComments[post.id]
-                            ? 'bg-gold/10 border-gold/40 text-gold'
-                            : 'border-white/5 bg-white/5 text-cream/60 hover:text-gold hover:border-gold/20'
+                            ? 'bg-[#1a1a1a]/5 border-[#1a1a1a]/20 text-[#1a1a1a]'
+                            : 'border-[rgba(26,26,26,0.1)] bg-[#F8F4E9]/50 text-[#1a1a1a]/60 hover:text-[#1a1a1a]'
                         }`}
                       >
                         💬 {commentCount}
                       </button>
                     </div>
 
-                    {/* Download & Report */}
+                    {/* Secondary Actions */}
                     <div className="flex items-center gap-2">
-                      {/* Download */}
                       <button
-                        onClick={() => handleDownloadPostCard(post)}
-                        className="p-1.5 border border-white/5 bg-white/5 hover:border-gold/30 rounded-lg text-cream/50 hover:text-gold transition-all"
+                        onClick={() => handleShareCard(post)}
+                        className="text-[#1a1a1a]/60 hover:text-[#1a1a1a] text-xs font-bold font-inter"
                         title="Download Share Card"
                       >
-                        🎨
+                        🎨 Share
                       </button>
 
-                      {/* Report */}
-                      <button
-                        onClick={() => setReportingPostId(post.id)}
-                        disabled={!user || isReported}
-                        className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold font-inter border transition-all flex items-center gap-1 ${
-                          isReported
-                            ? 'bg-purple-950/20 border-purple-500/20 text-purple-400 opacity-60 cursor-not-allowed'
-                            : 'border-white/5 bg-white/5 text-cream/30 hover:text-red-400 hover:border-red-500/20'
-                        } ${!user ? 'opacity-40 cursor-not-allowed' : ''}`}
-                        title={isReported ? 'Already Reported' : 'Report Post'}
-                      >
-                        🚩 {isReported ? 'Reported' : ''}
-                      </button>
+                      {user && !isReported && post.uid !== user.uid && (
+                        <button
+                          onClick={() => setReportingPostId(post.id)}
+                          className="text-red-600/60 hover:text-red-600 text-xs font-medium font-inter"
+                        >
+                          Report
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  {/* Comments expanded sub-panel */}
-                  {showComments[post.id] && (
-                    <div className="pt-4 border-t border-white/5 space-y-4 w-full">
-                      {/* Subtitle */}
-                      <h4 className="font-playfair font-bold text-xs text-gold uppercase tracking-wider">
-                        Comments
-                      </h4>
-
-                      {/* Comments feed */}
-                      {hasComments ? (
-                        <div className="space-y-3.5 max-h-56 overflow-y-auto pr-1">
-                          {post.comments.map((comment, index) => (
-                            <div
-                              key={index}
-                              className="p-3 bg-white/5 border border-white/5 rounded-xl text-left"
-                            >
-                              <div className="flex justify-between items-center text-[10px] text-cream/40 mb-1 font-inter">
-                                <span className="font-semibold text-gold">
-                                  {comment.displayName}
-                                </span>
-                                <span>{formatTimeAgo(comment.createdAt)}</span>
+                  {/* Comments Collapsible Panel */}
+                  <AnimatePresence>
+                    {showComments[post.id] && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden pt-4 space-y-4 border-t border-[rgba(26,26,26,0.06)]"
+                      >
+                        {/* Comments List */}
+                        {hasComments ? (
+                          <div className="space-y-3 max-h-60 overflow-y-auto pr-1 no-scrollbar">
+                            {post.comments.map((c, idx) => (
+                              <div
+                                key={`${c.uid}-${idx}`}
+                                className="bg-[#F8F4E9] p-3 rounded-xl border border-[rgba(26,26,26,0.04)]"
+                              >
+                                <div className="flex justify-between items-center mb-1">
+                                  {/* Comment clickable author */}
+                                  <NextLink
+                                    href={`/profile/${c.uid}`}
+                                    className="text-[10px] font-bold text-[#1a1a1a] hover:underline"
+                                  >
+                                    {c.displayName}
+                                  </NextLink>
+                                  <span className="text-[8px] text-[#1a1a1a]/40 font-inter">
+                                    {formatTimeAgo(c.createdAt)}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-[#1a1a1a]/85 leading-relaxed">
+                                  {c.content}
+                                </p>
                               </div>
-                              <p className="text-xs text-cream/80 whitespace-pre-wrap font-inter">
-                                {comment.content}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-[10px] italic text-cream/40 font-inter">
-                          No commentaries written yet. Be the first to scribe.
-                        </p>
-                      )}
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-[10px] italic text-[#1a1a1a]/40 text-center font-playfair">
+                            Silence fills the commentary. Be the first to reflect.
+                          </p>
+                        )}
 
-                      {/* Add comment box */}
-                      {user ? (
-                        <div className="flex items-center gap-2 pt-2">
-                          <input
-                            type="text"
-                            placeholder="Add commentary..."
-                            value={newCommentTexts[post.id] || ''}
-                            onChange={(e) =>
-                              setNewCommentTexts({
-                                ...newCommentTexts,
-                                [post.id]: e.target.value,
-                              })
-                            }
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleAddComment(post.id);
-                            }}
-                            className="flex-grow px-3 py-1.5 rounded-lg outline-none glass-input text-xs text-cream placeholder-cream/25 focus:border-gold/30"
-                          />
-                          <button
-                            onClick={() => handleAddComment(post.id)}
-                            disabled={!(newCommentTexts[post.id] || '').trim()}
-                            className="px-4 py-1.5 bg-gold hover:bg-gold-light disabled:opacity-50 disabled:cursor-not-allowed text-navy text-[10px] font-bold uppercase tracking-wider rounded-lg font-inter transition-all"
-                          >
-                            Submit
-                          </button>
-                        </div>
-                      ) : (
-                        <p className="text-[10px] text-cream/40 font-inter border-t border-white/5 pt-2">
-                          <Link href="/auth?mode=login" className="text-gold hover:underline">
-                            Login
-                          </Link>{' '}
-                          to write commentaries.
-                        </p>
-                      )}
-                    </div>
-                  )}
+                        {/* Comment Input */}
+                        {user ? (
+                          <div className="flex gap-2 pt-2">
+                            <input
+                              type="text"
+                              placeholder="Write a reflection..."
+                              value={newCommentTexts[post.id] || ''}
+                              onChange={(e) =>
+                                setNewCommentTexts({
+                                  ...newCommentTexts,
+                                  [post.id]: e.target.value,
+                                })
+                              }
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') handleAddComment(post.id);
+                              }}
+                              className="flex-grow px-3 py-1.5 rounded-lg border border-[rgba(26,26,26,0.1)] bg-[#F8F4E9]/50 text-xs text-[#1a1a1a] outline-none"
+                            />
+                            <button
+                              onClick={() => handleAddComment(post.id)}
+                              className="px-3 py-1.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white rounded-lg text-xs font-bold font-inter"
+                            >
+                              Post
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="text-[9px] text-center text-[#1a1a1a]/45 font-inter">
+                            Please{' '}
+                            <NextLink href="/auth" className="underline hover:text-[#1a1a1a]">
+                              login
+                            </NextLink>{' '}
+                            to post a reflection.
+                          </p>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               );
             })}
@@ -659,116 +697,83 @@ export default function CommunityPage() {
         </div>
       )}
 
-      {/* OVERLAY MODAL: CREATE POST */}
+      {/* Create Modal */}
       <AnimatePresence>
         {showCreateModal && (
-          <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
-            {/* Backdrop click */}
+          <div className="fixed inset-0 bg-[#1a1a1a]/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowCreateModal(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            />
-
-            {/* Modal Box */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="glass-card border-white/5 rounded-2xl w-full max-w-xl p-6 sm:p-8 shadow-2xl relative overflow-hidden z-10 space-y-6"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white border border-[rgba(26,26,26,0.1)] rounded-2xl p-6 sm:p-8 max-w-xl w-full shadow-2xl relative"
             >
-              {/* Gold side highlight bar */}
-              <div className="absolute top-0 left-0 bottom-0 w-[4px] bg-gold" />
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="absolute top-4 right-4 text-[#1a1a1a]/40 hover:text-[#1a1a1a] text-lg font-bold"
+              >
+                ✕
+              </button>
 
-              <div className="space-y-1">
-                <h3 className="font-playfair text-2xl font-bold text-cream">Share Your Work</h3>
-                <p className="font-inter text-[10px] text-gold uppercase tracking-wider">
-                  Publish to the Community Anthology
-                </p>
-              </div>
+              <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] mb-6 border-b border-[rgba(26,26,26,0.06)] pb-3">
+                🖋️ Scribe a New Work
+              </h3>
 
-              <form onSubmit={handleCreatePost} className="space-y-5">
-                {/* Title */}
-                <div>
-                  <label className="block text-[10px] uppercase font-bold tracking-widest text-gold mb-2 font-inter">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Provide a name for your masterpiece..."
-                    value={postTitle}
-                    onChange={(e) => setPostTitle(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl outline-none glass-input text-sm text-cream placeholder-cream/25 focus:border-gold/45 transition-all shadow"
-                  />
+              <form onSubmit={handleCreatePost} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs uppercase tracking-wider text-[#1a1a1a]/60 font-bold mb-1 font-inter">Title</label>
+                    <input
+                      type="text"
+                      placeholder="Title of your piece..."
+                      value={postTitle}
+                      onChange={(e) => setPostTitle(e.target.value)}
+                      required
+                      className="w-full px-4 py-2.5 rounded-xl border border-[rgba(26,26,26,0.1)] bg-[#F8F4E9] text-xs font-semibold text-[#1a1a1a] outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase tracking-wider text-[#1a1a1a]/60 font-bold mb-1 font-inter">Type</label>
+                    <select
+                      value={postType}
+                      onChange={(e) => setPostType(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl border border-[rgba(26,26,26,0.1)] bg-[#F8F4E9] text-xs font-semibold text-[#1a1a1a] outline-none"
+                    >
+                      {Object.entries(typeLabels).map(([val, label]) => (
+                        <option key={val} value={val} className="bg-white text-[#1a1a1a]">
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                {/* Type dropdown */}
                 <div>
-                  <label className="block text-[10px] uppercase font-bold tracking-widest text-gold mb-2 font-inter">
-                    Type of Work
-                  </label>
-                  <select
-                    value={postType}
-                    onChange={(e) => setPostType(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl outline-none glass-input text-xs font-semibold text-cream"
-                  >
-                    <option value="original" className="bg-navy text-cream">
-                      Original Poem
-                    </option>
-                    <option value="poem" className="bg-navy text-cream">
-                      AI Poem
-                    </option>
-                    <option value="story" className="bg-navy text-cream">
-                      Story
-                    </option>
-                    <option value="analysis" className="bg-navy text-cream">
-                      Literary Analysis
-                    </option>
-                    <option value="translation" className="bg-navy text-cream">
-                      Translation
-                    </option>
-                    <option value="collaboration" className="bg-navy text-cream">
-                      Collaboration
-                    </option>
-                    <option value="other" className="bg-navy text-cream">
-                      Other
-                    </option>
-                  </select>
-                </div>
-
-                {/* Content body */}
-                <div>
-                  <label className="block text-[10px] uppercase font-bold tracking-widest text-gold mb-2 font-inter">
-                    Content
-                  </label>
+                  <label className="block text-xs uppercase tracking-wider text-[#1a1a1a]/60 font-bold mb-1 font-inter">Your Writing</label>
                   <textarea
                     ref={textareaRef}
-                    required
-                    placeholder="Type or paste your verses, story seed, translation, or critical analysis here..."
+                    placeholder="Scribe your verses, story, or literary critique here..."
                     value={postContent}
                     onChange={(e) => setPostContent(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl outline-none glass-input text-sm text-cream placeholder-cream/25 resize-none leading-relaxed transition-all focus:border-gold/45 min-h-[120px]"
+                    required
+                    className="w-full px-4 py-3 rounded-xl border border-[rgba(26,26,26,0.1)] bg-[#F8F4E9] text-xs text-[#1a1a1a] outline-none resize-none leading-relaxed"
                   />
                 </div>
 
-                {/* Actions row */}
-                <div className="flex gap-4 pt-2">
+                <div className="flex gap-3 pt-3 border-t border-[rgba(26,26,26,0.06)]">
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="flex-1 py-3 border border-white/10 hover:bg-white/5 rounded-xl text-xs font-bold uppercase tracking-wider font-inter text-cream transition-all text-center"
+                    className="flex-grow py-2.5 border border-[rgba(26,26,26,0.1)] rounded-xl text-xs uppercase font-bold tracking-wider font-inter text-[#1a1a1a] hover:bg-[#F8F4E9] transition-all text-center"
                   >
-                    Cancel
+                    Discard
                   </button>
                   <button
                     type="submit"
                     disabled={submittingPost}
-                    className="flex-1 py-3 bg-gold hover:bg-gold-light text-navy text-xs font-bold uppercase tracking-wider rounded-xl font-inter transition-all text-center shadow shadow-gold/15"
+                    className="flex-grow py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white text-xs font-bold uppercase tracking-wider rounded-xl font-inter transition-all text-center shadow-sm disabled:opacity-50"
                   >
-                    {submittingPost ? 'Publishing...' : 'Post to Community'}
+                    {submittingPost ? 'Publishing...' : 'Publish to Anthology'}
                   </button>
                 </div>
               </form>
@@ -777,30 +782,20 @@ export default function CommunityPage() {
         )}
       </AnimatePresence>
 
-      {/* CONFIRMATION OVERLAY: REPORT POST */}
+      {/* Report Post Confirmation Modal */}
       <AnimatePresence>
         {reportingPostId && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setReportingPostId(null)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            />
+          <div className="fixed inset-0 bg-[#1a1a1a]/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-card border-white/5 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative overflow-hidden z-10 space-y-6 text-center"
+              className="bg-white border border-[rgba(26,26,26,0.1)] rounded-2xl p-6 sm:p-8 max-w-sm w-full text-center space-y-6 shadow-2xl relative"
             >
-              {/* Gold highlight bar */}
-              <div className="absolute top-0 left-0 bottom-0 w-[4px] bg-gold" />
-
               <span className="text-3xl block">🚩</span>
               <div className="space-y-2">
-                <h4 className="font-playfair text-lg font-bold text-cream">Report Post</h4>
-                <p className="text-xs text-cream/60 leading-relaxed font-inter">
+                <h4 className="font-playfair text-lg font-bold text-[#1a1a1a]">Report Post</h4>
+                <p className="text-xs text-[#1a1a1a]/60 leading-relaxed font-inter">
                   Are you sure you want to report this post as inappropriate?
                 </p>
               </div>
@@ -809,14 +804,14 @@ export default function CommunityPage() {
                 <button
                   type="button"
                   onClick={() => setReportingPostId(null)}
-                  className="flex-1 py-2 border border-white/10 hover:bg-white/5 rounded-lg text-[10px] uppercase font-bold tracking-wider font-inter text-cream transition-all text-center"
+                  className="flex-grow py-2 border border-[rgba(26,26,26,0.1)] hover:bg-[#F8F4E9] rounded-lg text-[10px] uppercase font-bold tracking-wider font-inter text-[#1a1a1a] transition-all text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleReportPost}
-                  className="flex-1 py-2 bg-red-600 hover:bg-red-500 text-cream text-[10px] font-bold uppercase tracking-wider rounded-lg font-inter transition-all text-center shadow shadow-red-500/10"
+                  className="flex-grow py-2 bg-red-600 hover:bg-red-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg font-inter transition-all text-center shadow-sm"
                 >
                   Confirm Report
                 </button>

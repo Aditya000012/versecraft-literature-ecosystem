@@ -109,13 +109,29 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { action, postId, uid, comment, displayName } = await request.json();
+    const { action, postId, uid, comment, displayName, newTitle, newContent } = await request.json();
 
-    if (!action || !postId || !uid) {
+    if (!action || !postId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
     const postRef = doc(db, 'communityPosts', postId);
+
+    if (action === 'editPost') {
+      if (!newTitle || !newContent) {
+        return NextResponse.json({ error: 'Missing title or content' }, { status: 400 });
+      }
+      await updateDoc(postRef, {
+        title: newTitle,
+        content: newContent
+      });
+      return NextResponse.json({ success: true });
+    }
+
+    // For other actions, we still require uid
+    if (!uid) {
+      return NextResponse.json({ error: 'Missing uid' }, { status: 400 });
+    }
 
     if (action === 'like') {
       await updateDoc(postRef, {
@@ -169,17 +185,29 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { postId, adminUid } = await request.json();
+    const { postId, adminUid, uid } = await request.json();
 
-    if (!postId || !adminUid) {
+    if (!postId || (!adminUid && !uid)) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
     }
 
-    if (adminUid !== 'AGUsKuZPq7YFBydMnnOnUcFhvdx1') {
-      return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });
+    const postRef = doc(db, 'communityPosts', postId);
+    const postSnap = await getDoc(postRef);
+
+    if (!postSnap.exists()) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    await deleteDoc(doc(db, 'communityPosts', postId));
+    const postData = postSnap.data();
+
+    const isModerator = adminUid === 'AGUsKuZPq7YFBydMnnOnUcFhvdx1';
+    const isOwner = uid && postData.uid === uid;
+
+    if (!isModerator && !isOwner) {
+      return NextResponse.json({ error: 'Unauthorized.' }, { status: 403 });
+    }
+
+    await deleteDoc(postRef);
 
     return NextResponse.json({ success: true });
   } catch (error) {
