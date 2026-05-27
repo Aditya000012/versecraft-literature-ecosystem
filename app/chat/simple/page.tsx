@@ -361,7 +361,7 @@ function SimpleChatPageContent() {
   useEffect(() => {
     const t = setTimeout(() => {
       setShowGateway(false);
-    }, 800);
+    }, 1200);
     return () => clearTimeout(t);
   }, []);
 
@@ -673,7 +673,7 @@ function SimpleChatPageContent() {
           <motion.div 
             initial={{ x: 0 }}
             animate={{ x: '-100%' }}
-            transition={{ duration: 0.65, ease: [0.19, 1, 0.22, 1] }}
+            transition={{ duration: 0.85, delay: 0.2, ease: [0.19, 1, 0.22, 1] }}
             className="w-1/2 h-full bg-[#FAF6EC] border-r border-[#1a1a1a]/10 flex items-center justify-end pr-12 md:pr-20 shadow-[12px_0_35px_rgba(0,0,0,0.12)] pointer-events-auto"
           >
             <div className="text-right max-w-xs space-y-3 select-none">
@@ -688,7 +688,7 @@ function SimpleChatPageContent() {
           <motion.div 
             initial={{ x: 0 }}
             animate={{ x: '100%' }}
-            transition={{ duration: 0.65, ease: [0.19, 1, 0.22, 1] }}
+            transition={{ duration: 0.85, delay: 0.2, ease: [0.19, 1, 0.22, 1] }}
             className="w-1/2 h-full bg-[#FAF6EC] border-l border-[#1a1a1a]/10 flex items-center justify-start pl-12 md:pl-20 shadow-[-12px_0_35px_rgba(0,0,0,0.12)] pointer-events-auto"
           >
             <div className="text-left max-w-xs space-y-2 select-none">
