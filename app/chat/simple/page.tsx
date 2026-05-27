@@ -144,8 +144,8 @@ function LocalChatSidebar({ currentChatId, chatType }: LocalChatSidebarProps) {
       style={{
         top: '80px',
         height: 'calc(100vh - 80px)',
-        background: isHovered ? '#F8F4E9' : 'rgba(248,244,233,0.95)',
-        borderRight: isHovered ? '1px solid rgba(26,26,26,0.1)' : '1px solid rgba(26,26,26,0.15)',
+        background: '#1a1a1a',
+        borderRight: '1px solid rgba(255, 255, 255, 0.1)',
       }}
     >
       {!isHovered ? (
@@ -156,7 +156,7 @@ function LocalChatSidebar({ currentChatId, chatType }: LocalChatSidebarProps) {
             style={{
               writingMode: 'vertical-rl',
               transform: 'rotate(180deg)',
-              color: '#1a1a1a',
+              color: '#F8F4E9',
               fontSize: '9px',
               textTransform: 'uppercase',
               letterSpacing: '2px',
@@ -171,10 +171,10 @@ function LocalChatSidebar({ currentChatId, chatType }: LocalChatSidebarProps) {
         <div className="flex-grow flex flex-col min-w-[280px] p-5 overflow-hidden h-full">
           {/* Header */}
           <div className="mb-6 flex-shrink-0">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-[#1a1a1a] font-playfair">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[#F8F4E9] font-playfair">
               Chat History
             </h3>
-            <p className="font-inter text-[10px] text-[#6b6b6b] mt-1 font-light">
+            <p className="font-inter text-[10px] text-[#F8F4E9]/60 mt-1 font-light">
               Your literary sessions
             </p>
           </div>
@@ -183,10 +183,10 @@ function LocalChatSidebar({ currentChatId, chatType }: LocalChatSidebarProps) {
           <div className="flex-grow overflow-y-auto pr-1 space-y-2 no-scrollbar">
             {loading ? (
               <div className="py-8 flex justify-center items-center">
-                <div className="w-4 h-4 border border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border border-[#F8F4E9] border-t-transparent rounded-full animate-spin" />
               </div>
             ) : sessions.length === 0 ? (
-              <p className="text-[11px] text-[#6b6b6b] font-inter italic text-center py-6">
+              <p className="text-[11px] text-[#F8F4E9]/60 font-inter italic text-center py-6">
                 No sessions recorded
               </p>
             ) : (
@@ -216,15 +216,15 @@ function LocalChatSidebar({ currentChatId, chatType }: LocalChatSidebarProps) {
                     onClick={() => router.push(`/chat/${s.type}?session=${s.id}`)}
                     className={`group relative flex justify-between items-center p-3 rounded-lg border border-transparent transition-all cursor-pointer ${
                       isActive 
-                        ? 'bg-[rgba(26,26,26,0.06)] border-l-2 border-l-[#1a1a1a]' 
-                        : 'hover:bg-[rgba(26,26,26,0.03)]'
+                        ? 'bg-[rgba(255,255,255,0.08)] border-l-2 border-l-[#F8F4E9]' 
+                        : 'hover:bg-[rgba(255,255,255,0.04)]'
                     }`}
                   >
                     <div className="flex-grow min-w-0 pr-6">
-                      <h4 className="font-playfair text-xs text-[#1a1a1a] font-medium truncate">
+                      <h4 className="font-playfair text-xs text-[#F8F4E9] font-medium truncate">
                         {sessionTitle}
                       </h4>
-                      <span className="font-inter text-[9px] text-[#6b6b6b] block mt-1">
+                      <span className="font-inter text-[9px] text-[#F8F4E9]/60 block mt-1">
                         {formattedDate} • <span className="capitalize">{s.mode}</span>
                       </span>
                     </div>
@@ -246,10 +246,10 @@ function LocalChatSidebar({ currentChatId, chatType }: LocalChatSidebarProps) {
           </div>
 
           {/* New Chat Trigger */}
-          <div className="pt-4 border-t border-[rgba(26,26,26,0.1)] flex-shrink-0">
+          <div className="pt-4 border-t border-[rgba(255,255,255,0.1)] flex-shrink-0">
             <button
               onClick={() => router.push(`/chat/${chatType}`)}
-              className="w-full py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] rounded-lg text-[10px] uppercase font-bold tracking-wider font-inter text-white transition-all flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 bg-[#F8F4E9] hover:bg-[#FAF6EC] rounded-lg text-[10px] uppercase font-bold tracking-wider font-inter text-[#1a1a1a] transition-all flex items-center justify-center gap-1.5"
             >
               <span>✦</span> New Chat
             </button>
