@@ -260,6 +260,83 @@ function LocalChatSidebar({ currentChatId, chatType }: LocalChatSidebarProps) {
   );
 }
 
+interface TypewriterTextProps {
+  content: string;
+  speed?: number;
+  onComplete?: () => void;
+}
+
+function TypewriterText({ content, speed = 12, onComplete }: TypewriterTextProps) {
+  const [displayedText, setDisplayedText] = useState('');
+  
+  useEffect(() => {
+    let index = 0;
+    setDisplayedText('');
+    
+    const interval = setInterval(() => {
+      setDisplayedText((prev) => prev + content.charAt(index));
+      index++;
+      if (index >= content.length) {
+        clearInterval(interval);
+        if (onComplete) onComplete();
+      }
+    }, speed);
+    
+    return () => clearInterval(interval);
+  }, [content, speed, onComplete]);
+
+  return <>{displayedText}</>;
+}
+
+function InkDropSplat({ onComplete }: { onComplete: () => void }) {
+  const [phase, setPhase] = useState<'falling' | 'splatting' | 'done'>('falling');
+
+  useEffect(() => {
+    const fallTimer = setTimeout(() => {
+      setPhase('splatting');
+    }, 350);
+
+    const splatTimer = setTimeout(() => {
+      setPhase('done');
+      onComplete();
+    }, 750);
+
+    return () => {
+      clearTimeout(fallTimer);
+      clearTimeout(splatTimer);
+    };
+  }, [onComplete]);
+
+  if (phase === 'done') return null;
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden z-10">
+      {phase === 'falling' && (
+        <motion.div
+          initial={{ y: -60, scale: 1.2, opacity: 0 }}
+          animate={{ y: 0, scale: 1, opacity: 1 }}
+          transition={{ duration: 0.35, ease: 'easeIn' }}
+          className="w-4 h-5 bg-[#1a1a1a] rounded-full"
+          style={{
+            clipPath: 'polygon(50% 0%, 100% 70%, 100% 100%, 0% 100%, 0% 70%)',
+          }}
+        />
+      )}
+      {phase === 'splatting' && (
+        <motion.div
+          initial={{ scale: 0.2, opacity: 1 }}
+          animate={{ scale: 2.2, opacity: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="w-12 h-12 bg-[#1a1a1a] rounded-full filter blur-[1px]"
+          style={{
+            borderRadius: '42% 56% 35% 55% / 45% 45% 55% 55%',
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 function SimpleChatPageContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -277,6 +354,8 @@ function SimpleChatPageContent() {
   const [aiLoading, setAiLoading] = useState(false);
   const [saveSuccessId, setSaveSuccessId] = useState<string | null>(null);
   const [activeMood, setActiveMood] = useState<{ genre: string; era: string; style: string } | null>(null);
+  const [inkDropMessageIndex, setInkDropMessageIndex] = useState<number | null>(null);
+  const [currentlyTypingIndex, setCurrentlyTypingIndex] = useState<number | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -347,6 +426,7 @@ function SimpleChatPageContent() {
               timestamp: new Date()
             }
           ]);
+          setInkDropMessageIndex(0);
         } else {
           throw new Error('Failed to fetch dynamic greeting');
         }
@@ -359,6 +439,7 @@ function SimpleChatPageContent() {
             timestamp: new Date()
           }
         ]);
+        setInkDropMessageIndex(0);
       } finally {
         setAiLoading(false);
       }
@@ -433,7 +514,11 @@ function SimpleChatPageContent() {
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, aiMessage]);
+      setMessages((prev) => {
+        const nextIndex = prev.length;
+        setInkDropMessageIndex(nextIndex);
+        return [...prev, aiMessage];
+      });
 
       // Save session to Firestore
       const chatDocRef = doc(db, 'users', user.uid, 'chats', chatId);
@@ -627,6 +712,7 @@ function SimpleChatPageContent() {
                     timestamp: new Date()
                   }
                 ]);
+                setInkDropMessageIndex(0);
               }
             } catch (err) {
               console.error(err);
@@ -657,14 +743,24 @@ function SimpleChatPageContent() {
             >
               <div
                 style={{
-                  border: msg.role === 'user' ? 'none' : '1px solid rgba(26, 26, 26, 0.1)',
+                  border: msg.role === 'user' ? 'none' : '1px solid rgba(26, 26, 26, 0.15)',
+                  background: msg.role === 'user' ? '#1a1a1a' : '#ebdcb9',
                 }}
-                className={`max-w-[85%] sm:max-w-xl p-5 rounded-2xl transition-all ${
+                className={`max-w-[85%] sm:max-w-xl p-5 rounded-2xl transition-all relative ${
                   msg.role === 'user'
-                    ? 'bg-[#1a1a1a] text-white rounded-br-none'
-                    : 'bg-white text-[#1a1a1a] rounded-bl-none'
+                    ? 'text-white rounded-br-none'
+                    : 'text-[#1a1a1a] rounded-bl-none shadow-sm'
                 }`}
               >
+                {msg.role === 'model' && index === inkDropMessageIndex && (
+                  <InkDropSplat
+                    onComplete={() => {
+                      setInkDropMessageIndex(null);
+                      setCurrentlyTypingIndex(index);
+                    }}
+                  />
+                )}
+
                 {msg.role === 'model' && (
                   <div className="flex justify-between items-center mb-3 border-b border-[rgba(26, 26, 26, 0.1)] pb-2">
                     <span className="text-[9px] uppercase tracking-widest text-[#6b6b6b] font-bold font-inter">
@@ -674,7 +770,27 @@ function SimpleChatPageContent() {
                 )}
 
                 <p className={`font-inter text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'model' ? 'italic font-playfair text-base text-[#1a1a1a] font-normal' : 'text-white font-light'}`}>
-                  {msg.content}
+                  {index === 0 && msg.role === 'model' ? (
+                    <span className="relative px-6 py-2 block font-playfair text-lg text-[#1a1a1a]">
+                      <span className="absolute left-0 top-[-8px] text-4xl text-[#6b6b6b]/40 font-serif">“</span>
+                      <span className={index === inkDropMessageIndex ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}>
+                        {index === currentlyTypingIndex ? (
+                          <TypewriterText content={msg.content} onComplete={() => setCurrentlyTypingIndex(null)} />
+                        ) : (
+                          msg.content
+                        )}
+                      </span>
+                      <span className="absolute right-0 bottom-[-8px] text-4xl text-[#6b6b6b]/40 font-serif">”</span>
+                    </span>
+                  ) : (
+                    <span className={index === inkDropMessageIndex ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'}>
+                      {index === currentlyTypingIndex ? (
+                        <TypewriterText content={msg.content} onComplete={() => setCurrentlyTypingIndex(null)} />
+                      ) : (
+                        msg.content
+                      )}
+                    </span>
+                  )}
                 </p>
 
                 {msg.role === 'model' && index > 0 && (
@@ -743,6 +859,7 @@ function SimpleChatPageContent() {
                           timestamp: new Date()
                         }
                       ]);
+                      setInkDropMessageIndex(0); // Trigger ink drop on welcome message!
                     }
                   } catch (err) {
                     console.error(err);
