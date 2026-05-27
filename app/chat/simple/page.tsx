@@ -356,6 +356,14 @@ function SimpleChatPageContent() {
   const [activeMood, setActiveMood] = useState<{ genre: string; era: string; style: string } | null>(null);
   const [inkDropMessageIndex, setInkDropMessageIndex] = useState<number | null>(null);
   const [currentlyTypingIndex, setCurrentlyTypingIndex] = useState<number | null>(null);
+  const [showGateway, setShowGateway] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setShowGateway(false);
+    }, 800);
+    return () => clearTimeout(t);
+  }, []);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -658,6 +666,41 @@ function SimpleChatPageContent() {
 
   return (
     <div className="relative z-10 w-full min-h-screen bg-[#F8F4E9] flex flex-col pt-20">
+      {/* Cinematic Gateway Open/Reveal Transition Overlay */}
+      {showGateway && (
+        <div className="fixed inset-0 z-50 pointer-events-none flex overflow-hidden">
+          {/* Left split-leaf page */}
+          <motion.div 
+            initial={{ x: 0 }}
+            animate={{ x: '-100%' }}
+            transition={{ duration: 0.65, ease: [0.19, 1, 0.22, 1] }}
+            className="w-1/2 h-full bg-[#FAF6EC] border-r border-[#1a1a1a]/10 flex items-center justify-end pr-12 md:pr-20 shadow-[12px_0_35px_rgba(0,0,0,0.12)] pointer-events-auto"
+          >
+            <div className="text-right max-w-xs space-y-3 select-none">
+              <span className="font-playfair text-xs italic opacity-40">Chamber portal...</span>
+              <h2 className="font-playfair text-2xl font-bold tracking-tight text-[#1a1a1a]">
+                Opening Journal
+              </h2>
+            </div>
+          </motion.div>
+
+          {/* Right split-leaf page */}
+          <motion.div 
+            initial={{ x: 0 }}
+            animate={{ x: '100%' }}
+            transition={{ duration: 0.65, ease: [0.19, 1, 0.22, 1] }}
+            className="w-1/2 h-full bg-[#FAF6EC] border-l border-[#1a1a1a]/10 flex items-center justify-start pl-12 md:pl-20 shadow-[-12px_0_35px_rgba(0,0,0,0.12)] pointer-events-auto"
+          >
+            <div className="text-left max-w-xs space-y-2 select-none">
+              <span className="font-inter text-[9px] uppercase tracking-[0.25em] opacity-50">VERSECRAFT</span>
+              <p className="font-inter text-xs italic text-[#1a1a1a]/60">
+                “The Companion awaits...”
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       <LocalChatSidebar currentChatId={chatId || null} chatType="simple" />
       
       {/* Session Header Bar */}
