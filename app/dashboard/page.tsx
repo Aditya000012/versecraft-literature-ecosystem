@@ -109,6 +109,7 @@ export default function DashboardPage() {
   const activeBlotsRef = React.useRef<CanvasBlot[]>([]);
   const currentTipYRef = React.useRef<number>(0);
   const currentRotationRef = React.useRef<number>(0);
+  const maxTipYRef = React.useRef<number>(0);
   const unrolledDividersRef = React.useRef<boolean[]>([false, false, false, false, false, false]);
 
   // Sync ref with state
@@ -148,8 +149,8 @@ export default function DashboardPage() {
       activeBlotsRef.current.push({
         x: blotX,
         pageY: dividerPageY,
-        maxCoreRadius: 7.5,
-        maxBleedRadius: 17.5,
+        maxCoreRadius: 11.5,
+        maxBleedRadius: 26.5,
         progress: 0,
       });
     }
@@ -328,41 +329,59 @@ export default function DashboardPage() {
       }
       const tipY = currentTipYRef.current;
 
-      // Calculate smooth tilt rotation for the bottle based on scroll (inwards pour)
-      const maxTilt = 0.55; // ~31 degrees
+      // Calculate smooth tilt rotation for the bottle based on scroll (pours from -45 to -90 degrees)
+      const startTilt = -Math.PI / 4; // -45 degrees default tilt
+      const endTilt = -Math.PI / 2; // -90 degrees max pour tilt
       const tiltScrollRange = 120; // Tilts fully by 120px scroll
-      const targetRotation = -Math.min(maxTilt, (currentScrollY / tiltScrollRange) * maxTilt);
-      currentRotationRef.current += (targetRotation - currentRotationRef.current) * 0.08;
+      const targetRotation = startTilt + (endTilt - startTilt) * Math.min(1, currentScrollY / tiltScrollRange);
+      
+      // Smooth lerp for rotation transitions
+      if (currentRotationRef.current === 0) {
+        currentRotationRef.current = targetRotation;
+      } else {
+        currentRotationRef.current += (targetRotation - currentRotationRef.current) * 0.08;
+      }
       const rotation = currentRotationRef.current;
 
       // Calculate emergence progress (line is 0 length when scrollY = 0, fully emerges after 150px scrolling)
       const startProgress = Math.min(1, currentScrollY / 150);
       const activeTipY = logoY_page + (tipY - logoY_page) * startProgress;
 
-      // 1. Draw Growing Wobbly Parchment Line (only if scrolling started)
+      // Update maximum permanent Y reached by the ink line
+      if (maxTipYRef.current === 0) {
+        maxTipYRef.current = logoY_page;
+      }
+      maxTipYRef.current = Math.max(maxTipYRef.current, activeTipY);
+      const drawLimitY = maxTipYRef.current;
+
+      // 1. Draw Growing Wobbly Parchment Line (only if scrolling started, permanently drawn to drawLimitY)
       const startX = getWobblyLineX(logoY_page, logoX);
       const startY_viewport = logoY_page - currentScrollY;
       
-      if (activeTipY > logoY_page) {
+      if (drawLimitY > logoY_page) {
         ctx.beginPath();
         ctx.moveTo(startX, startY_viewport);
 
-        for (let tempY = logoY_page + 4; tempY <= activeTipY; tempY += 4) {
+        for (let tempY = logoY_page + 4; tempY <= drawLimitY; tempY += 4) {
           const x = getWobblyLineX(tempY, logoX);
           const y_viewport = tempY - currentScrollY;
           ctx.lineTo(x, y_viewport);
         }
 
-        const endX = getWobblyLineX(activeTipY, logoX);
-        const endY_viewport = activeTipY - currentScrollY;
+        const endX = getWobblyLineX(drawLimitY, logoX);
+        const endY_viewport = drawLimitY - currentScrollY;
         ctx.lineTo(endX, endY_viewport);
 
         ctx.strokeStyle = 'rgba(26, 26, 26, 0.18)';
         ctx.lineWidth = 1.5;
         ctx.stroke();
+      }
 
-        // 2. Draw Teardrop Droplet at the tip (only when emerged from the bottle)
-        drawTeardrop(ctx, endX, endY_viewport, 14, 20);
+      // 2. Draw Teardrop Droplet at the current activeTipY (only when emerged from the bottle)
+      if (activeTipY > logoY_page) {
+        const dropX = getWobblyLineX(activeTipY, logoX);
+        const dropY_viewport = activeTipY - currentScrollY;
+        drawTeardrop(ctx, dropX, dropY_viewport, 14, 20);
       }
 
       // 3. Draw Ink Bottle in page space (so it scrolls naturally off-screen)
