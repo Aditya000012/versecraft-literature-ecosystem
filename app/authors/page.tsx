@@ -102,10 +102,10 @@ function AuthorsPageContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a1a] flex flex-col items-center justify-center relative z-10 pt-20">
+      <div className="min-h-screen bg-[#F8F4E9] flex flex-col items-center justify-center relative z-10 pt-20">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-t-2 border-[#c9a84c] border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-[#c9a84c] font-medium italic">Consulting the archives...</span>
+          <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
+          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Consulting the archives...</span>
         </div>
       </div>
     );
@@ -362,10 +362,10 @@ function AuthorsPageContent() {
 export default function AuthorsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#0a0a1a] flex flex-col items-center justify-center relative z-10 pt-20">
+      <div className="min-h-screen bg-[#F8F4E9] flex flex-col items-center justify-center relative z-10 pt-20">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-t-2 border-[#c9a84c] border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-[#c9a84c] font-medium italic">Opening the archives...</span>
+          <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
+          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Opening the archives...</span>
         </div>
       </div>
     }>

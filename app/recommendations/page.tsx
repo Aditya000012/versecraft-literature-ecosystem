@@ -286,10 +286,10 @@ export default function RecommendationsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-navy flex items-center justify-center relative z-10">
+      <div className="min-h-screen bg-[#F8F4E9] flex items-center justify-center relative z-10">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-t-2 border-gold border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-gold font-medium italic">Attuning recommended coordinates...</span>
+          <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
+          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Attuning recommended coordinates...</span>
         </div>
       </div>
     );
@@ -401,10 +401,10 @@ export default function RecommendationsPage() {
             exit={{ opacity: 0 }}
             className="flex flex-col items-center justify-center py-28 gap-4"
           >
-            <div className="w-12 h-12 rounded-full border-t-2 border-gold border-r-2 animate-spin" />
+            <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
             <div className="text-center">
-              <span className="font-playfair text-gold italic text-base block animate-pulse">Scribing poetic alignments...</span>
-              <span className="text-[10px] text-cream/40 font-inter uppercase tracking-widest mt-1 block">Consulting central literary indexes</span>
+              <span className="font-playfair text-[#1a1a1a] italic text-base block animate-pulse">Scribing poetic alignments...</span>
+              <span className="text-[10px] text-[#1a1a1a]/60 font-inter uppercase tracking-widest mt-1 block">Consulting central literary indexes</span>
             </div>
           </motion.div>
         ) : recommendations.length === 0 ? (

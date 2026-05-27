@@ -365,8 +365,8 @@ function LibraryPageContent() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center justify-center py-32 gap-3"
               >
-                <div className="w-10 h-10 rounded-full border-t-2 border-gold border-r-2 animate-spin" />
-                <span className="font-playfair text-gold italic text-sm">Opening archive vaults...</span>
+                <div className="w-10 h-10 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
+                <span className="font-playfair text-[#1a1a1a] italic text-sm">Opening archive vaults...</span>
               </motion.div>
             ) : books.length === 0 ? (
               <motion.div
@@ -681,10 +681,10 @@ function LibraryPageContent() {
 export default function LibraryPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-navy flex items-center justify-center relative z-10">
+      <div className="min-h-screen bg-[#F8F4E9] flex items-center justify-center relative z-10">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-t-2 border-gold border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-gold font-medium italic">Opening archive vaults...</span>
+          <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
+          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Opening archive vaults...</span>
         </div>
       </div>
     }>

@@ -473,10 +473,10 @@ function AdvancedChatPageContent() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-navy flex items-center justify-center relative z-10">
+      <div className="min-h-screen bg-[#F8F4E9] flex items-center justify-center relative z-10">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-t-2 border-gold border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-gold font-medium italic">Attuning chamber frequencies...</span>
+          <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
+          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Attuning chamber frequencies...</span>
         </div>
       </div>
     );
@@ -774,10 +774,10 @@ function AdvancedChatPageContent() {
 export default function AdvancedChatPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-navy flex items-center justify-center relative z-10">
+      <div className="min-h-screen bg-[#F8F4E9] flex items-center justify-center relative z-10">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-t-2 border-gold border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-gold font-medium italic">Attuning chamber frequencies...</span>
+          <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
+          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Attuning chamber frequencies...</span>
         </div>
       </div>
     }>
