@@ -149,8 +149,8 @@ export default function DashboardPage() {
       activeBlotsRef.current.push({
         x: blotX,
         pageY: dividerPageY,
-        maxCoreRadius: 11.5,
-        maxBleedRadius: 26.5,
+        maxCoreRadius: 18.5,
+        maxBleedRadius: 38.5,
         progress: 0,
       });
     }
@@ -372,8 +372,8 @@ export default function DashboardPage() {
         const endY_viewport = drawLimitY - currentScrollY;
         ctx.lineTo(endX, endY_viewport);
 
-        ctx.strokeStyle = 'rgba(26, 26, 26, 0.18)';
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = 'rgba(18, 18, 18, 0.82)';
+        ctx.lineWidth = 2.5;
         ctx.stroke();
       }
 
