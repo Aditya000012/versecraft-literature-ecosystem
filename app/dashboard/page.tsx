@@ -107,6 +107,8 @@ export default function DashboardPage() {
   }
 
   const activeBlotsRef = React.useRef<CanvasBlot[]>([]);
+  const animationFrameRef = React.useRef<number | null>(null);
+  const lastScrollTime = React.useRef<number>(0);
   const currentTipYRef = React.useRef<number>(0);
   const currentRotationRef = React.useRef<number>(0);
   const maxTipYRef = React.useRef<number>(0);
@@ -116,6 +118,16 @@ export default function DashboardPage() {
   useEffect(() => {
     unrolledDividersRef.current = unrolledDividers;
   }, [unrolledDividers]);
+
+  useEffect(() => {
+    if (activeTransition && canvasRef.current) {
+      canvasRef.current.style.opacity = '0';
+      canvasRef.current.style.transition = 'opacity 0.2s ease';
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    }
+  }, [activeTransition]);
 
   // Spawn wobbly organic blot
   const triggerUnroll = (idx: number, dividerPageY: number) => {
@@ -146,6 +158,9 @@ export default function DashboardPage() {
 
     // Avoid duplicate blots near the same Y coordinate
     if (!activeBlotsRef.current.some(b => Math.abs(b.pageY - dividerPageY) < 15)) {
+      if (activeBlotsRef.current.length >= 8) {
+        activeBlotsRef.current.shift();
+      }
       activeBlotsRef.current.push({
         x: blotX,
         pageY: dividerPageY,
@@ -169,6 +184,10 @@ export default function DashboardPage() {
   // 2. Unrolling Dividers and Scroll Tracking
   useEffect(() => {
     const handleScroll = () => {
+      const now = Date.now();
+      if (now - lastScrollTime.current < 16) return;
+      lastScrollTime.current = now;
+
       // Desktop checks are handled by the canvas animate() loop for frame-perfect droplet alignment!
       if (window.innerWidth >= 768) return;
 
@@ -290,8 +309,6 @@ export default function DashboardPage() {
 
       cContext.restore();
     };
-
-    let animationFrameId: number;
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -453,13 +470,15 @@ export default function DashboardPage() {
         }
       }
 
-      animationFrameId = requestAnimationFrame(animate);
+      animationFrameRef.current = requestAnimationFrame(animate);
     };
 
     animate();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       window.removeEventListener('resize', handleResize);
     };
   }, []);
