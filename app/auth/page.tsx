@@ -184,10 +184,10 @@ function AuthPageContent() {
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
 
           <Link href="/" className="block text-center mb-8 group">
-            <h1 className="font-playfair text-4xl font-bold text-gold tracking-wide transition-colors group-hover:text-gold-light">
+            <h1 className="font-playfair text-4xl font-bold text-[#1a1a1a] tracking-wide transition-colors group-hover:text-[#2d2d2d]">
               Versecraft
             </h1>
-            <p className="font-inter text-[10px] text-cream/40 uppercase tracking-widest mt-1">
+            <p className="font-inter text-[10px] text-[#6b6b6b] uppercase tracking-widest mt-1">
               Your Literary Companion
             </p>
           </Link>
@@ -201,7 +201,7 @@ function AuthPageContent() {
                 router.replace('/auth?mode=login');
               }}
               className={`flex-1 py-2 text-xs font-semibold rounded-md font-inter transition-all duration-300 ${
-                isLogin ? 'bg-gold text-navy shadow-md shadow-gold/10' : 'text-cream/50 hover:text-cream'
+                isLogin ? 'bg-[#1a1a1a] text-white shadow-md' : 'bg-transparent text-[#6b6b6b] hover:text-[#1a1a1a]'
               }`}
             >
               Sign In
@@ -213,7 +213,7 @@ function AuthPageContent() {
                 router.replace('/auth?mode=signup');
               }}
               className={`flex-1 py-2 text-xs font-semibold rounded-md font-inter transition-all duration-300 ${
-                !isLogin ? 'bg-gold text-navy shadow-md shadow-gold/10' : 'text-cream/50 hover:text-cream'
+                !isLogin ? 'bg-[#1a1a1a] text-white shadow-md' : 'bg-transparent text-[#6b6b6b] hover:text-[#1a1a1a]'
               }`}
             >
               Create Account
@@ -288,7 +288,7 @@ function AuthPageContent() {
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     required={!isLogin}
-                    className="w-full px-4 py-3 text-sm rounded-lg outline-none glass-input"
+                    className="w-full px-4 py-3 text-sm rounded-lg outline-none border border-[rgba(26,26,26,0.2)] focus:border-[rgba(26,26,26,0.6)] placeholder-[#9b9b9b] bg-transparent text-[#1a1a1a] transition-all"
                     placeholder="e.g. Victor Hugo"
                   />
                 </motion.div>
@@ -304,7 +304,7 @@ function AuthPageContent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 text-sm rounded-lg outline-none glass-input"
+                className="w-full px-4 py-3 text-sm rounded-lg outline-none border border-[rgba(26,26,26,0.2)] focus:border-[rgba(26,26,26,0.6)] placeholder-[#9b9b9b] bg-transparent text-[#1a1a1a] transition-all"
                 placeholder="you@sanctuary.com"
               />
             </div>
@@ -319,7 +319,7 @@ function AuthPageContent() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 text-sm rounded-lg outline-none glass-input"
+                className="w-full px-4 py-3 text-sm rounded-lg outline-none border border-[rgba(26,26,26,0.2)] focus:border-[rgba(26,26,26,0.6)] placeholder-[#9b9b9b] bg-transparent text-[#1a1a1a] transition-all"
                 placeholder="••••••••"
               />
             </div>
@@ -327,11 +327,11 @@ function AuthPageContent() {
             <button
               type="submit"
               disabled={authLoading}
-              className="w-full bg-gold hover:bg-gold-light text-navy py-3 rounded-lg transition-all font-bold text-xs tracking-wider uppercase font-inter shadow-md shadow-gold/10 hover:shadow-gold/20 hover:-translate-y-0.5 disabled:opacity-50"
+              className="w-full bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white py-3 rounded-lg transition-all font-bold text-xs tracking-wider uppercase font-inter shadow-md shadow-black/10 hover:shadow-black/20 hover:-translate-y-0.5 disabled:opacity-50"
             >
               {authLoading ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-3.5 h-3.5 border-2 border-navy border-t-transparent rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Processing...
                 </div>
               ) : isLogin ? (
