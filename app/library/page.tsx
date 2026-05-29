@@ -46,19 +46,11 @@ const genres = [
   { id: 'sufi', name: 'Sufi', icon: '✨' },
 ];
 
-const normalizeTitle = (title: string) => {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s]/g, '')
-    .trim()
-    .replace(/\s+/g, ' ');
-};
-
-const checkTitleMatch = (title1: string, title2: string) => {
-  const norm1 = normalizeTitle(title1);
-  const norm2 = normalizeTitle(title2);
-  return norm1 === norm2 || norm1.includes(norm2) || norm2.includes(norm1);
-};
+const normalizeTitle = (title: string) => 
+  title.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 function LibraryPageContent() {
   const { user } = useAuth();
@@ -188,13 +180,38 @@ function LibraryPageContent() {
           try {
             const booksWithGutenberg = await Promise.all(
               booksList.map(async (book) => {
+                const bookTitle = book.volumeInfo.title;
+
+                // Step 5 — Hardcode Pride and Prejudice fallback
+                if (bookTitle.toLowerCase().includes('pride and prejudice')) {
+                  return {
+                    ...book,
+                    gutenbergId: 1342
+                  };
+                }
+
                 try {
-                  const titleQuery = book.volumeInfo.title;
-                  const gutRes = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(titleQuery)}`);
+                  // Step 3 — Search query endpoint URL exactly as specified
+                  const gutRes = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(bookTitle)}`);
                   if (gutRes.ok) {
-                    const gutData = await gutRes.json();
-                    if (Array.isArray(gutData)) {
-                      const match = gutData.find((gBook: { title: string; id: number }) => checkTitleMatch(titleQuery, gBook.title));
+                    const results = await gutRes.json();
+                    if (Array.isArray(results)) {
+                      // Step 2 — Lenient title matching rules
+                      const googleTitle = normalizeTitle(bookTitle);
+                      const match = results.find((g: { title: string; id: number }) => {
+                        const gutenbergTitle = normalizeTitle(g.title);
+                        return gutenbergTitle.includes(googleTitle) || 
+                               googleTitle.includes(gutenbergTitle) ||
+                               gutenbergTitle.split(' ').slice(0, 3).join(' ') === googleTitle.split(' ').slice(0, 3).join(' ');
+                      });
+
+                      const matchedId = match ? match.id : null;
+
+                      // Step 1 — Console logs
+                      console.log('Searching Gutenberg for:', bookTitle);
+                      console.log('Gutenberg results:', results);
+                      console.log('Match found:', matchedId);
+
                       if (match) {
                         return {
                           ...book,
