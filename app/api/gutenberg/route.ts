@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       if (!query) {
         return NextResponse.json({ error: 'Query parameter is required for search' }, { status: 400 });
       }
-      const res = await fetch(`https://gutendex.com/books?search=${encodeURIComponent(query)}&languages=en`);
+      const res = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}&languages=en`);
       if (!res.ok) throw new Error('Gutendex search failed');
       const data = await res.json();
       return NextResponse.json(data.results || []);
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (action === 'popular') {
-      const res = await fetch('https://gutendex.com/books?languages=en&sort=popular');
+      const res = await fetch('https://gutendex.com/books/?languages=en&sort=popular');
       if (!res.ok) throw new Error('Gutendex popular fetch failed');
       const data = await res.json();
       return NextResponse.json(data.results || []);
