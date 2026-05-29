@@ -190,14 +190,17 @@ function LibraryPageContent() {
                   };
                 }
 
+                // Extract main title by splitting on dividers to prevent empty Gutenberg API search results
+                const searchTitle = bookTitle.split(/[:;\-\(]/)[0].trim() || bookTitle;
+
                 try {
-                  // Step 3 — Search query endpoint URL exactly as specified
-                  const gutRes = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(bookTitle)}`);
+                  // Search query endpoint URL exactly as specified
+                  const gutRes = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(searchTitle)}`);
                   if (gutRes.ok) {
                     const results = await gutRes.json();
                     if (Array.isArray(results)) {
-                      // Step 2 — Lenient title matching rules
-                      const googleTitle = normalizeTitle(bookTitle);
+                      // Lenient title matching rules using clean searchTitle
+                      const googleTitle = normalizeTitle(searchTitle);
                       const match = results.find((g: { title: string; id: number }) => {
                         const gutenbergTitle = normalizeTitle(g.title);
                         return gutenbergTitle.includes(googleTitle) || 
