@@ -194,10 +194,11 @@ function LibraryPageContent() {
                 const searchTitle = bookTitle.split(/[:;\-\(]/)[0].trim() || bookTitle;
 
                 try {
-                  // Search query endpoint URL exactly as specified
-                  const gutRes = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(searchTitle)}`);
+                  // Direct fetch to absolute Project Gutenberg Gutendex API to avoid server-side relative redirect bugs
+                  const gutRes = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(searchTitle)}&languages=en`);
                   if (gutRes.ok) {
-                    const results = await gutRes.json();
+                    const resJson = await gutRes.json();
+                    const results = Array.isArray(resJson) ? resJson : (resJson.results || []);
                     if (Array.isArray(results)) {
                       // Lenient title matching rules using clean searchTitle
                       const googleTitle = normalizeTitle(searchTitle);
