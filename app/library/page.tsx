@@ -52,15 +52,184 @@ const normalizeTitle = (title: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 
+const GLOBAL_GUTENBERG_CACHE: Record<string, number | null> = {};
+
+const LOCAL_GUTENBERG_MAP: Record<string, number> = {
+  'pride and prejudice': 1342,
+  'frankenstein': 84,
+  'frankenstein or the modern prometheus': 84,
+  'dracula': 345,
+  'the great gatsby': 64317,
+  'moby dick': 2701,
+  'moby dick or the whale': 2701,
+  'a tale of two cities': 98,
+  'alices adventures in wonderland': 11,
+  'alice in wonderland': 11,
+  'the picture of dorian gray': 174,
+  'the adventures of sherlock holmes': 1661,
+  'sherlock holmes': 1661,
+  'jane eyre': 1260,
+  'jane eyre an autobiography': 1260,
+  'the scarlet letter': 33,
+  'great expectations': 1400,
+  'metamorphosis': 5200,
+  'the metamorphosis': 5200,
+  'the yellow wallpaper': 1952,
+  'wuthering heights': 768,
+  'the importance of being earnest': 844,
+  'a dolls house': 2542,
+  'the odyssey': 1727,
+  'the iliad': 6130,
+  'heart of darkness': 526,
+  'the strange case of dr jekyll and mr hyde': 43,
+  'dr jekyll and mr hyde': 43,
+  'the time machine': 35,
+  'the invisible man': 5230,
+  'the war of the worlds': 36,
+  'adventures of huckleberry finn': 74,
+  'huckleberry finn': 74,
+  'the adventures of tom sawyer': 74,
+  'tom sawyer': 74,
+  'grimms fairy tales': 2591,
+  'the count of monte cristo': 1184,
+  'les miserables': 135,
+  'crime and punishment': 2554,
+  'the brothers karamazov': 28054,
+  'walden': 205,
+  'leaves of grass': 1322,
+  'siddhartha': 2500,
+  'emma': 158,
+  'sense and sensibility': 161,
+  'persuasion': 105,
+  'mansfield park': 141,
+  'northanger abbey': 121,
+  'little women': 514,
+  'peter pan': 16,
+  'treasure island': 120,
+  'the secret garden': 113,
+  'the wind in the willows': 289,
+  'pygmalion': 3825,
+  'candide': 19912,
+  'ulysses': 4300,
+  'dubliners': 2814,
+  'a portrait of the artist as a young man': 4217,
+  'don quixote': 996,
+  'the divine comedy': 8800,
+  'paradise lost': 20,
+  'beowulf': 16328,
+  'the canterbury tales': 2383,
+  'macbeth': 1533,
+  'hamlet': 1524,
+  'romeo and juliet': 1513,
+  'othello': 1531,
+  'king lear': 1529,
+  'julius caesar': 1522,
+  'a midsummer nights dream': 1514,
+  'the tempest': 1540,
+  'the merchant of venice': 1515,
+  'the prophet': 58585,
+  'the rubaiyat of omar khayyam': 246,
+  'gitanjali': 44733,
+  'the awakening': 160,
+  'the awakening and selected short stories': 160,
+  'common sense': 147,
+  'the prince': 1232,
+  'the republic': 1497,
+  'leviathan': 3207,
+  'the social contract': 46392,
+  'beyond good and evil': 4363,
+  'thus spake zarathustra': 1998,
+  'the art of war': 132,
+  'the book of tea': 19232,
+  'the double': 18716,
+  'notes from the underground': 600,
+  'white nights': 36034,
+  'the idiot': 2638,
+  'the possessed': 8117,
+  'dead souls': 13957,
+  'tarzan of the apes': 78,
+  'the return of tarzan': 81,
+  'the beast in the jungle': 1093,
+  'the turn of the screw': 209,
+  'the portrait of a lady': 284,
+  'daisy miller': 208,
+  'the red badge of courage': 73,
+  'uncle toms cabin': 203,
+  'robinson crusoe': 521,
+  'gullivers travels': 829,
+  'david copperfield': 766,
+  'oliver twist': 730,
+  'bleak house': 1023,
+  'a christmas carol': 46,
+  'the chimes': 653,
+  'the cricket on the hearth': 2078,
+  'hard times': 786,
+  'our mutual friend': 883,
+  'little dorrit': 963,
+  'the old curiosity shop': 700,
+  'nicholas nickleby': 967,
+  'the pickwick papers': 580,
+  'dombey and son': 821,
+  'tess of the durbervilles': 110,
+  'jude the obscure': 113,
+  'far from the madding crowd': 107,
+  'the return of the native': 122,
+  'the mayor of casterbridge': 144,
+  'a pair of blue eyes': 114,
+  'the woodlanders': 468,
+  'dracula guest': 10077,
+  'the jewel of seven stars': 3742,
+  'the lair of the white worm': 765,
+  'the lady of the shroud': 3095,
+  'frankenstein complete text': 84,
+};
+
 const checkGutenberg = async (title: string, authors: string[]): Promise<number | null> => {
+  const googleTitle = normalizeTitle(title);
+  
+  // 1. Check GLOBAL_GUTENBERG_CACHE
+  if (GLOBAL_GUTENBERG_CACHE[googleTitle] !== undefined) {
+    return GLOBAL_GUTENBERG_CACHE[googleTitle];
+  }
+  
+  // 2. Check LOCAL_GUTENBERG_MAP exact match
+  if (LOCAL_GUTENBERG_MAP[googleTitle] !== undefined) {
+    return LOCAL_GUTENBERG_MAP[googleTitle];
+  }
+  
+  // 3. Check LOCAL_GUTENBERG_MAP partial match
+  for (const [key, id] of Object.entries(LOCAL_GUTENBERG_MAP)) {
+    if (key.length > 3 && googleTitle.length > 3) {
+      if (googleTitle.includes(key) || key.includes(googleTitle)) {
+        return id;
+      }
+    }
+  }
+
+  // 4. API Fetch with strict timeout abort controller
   try {
-    const authorName = authors?.[0]?.split(',')[0] || '';
-    const searchQuery = authorName ? `${title} ${authorName}` : title;
-    const res = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(searchQuery)}`);
-    const data = await res.json();
-    if (!data.results || data.results.length === 0) return null;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500); // 2.5s timeout
     
-    const googleTitle = normalizeTitle(title);
+    const authorName = authors?.[0]?.split(',')[0] || '';
+    const cleanTitle = title.split(/[:;\-\(]/)[0].trim() || title;
+    const searchQuery = authorName ? `${cleanTitle} ${authorName}` : cleanTitle;
+    
+    const res = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(searchQuery)}`, {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    
+    if (!res.ok) {
+      GLOBAL_GUTENBERG_CACHE[googleTitle] = null;
+      return null;
+    }
+    
+    const data = await res.json();
+    if (!data.results || data.results.length === 0) {
+      GLOBAL_GUTENBERG_CACHE[googleTitle] = null;
+      return null;
+    }
     
     const match = data.results.find((g: { title: string; id: number }) => {
       const gutenbergTitle = normalizeTitle(g.title);
@@ -71,8 +240,11 @@ const checkGutenberg = async (title: string, authors: string[]): Promise<number 
              firstThreeGoogle === firstThreeGutenberg;
     });
     
-    return match ? match.id : null;
+    const resultId = match ? match.id : null;
+    GLOBAL_GUTENBERG_CACHE[googleTitle] = resultId;
+    return resultId;
   } catch {
+    GLOBAL_GUTENBERG_CACHE[googleTitle] = null;
     return null;
   }
 };
@@ -203,17 +375,33 @@ function LibraryPageContent() {
       if (booksList.length > 0) {
         (async () => {
           try {
-            const gutenbergIds = await Promise.all(
-              booksList.map(book => checkGutenberg(
+            const booksWithGutenberg = [...booksList];
+            for (let i = 0; i < booksList.length; i++) {
+              const book = booksList[i];
+              const googleTitle = normalizeTitle(book.volumeInfo.title);
+              
+              const alreadyCached = GLOBAL_GUTENBERG_CACHE[googleTitle] !== undefined ||
+                                    LOCAL_GUTENBERG_MAP[googleTitle] !== undefined;
+                                    
+              const matchedId = await checkGutenberg(
                 book.volumeInfo.title,
                 book.volumeInfo.authors || []
-              ))
-            );
-            const booksWithGutenberg = booksList.map((book, i) => ({
-              ...book,
-              gutenbergId: gutenbergIds[i] !== null ? (gutenbergIds[i] as number) : undefined
-            }));
-            setBooks(booksWithGutenberg);
+              );
+              
+              if (matchedId !== null) {
+                booksWithGutenberg[i] = {
+                  ...book,
+                  gutenbergId: matchedId
+                };
+                // Batch update state incrementally so UI renders matches instantly!
+                setBooks([...booksWithGutenberg]);
+              }
+              
+              if (!alreadyCached) {
+                // Introduce a 150ms delay for actual API requests to prevent rate limiting & Node socket lockups
+                await new Promise(resolve => setTimeout(resolve, 150));
+              }
+            }
           } catch (bgError) {
             console.error('Background Gutenberg matching error:', bgError);
           }
