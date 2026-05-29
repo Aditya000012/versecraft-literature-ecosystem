@@ -15,11 +15,24 @@ export async function GET(request: NextRequest) {
       if (!query) {
         return NextResponse.json({ error: 'Query parameter is required for search' }, { status: 400 });
       }
-      const res = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}&languages=en`);
-      if (!res.ok) throw new Error('Gutendex search failed');
-      const data = await res.json();
-      // Search action returns results wrapped in a 'results' key to match client expectations
-      return NextResponse.json({ results: data.results || [] });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 seconds timeout
+      
+      try {
+        const res = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}&languages=en`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) throw new Error('Gutendex search failed');
+        const data = await res.json();
+        // Search action returns results wrapped in a 'results' key to match client expectations
+        return NextResponse.json({ results: data.results || [] });
+      } catch (err) {
+        clearTimeout(timeoutId);
+        console.warn(`Gutendex search timeout or failure for query "${query}":`, err);
+        return NextResponse.json({ results: [] }); // Fallback cleanly to empty results rather than crashing
+      }
     }
 
     if (action === 'book') {

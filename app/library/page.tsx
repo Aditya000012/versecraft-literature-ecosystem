@@ -206,16 +206,16 @@ const checkGutenberg = async (title: string, authors: string[]): Promise<number 
     }
   }
 
-  // 4. API Fetch with strict timeout abort controller
+  // 4. API Fetch with strict timeout abort controller (extended to 6.5s to resolve slow Gutenberg loads safely)
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2500); // 2.5s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 6500);
     
-    const authorName = authors?.[0]?.split(',')[0] || '';
+    // Clean title by removing subtitle dividers to guarantee high Gutendex database matching
     const cleanTitle = title.split(/[:;\-\(]/)[0].trim() || title;
-    const searchQuery = authorName ? `${cleanTitle} ${authorName}` : cleanTitle;
     
-    const res = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(searchQuery)}`, {
+    // Search Gutendex by clean title only to ensure fast indexes and prevent excess query terms failures
+    const res = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(cleanTitle)}`, {
       signal: controller.signal
     });
     clearTimeout(timeoutId);
@@ -231,13 +231,42 @@ const checkGutenberg = async (title: string, authors: string[]): Promise<number 
       return null;
     }
     
-    const match = data.results.find((g: { title: string; id: number }) => {
+    // Highly robust and flexible title + author matching in Javascript
+    const match = data.results.find((g: { title: string; id: number; authors?: { name: string }[] }) => {
       const gutenbergTitle = normalizeTitle(g.title);
       const firstThreeGoogle = googleTitle.split(' ').slice(0, 3).join(' ');
       const firstThreeGutenberg = gutenbergTitle.split(' ').slice(0, 3).join(' ');
-      return gutenbergTitle.includes(googleTitle) ||
-             googleTitle.includes(gutenbergTitle) ||
-             firstThreeGoogle === firstThreeGutenberg;
+      
+      const titleMatch = gutenbergTitle.includes(googleTitle) ||
+                         googleTitle.includes(gutenbergTitle) ||
+                         firstThreeGoogle === firstThreeGutenberg;
+                         
+      if (!titleMatch) return false;
+      
+      // Match author token words if authors are present
+      if (authors && authors.length > 0 && g.authors && g.authors.length > 0) {
+        const primaryAuthor = authors[0].toLowerCase();
+        // Skip match filter for anonymous/various
+        if (primaryAuthor.includes('various') || primaryAuthor.includes('anonymous')) {
+          return true;
+        }
+        
+        // Split name into clean word tokens longer than 2 letters (ignoring punctuation)
+        const authorWords = primaryAuthor
+          .replace(/[^a-z\s]/g, '')
+          .split(' ')
+          .filter(word => word.length > 2);
+          
+        if (authorWords.length === 0) return true;
+        
+        // Verify Gutenberg has at least one matching author name token
+        return g.authors.some(a => {
+          const gutAuthorLower = (a.name || '').toLowerCase();
+          return authorWords.some(word => gutAuthorLower.includes(word));
+        });
+      }
+      
+      return true;
     });
     
     const resultId = match ? match.id : null;
