@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
       const res = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}&languages=en`);
       if (!res.ok) throw new Error('Gutendex search failed');
       const data = await res.json();
-      return NextResponse.json(data.results || []);
+      // Search action returns results wrapped in a 'results' key to match client expectations
+      return NextResponse.json({ results: data.results || [] });
     }
 
     if (action === 'book') {

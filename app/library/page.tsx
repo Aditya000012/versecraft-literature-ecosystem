@@ -52,6 +52,31 @@ const normalizeTitle = (title: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 
+const checkGutenberg = async (title: string, authors: string[]): Promise<number | null> => {
+  try {
+    const authorName = authors?.[0]?.split(',')[0] || '';
+    const searchQuery = authorName ? `${title} ${authorName}` : title;
+    const res = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(searchQuery)}`);
+    const data = await res.json();
+    if (!data.results || data.results.length === 0) return null;
+    
+    const googleTitle = normalizeTitle(title);
+    
+    const match = data.results.find((g: { title: string; id: number }) => {
+      const gutenbergTitle = normalizeTitle(g.title);
+      const firstThreeGoogle = googleTitle.split(' ').slice(0, 3).join(' ');
+      const firstThreeGutenberg = gutenbergTitle.split(' ').slice(0, 3).join(' ');
+      return gutenbergTitle.includes(googleTitle) ||
+             googleTitle.includes(gutenbergTitle) ||
+             firstThreeGoogle === firstThreeGutenberg;
+    });
+    
+    return match ? match.id : null;
+  } catch {
+    return null;
+  }
+};
+
 function LibraryPageContent() {
   const { user } = useAuth();
   const router = useRouter();
@@ -178,57 +203,16 @@ function LibraryPageContent() {
       if (booksList.length > 0) {
         (async () => {
           try {
-            const booksWithGutenberg = await Promise.all(
-              booksList.map(async (book) => {
-                const bookTitle = book.volumeInfo.title;
-
-                // Step 5 — Hardcode Pride and Prejudice fallback
-                if (bookTitle.toLowerCase().includes('pride and prejudice')) {
-                  return {
-                    ...book,
-                    gutenbergId: 1342
-                  };
-                }
-
-                // Extract main title by splitting on dividers to prevent empty Gutenberg API search results
-                const searchTitle = bookTitle.split(/[:;\-\(]/)[0].trim() || bookTitle;
-
-                try {
-                  // Fetch using the local dynamic proxy endpoint (which handles redirects cleanly via our server trailing slash fix)
-                  const gutRes = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(searchTitle)}`);
-                  if (gutRes.ok) {
-                    const results = await gutRes.json();
-                    if (Array.isArray(results)) {
-                      // Lenient title matching rules using clean searchTitle
-                      const googleTitle = normalizeTitle(searchTitle);
-                      const match = results.find((g: { title: string; id: number }) => {
-                        const gutenbergTitle = normalizeTitle(g.title);
-                        return gutenbergTitle.includes(googleTitle) || 
-                               googleTitle.includes(gutenbergTitle) ||
-                               gutenbergTitle.split(' ').slice(0, 3).join(' ') === googleTitle.split(' ').slice(0, 3).join(' ');
-                      });
-
-                      const matchedId = match ? match.id : null;
-
-                      // Step 1 — Console logs
-                      console.log('Searching Gutenberg for:', bookTitle);
-                      console.log('Gutenberg results:', results);
-                      console.log('Match found:', matchedId);
-
-                      if (match) {
-                        return {
-                          ...book,
-                          gutenbergId: match.id
-                        };
-                      }
-                    }
-                  }
-                } catch (e) {
-                  console.error('Error matching single Gutenberg book:', e);
-                }
-                return book;
-              })
+            const gutenbergIds = await Promise.all(
+              booksList.map(book => checkGutenberg(
+                book.volumeInfo.title,
+                book.volumeInfo.authors || []
+              ))
             );
+            const booksWithGutenberg = booksList.map((book, i) => ({
+              ...book,
+              gutenbergId: gutenbergIds[i] !== null ? (gutenbergIds[i] as number) : undefined
+            }));
             setBooks(booksWithGutenberg);
           } catch (bgError) {
             console.error('Background Gutenberg matching error:', bgError);
@@ -616,6 +600,15 @@ function LibraryPageContent() {
                               📖 Read Now
                             </button>
                           )}
+                          <a
+                            href={`https://play.google.com/store/search?q=${encodeURIComponent(book.volumeInfo.title + ' ' + (book.volumeInfo.authors?.[0] || ''))}&c=books`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white border border-black text-black text-xs font-semibold font-inter hover:bg-gray-100 transition-all duration-200 w-full text-center"
+                          >
+                            Buy Ebook
+                          </a>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -760,6 +753,16 @@ function LibraryPageContent() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                       </svg>
                       Acquire Volume
+                    </a>
+
+                    {/* Buy Ebook Button */}
+                    <a
+                      href={`https://play.google.com/store/search?q=${encodeURIComponent(selectedBook.volumeInfo.title + ' ' + (selectedBook.volumeInfo.authors?.[0] || ''))}&c=books`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 py-3 bg-white border border-black text-black hover:bg-gray-100 rounded-xl text-center text-xs font-bold uppercase tracking-wider font-inter transition-all flex items-center justify-center gap-1.5"
+                    >
+                      Buy Ebook
                     </a>
 
                     {/* Wishlist Toggle Button */}
