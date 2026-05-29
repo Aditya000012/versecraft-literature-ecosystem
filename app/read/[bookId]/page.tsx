@@ -61,7 +61,6 @@ export default function BookReaderPage() {
   // UI state
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
   const [showCompanion, setShowCompanion] = useState(false);
-  const [scrollPercent, setScrollPercent] = useState(0);
   const [activeChapterId, setActiveChapterId] = useState('');
 
   // Companion Chat state
@@ -75,8 +74,12 @@ export default function BookReaderPage() {
   const [savePassageLoading, setSavePassageLoading] = useState(false);
   const [saveConfirmation, setSaveConfirmation] = useState(false);
 
-  // Throttled Scroll Ref
-  const lastSaveTimeRef = useRef<number>(0);
+  // Refs for scroll and DOM tracking
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const progressTextRef = useRef<HTMLDivElement>(null);
+  const savedScrollPositionRef = useRef(0);
+  const restoreHappened = useRef(false);
+  const lastSaveTime = useRef(0);
   const readingAreaRef = useRef<HTMLDivElement>(null);
   const isScrollingToChapterRef = useRef<boolean>(false);
 
@@ -140,13 +143,7 @@ export default function BookReaderPage() {
               setConversation(sessionData.conversation);
             }
             if (sessionData.lastScrollPosition) {
-              // Restore scroll position after DOM rendering
-              setTimeout(() => {
-                window.scrollTo({
-                  top: sessionData.lastScrollPosition,
-                  behavior: 'instant' as ScrollBehavior
-                });
-              }, 250);
+              savedScrollPositionRef.current = sessionData.lastScrollPosition;
             }
           } else {
             // Create a new reading session
@@ -198,7 +195,23 @@ export default function BookReaderPage() {
     return () => window.removeEventListener('scroll', handleActiveChapterScroll);
   }, [chapters, loading]);
 
-  // Throttled Scroll event to update progress bar and sync to Firestore
+  // Fix 1 — Prevent Firestore saves from causing re-renders
+  const saveProgress = useCallback(async (scrollPos: number) => {
+    const now = Date.now();
+    if (now - lastSaveTime.current < 5000) return;
+    lastSaveTime.current = now;
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, 'users', user.uid, 'readingSessions', bookId), {
+        lastScrollPosition: scrollPos,
+        lastReadAt: new Date()
+      });
+    } catch {
+      // silent fail
+    }
+  }, [user, bookId]);
+
+  // Fix 2 — Reading progress bar must not cause re-renders
   const handleScroll = useCallback(() => {
     if (loading) return;
 
@@ -206,34 +219,54 @@ export default function BookReaderPage() {
     const scrollHeight = document.documentElement.scrollHeight;
     const clientHeight = document.documentElement.clientHeight;
     const denominator = scrollHeight - clientHeight;
-    const progress = denominator > 0 ? scrollTop / denominator : 0;
+    const percentage = denominator > 0 ? (scrollTop / denominator) * 100 : 0;
 
-    setScrollPercent(progress * 100);
-
-    // Throttle Firestore saves to at most once per 5 seconds
-    const now = Date.now();
-    if (user && bookId && now - lastSaveTimeRef.current >= 5000) {
-      lastSaveTimeRef.current = now;
-      const sessionRef = doc(db, 'users', user.uid, 'readingSessions', bookId);
-      updateDoc(sessionRef, {
-        lastScrollPosition: Math.round(scrollTop),
-        lastReadAt: serverTimestamp()
-      }).catch((err) => console.error('Error saving reading progress:', err));
+    if (progressBarRef.current) {
+      progressBarRef.current.style.width = `${percentage}%`;
     }
-  }, [user, bookId, loading]);
+    if (progressTextRef.current) {
+      progressTextRef.current.textContent = `${Math.round(percentage)}% READ`;
+    }
+
+    saveProgress(Math.round(scrollTop));
+  }, [loading, saveProgress]);
+
+  // Fix 3 — Scroll position restore must happen after content is fully rendered
+  useEffect(() => {
+    if (cleanHtml && savedScrollPositionRef.current > 0 && !restoreHappened.current) {
+      restoreHappened.current = true;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, savedScrollPositionRef.current);
+          
+          // Initial DOM sync for progress indicator upon restoration
+          const scrollTop = savedScrollPositionRef.current;
+          const scrollHeight = document.documentElement.scrollHeight;
+          const clientHeight = document.documentElement.clientHeight;
+          const denominator = scrollHeight - clientHeight;
+          const percentage = denominator > 0 ? (scrollTop / denominator) * 100 : 0;
+          if (progressBarRef.current) {
+            progressBarRef.current.style.width = `${percentage}%`;
+          }
+          if (progressTextRef.current) {
+            progressTextRef.current.textContent = `${Math.round(percentage)}% READ`;
+          }
+        });
+      });
+    }
+  }, [cleanHtml]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      // Final save on exit/unmount
+      // Final save on exit/unmount without touching state
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
       if (user && bookId && scrollTop > 0) {
-        const sessionRef = doc(db, 'users', user.uid, 'readingSessions', bookId);
-        updateDoc(sessionRef, {
+        updateDoc(doc(db, 'users', user.uid, 'readingSessions', bookId), {
           lastScrollPosition: Math.round(scrollTop),
-          lastReadAt: serverTimestamp()
-        }).catch((err) => console.error('Error saving reading progress on leave:', err));
+          lastReadAt: new Date()
+        }).catch(() => {});
       }
     };
   }, [handleScroll, user, bookId]);
@@ -530,8 +563,11 @@ export default function BookReaderPage() {
         </div>
 
         {/* Center: Reading progress percentage */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 text-xs font-bold font-inter">
-          {Math.round(scrollPercent)}% READ
+        <div
+          ref={progressTextRef}
+          className="absolute left-1/2 transform -translate-x-1/2 text-xs font-bold font-inter"
+        >
+          0% READ
         </div>
 
         {/* Right Side: Toggle Companion */}
@@ -547,8 +583,9 @@ export default function BookReaderPage() {
         {/* Reading progress bar */}
         <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#1a1a1a]/10">
           <div
+            ref={progressBarRef}
             className="h-full bg-[#1a1a1a] transition-all duration-75"
-            style={{ width: `${scrollPercent}%` }}
+            style={{ width: '0%' }}
           />
         </div>
       </div>
