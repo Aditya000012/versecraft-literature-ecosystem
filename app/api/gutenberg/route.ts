@@ -6,32 +6,50 @@ export async function GET(request: NextRequest) {
     const action = searchParams.get('action');
     const bookId = searchParams.get('bookId');
     const query = searchParams.get('query');
+    const topic = searchParams.get('topic');
 
     if (!action) {
       return NextResponse.json({ error: 'Action parameter is required' }, { status: 400 });
     }
 
     if (action === 'search') {
-      if (!query) {
-        return NextResponse.json({ error: 'Query parameter is required for search' }, { status: 400 });
+      let gutUrl = 'https://gutendex.com/books/?languages=en';
+      if (query) {
+        gutUrl += `&search=${encodeURIComponent(query)}`;
+      } else if (topic) {
+        gutUrl += `&topic=${encodeURIComponent(topic)}`;
       }
+      
+      const page = searchParams.get('page');
+      if (page) {
+        gutUrl += `&page=${page}`;
+      }
+      
+      const sort = searchParams.get('sort');
+      if (sort) {
+        gutUrl += `&sort=${sort}`;
+      }
+      
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 seconds timeout
+      const timeoutId = setTimeout(() => controller.abort(), 6500); // 6.5s timeout
       
       try {
-        const res = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}&languages=en`, {
-          signal: controller.signal
-        });
+        const res = await fetch(gutUrl, { signal: controller.signal });
         clearTimeout(timeoutId);
         
         if (!res.ok) throw new Error('Gutendex search failed');
         const data = await res.json();
-        // Search action returns results wrapped in a 'results' key to match client expectations
-        return NextResponse.json({ results: data.results || [] });
+        
+        return NextResponse.json({
+          count: data.count || 0,
+          next: data.next ? true : false,
+          previous: data.previous ? true : false,
+          results: data.results || []
+        });
       } catch (err) {
         clearTimeout(timeoutId);
-        console.warn(`Gutendex search timeout or failure for query "${query}":`, err);
-        return NextResponse.json({ results: [] }); // Fallback cleanly to empty results rather than crashing
+        console.warn(`Gutendex search timeout or failure for URL "${gutUrl}":`, err);
+        return NextResponse.json({ count: 0, next: false, previous: false, results: [] });
       }
     }
 
@@ -78,10 +96,28 @@ export async function GET(request: NextRequest) {
     }
 
     if (action === 'popular') {
-      const res = await fetch('https://gutendex.com/books/?languages=en&sort=popular');
-      if (!res.ok) throw new Error('Gutendex popular fetch failed');
-      const data = await res.json();
-      return NextResponse.json(data.results || []);
+      const page = searchParams.get('page') || '1';
+      const gutUrl = `https://gutendex.com/books/?languages=en&sort=popular&page=${page}`;
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6500);
+      
+      try {
+        const res = await fetch(gutUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error('Gutendex popular fetch failed');
+        const data = await res.json();
+        return NextResponse.json({
+          count: data.count || 0,
+          next: data.next ? true : false,
+          previous: data.previous ? true : false,
+          results: data.results || []
+        });
+      } catch (err) {
+        clearTimeout(timeoutId);
+        console.warn('Gutendex popular error:', err);
+        return NextResponse.json({ count: 0, next: false, previous: false, results: [] });
+      }
     }
 
     return NextResponse.json({ error: 'Invalid action parameter' }, { status: 400 });

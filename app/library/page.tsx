@@ -11,6 +11,9 @@ import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 interface Book {
   id: string;
   gutenbergId?: number;
+  source: 'google' | 'gutenberg' | 'merged';
+  publicDomain?: boolean;
+  epubUrl?: string;
   volumeInfo: {
     title: string;
     authors?: string[];
@@ -51,8 +54,6 @@ const normalizeTitle = (title: string) =>
     .replace(/[^a-z0-9\s]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
-
-const GLOBAL_GUTENBERG_CACHE: Record<string, number | null> = {};
 
 const LOCAL_GUTENBERG_MAP: Record<string, number> = {
   'pride and prejudice': 1342,
@@ -184,99 +185,200 @@ const LOCAL_GUTENBERG_MAP: Record<string, number> = {
   'frankenstein complete text': 84,
 };
 
-const checkGutenberg = async (title: string, authors: string[]): Promise<number | null> => {
-  const googleTitle = normalizeTitle(title);
-  
-  // 1. Check GLOBAL_GUTENBERG_CACHE
-  if (GLOBAL_GUTENBERG_CACHE[googleTitle] !== undefined) {
-    return GLOBAL_GUTENBERG_CACHE[googleTitle];
-  }
-  
-  // 2. Check LOCAL_GUTENBERG_MAP exact match
-  if (LOCAL_GUTENBERG_MAP[googleTitle] !== undefined) {
-    return LOCAL_GUTENBERG_MAP[googleTitle];
-  }
-  
-  // 3. Check LOCAL_GUTENBERG_MAP partial match
-  for (const [key, id] of Object.entries(LOCAL_GUTENBERG_MAP)) {
-    if (key.length > 3 && googleTitle.length > 3) {
-      if (googleTitle.includes(key) || key.includes(googleTitle)) {
-        return id;
-      }
-    }
-  }
+interface GutenbergAuthor {
+  name?: string;
+  birth_year?: number;
+  death_year?: number;
+}
 
-  // 4. API Fetch with strict timeout abort controller (extended to 6.5s to resolve slow Gutenberg loads safely)
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6500);
-    
-    // Clean title by removing subtitle dividers to guarantee high Gutendex database matching
-    const cleanTitle = title.split(/[:;\-\(]/)[0].trim() || title;
-    
-    // Search Gutendex by clean title only to ensure fast indexes and prevent excess query terms failures
-    const res = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(cleanTitle)}`, {
-      signal: controller.signal
+interface GutenbergBook {
+  id: number;
+  title?: string;
+  authors?: GutenbergAuthor[];
+  copyright?: boolean;
+  formats?: Record<string, string>;
+  summaries?: string[];
+  bookshelves?: string[];
+}
+
+interface GoogleBook {
+  id: string;
+  volumeInfo?: {
+    title?: string;
+    authors?: string[];
+    publisher?: string;
+    publishedDate?: string;
+    description?: string;
+    imageLinks?: {
+      thumbnail?: string;
+      smallThumbnail?: string;
+    };
+    categories?: string[];
+    infoLink?: string;
+  };
+}
+
+function normalizeBookData(raw: GutenbergBook | GoogleBook, source: 'google' | 'gutenberg'): Book {
+  if (source === 'gutenberg') {
+    const gBook = raw as GutenbergBook;
+    const authors = (gBook.authors || []).map((a) => {
+      if (a.name && a.name.includes(',')) {
+        const parts = a.name.split(',');
+        return `${parts[1].trim()} ${parts[0].trim()}`;
+      }
+      return a.name || 'Unknown Author';
     });
-    clearTimeout(timeoutId);
+
+    const thumbnail = gBook.formats?.['image/jpeg'] || 
+                      `https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80`;
     
-    if (!res.ok) {
-      GLOBAL_GUTENBERG_CACHE[googleTitle] = null;
-      return null;
-    }
+    const formats = gBook.formats || {};
+    const epubUrl = formats['application/epub+zip'] || 
+                    formats['application/x-mobipocket-ebook'] || 
+                    formats['text/plain'] || '';
+
+    return {
+      id: `gutenberg-${gBook.id}`,
+      gutenbergId: gBook.id,
+      source: 'gutenberg',
+      publicDomain: !gBook.copyright,
+      epubUrl: epubUrl,
+      volumeInfo: {
+        title: gBook.title || 'Untitled Work',
+        authors: authors.length > 0 ? authors : ['Unknown Author'],
+        publisher: 'Project Gutenberg',
+        publishedDate: 'Public Domain',
+        description: gBook.summaries?.[0] || `A classic masterpiece by ${authors.join(', ')}. Available for free, high-fidelity reading inside the Versecraft Grand Library.`,
+        imageLinks: {
+          thumbnail: thumbnail,
+          smallThumbnail: thumbnail,
+        },
+        categories: gBook.bookshelves?.map((b: string) => b.replace('Category: ', '')) || ['Classics'],
+        infoLink: `https://www.gutenberg.org/ebooks/${gBook.id}`
+      }
+    };
+  } else {
+    const googleBook = raw as GoogleBook;
+    const info = googleBook.volumeInfo || {};
+    return {
+      id: googleBook.id,
+      source: 'google',
+      publicDomain: false,
+      volumeInfo: {
+        title: info.title || 'Untitled Work',
+        authors: info.authors || ['Unknown Author'],
+        publisher: info.publisher || 'Unknown Publisher',
+        publishedDate: info.publishedDate || '',
+        description: info.description || 'No description available for this volume in the central archives.',
+        imageLinks: {
+          thumbnail: info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80',
+          smallThumbnail: info.imageLinks?.smallThumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80',
+        },
+        categories: info.categories || ['Literature'],
+        infoLink: info.infoLink || `https://books.google.com/books?id=${googleBook.id}`
+      }
+    };
+  }
+}
+
+function mergeBookResults(googleBooks: Book[], gutenbergBooks: Book[]): Book[] {
+  const mergedList: Book[] = [];
+  const matchedGutenbergIds = new Set<number>();
+  
+  googleBooks.forEach(gBook => {
+    const normGoogleTitle = normalizeTitle(gBook.volumeInfo.title);
     
-    const data = await res.json();
-    if (!data.results || data.results.length === 0) {
-      GLOBAL_GUTENBERG_CACHE[googleTitle] = null;
-      return null;
-    }
-    
-    // Highly robust and flexible title + author matching in Javascript
-    const match = data.results.find((g: { title: string; id: number; authors?: { name: string }[] }) => {
-      const gutenbergTitle = normalizeTitle(g.title);
-      const firstThreeGoogle = googleTitle.split(' ').slice(0, 3).join(' ');
-      const firstThreeGutenberg = gutenbergTitle.split(' ').slice(0, 3).join(' ');
+    const match = gutenbergBooks.find(gutBook => {
+      if (!gutBook.gutenbergId || matchedGutenbergIds.has(gutBook.gutenbergId)) return false;
       
-      const titleMatch = gutenbergTitle.includes(googleTitle) ||
-                         googleTitle.includes(gutenbergTitle) ||
+      const normGutTitle = normalizeTitle(gutBook.volumeInfo.title);
+      const firstThreeGoogle = normGoogleTitle.split(' ').slice(0, 3).join(' ');
+      const firstThreeGutenberg = normGutTitle.split(' ').slice(0, 3).join(' ');
+      
+      const titleMatch = normGutTitle.includes(normGoogleTitle) ||
+                         normGoogleTitle.includes(normGutTitle) ||
                          firstThreeGoogle === firstThreeGutenberg;
                          
       if (!titleMatch) return false;
       
-      // Match author token words if authors are present
-      if (authors && authors.length > 0 && g.authors && g.authors.length > 0) {
-        const primaryAuthor = authors[0].toLowerCase();
-        // Skip match filter for anonymous/various
+      const gAuthors = gBook.volumeInfo.authors || [];
+      const gutAuthors = gutBook.volumeInfo.authors || [];
+      if (gAuthors.length > 0 && gutAuthors.length > 0) {
+        const primaryAuthor = gAuthors[0].toLowerCase();
         if (primaryAuthor.includes('various') || primaryAuthor.includes('anonymous')) {
           return true;
         }
-        
-        // Split name into clean word tokens longer than 2 letters (ignoring punctuation)
-        const authorWords = primaryAuthor
-          .replace(/[^a-z\s]/g, '')
-          .split(' ')
-          .filter(word => word.length > 2);
-          
+        const authorWords = primaryAuthor.replace(/[^a-z\s]/g, '').split(' ').filter(w => w.length > 2);
         if (authorWords.length === 0) return true;
-        
-        // Verify Gutenberg has at least one matching author name token
-        return g.authors.some(a => {
-          const gutAuthorLower = (a.name || '').toLowerCase();
-          return authorWords.some(word => gutAuthorLower.includes(word));
+        return gutAuthors.some(ga => {
+          const gaLower = ga.toLowerCase();
+          return authorWords.some(word => gaLower.includes(word));
         });
       }
-      
       return true;
     });
-    
-    const resultId = match ? match.id : null;
-    GLOBAL_GUTENBERG_CACHE[googleTitle] = resultId;
-    return resultId;
-  } catch {
-    GLOBAL_GUTENBERG_CACHE[googleTitle] = null;
-    return null;
-  }
-};
+
+    if (match && match.gutenbergId) {
+      matchedGutenbergIds.add(match.gutenbergId);
+      mergedList.push({
+        ...gBook,
+        source: 'merged',
+        gutenbergId: match.gutenbergId,
+        publicDomain: match.publicDomain,
+        epubUrl: match.epubUrl,
+        volumeInfo: {
+          ...gBook.volumeInfo,
+          description: gBook.volumeInfo.description && gBook.volumeInfo.description !== 'No description available for this volume in the central archives.' 
+            ? gBook.volumeInfo.description 
+            : match.volumeInfo.description,
+          categories: gBook.volumeInfo.categories && gBook.volumeInfo.categories[0] !== 'Literature' 
+            ? gBook.volumeInfo.categories 
+            : match.volumeInfo.categories
+        }
+      });
+    } else {
+      if (LOCAL_GUTENBERG_MAP[normGoogleTitle] !== undefined) {
+        const gId = LOCAL_GUTENBERG_MAP[normGoogleTitle];
+        mergedList.push({
+          ...gBook,
+          source: 'merged',
+          gutenbergId: gId,
+          publicDomain: true,
+          epubUrl: `https://www.gutenberg.org/ebooks/${gId}.epub3.images`
+        });
+      } else {
+        let matchedId: number | null = null;
+        for (const [key, id] of Object.entries(LOCAL_GUTENBERG_MAP)) {
+          if (key.length > 3 && normGoogleTitle.length > 3) {
+            if (normGoogleTitle.includes(key) || key.includes(normGoogleTitle)) {
+              matchedId = id;
+              break;
+            }
+          }
+        }
+        if (matchedId !== null) {
+          mergedList.push({
+            ...gBook,
+            source: 'merged',
+            gutenbergId: matchedId,
+            publicDomain: true,
+            epubUrl: `https://www.gutenberg.org/ebooks/${matchedId}.epub3.images`
+          });
+        } else {
+          mergedList.push(gBook);
+        }
+      }
+    }
+  });
+
+  gutenbergBooks.forEach(gutBook => {
+    if (gutBook.gutenbergId && !matchedGutenbergIds.has(gutBook.gutenbergId)) {
+      mergedList.push(gutBook);
+    }
+  });
+
+  return mergedList;
+}
 
 function LibraryPageContent() {
   const { user } = useAuth();
@@ -293,6 +395,8 @@ function LibraryPageContent() {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [loadingBooks, setLoadingBooks] = useState(false);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
 
   const [activeListDropdown, setActiveListDropdown] = useState<string | null>(null);
   const [readingLists, setReadingLists] = useState<{ id: string; name: string }[]>([]);
@@ -381,63 +485,40 @@ function LibraryPageContent() {
     fetchWishlist();
   }, [user]);
 
-  const fetchBooks = React.useCallback(async (genreName: string, queryText: string) => {
+  const fetchBooks = React.useCallback(async (genreName: string, queryText: string, pageNumber: number = 1) => {
     setLoadingBooks(true);
     try {
-      let url = '/api/library';
-      if (queryText.trim()) {
-        url = `/api/library?q=${encodeURIComponent(queryText.trim())}`;
-      } else {
-        const genre = genreName || 'fiction';
-        url = `/api/library?genre=${encodeURIComponent(genre)}`;
-      }
-      console.log('Library fetch URL:', url);
-      const res = await fetch(url);
-      const data = await res.json();
-      console.log('Library data received:', data?.length, data?.[0]);
-      
-      const booksList = Array.isArray(data) ? data : [];
-      // 1. Immediately render Google Books results to prevent blocking initial render
-      setBooks(booksList);
+      let googleUrl = '/api/library';
+      let gutenbergUrl = `/api/gutenberg?action=popular&page=${pageNumber}`;
 
-      // 2. Perform Gutenberg matching asynchronously in background
-      if (booksList.length > 0) {
-        (async () => {
-          try {
-            const booksWithGutenberg = [...booksList];
-            for (let i = 0; i < booksList.length; i++) {
-              const book = booksList[i];
-              const googleTitle = normalizeTitle(book.volumeInfo.title);
-              
-              const alreadyCached = GLOBAL_GUTENBERG_CACHE[googleTitle] !== undefined ||
-                                    LOCAL_GUTENBERG_MAP[googleTitle] !== undefined;
-                                    
-              const matchedId = await checkGutenberg(
-                book.volumeInfo.title,
-                book.volumeInfo.authors || []
-              );
-              
-              if (matchedId !== null) {
-                booksWithGutenberg[i] = {
-                  ...book,
-                  gutenbergId: matchedId
-                };
-                // Batch update state incrementally so UI renders matches instantly!
-                setBooks([...booksWithGutenberg]);
-              }
-              
-              if (!alreadyCached) {
-                // Introduce a 150ms delay for actual API requests to prevent rate limiting & Node socket lockups
-                await new Promise(resolve => setTimeout(resolve, 150));
-              }
-            }
-          } catch (bgError) {
-            console.error('Background Gutenberg matching error:', bgError);
-          }
-        })();
+      if (queryText.trim()) {
+        const encQ = encodeURIComponent(queryText.trim());
+        googleUrl = `/api/library?q=${encQ}`;
+        gutenbergUrl = `/api/gutenberg?action=search&query=${encQ}&page=${pageNumber}`;
+      } else if (genreName) {
+        const encG = encodeURIComponent(genreName);
+        googleUrl = `/api/library?genre=${encG}`;
+        gutenbergUrl = `/api/gutenberg?action=search&topic=${encG}&page=${pageNumber}`;
       }
+      
+      console.log('Fetching parallel content sources:', { googleUrl, gutenbergUrl });
+      
+      const [googleRes, gutenbergRes] = await Promise.all([
+        fetch(googleUrl).then(r => r.ok ? r.json() : []).catch(() => []),
+        fetch(gutenbergUrl).then(r => r.ok ? r.json() : { results: [], next: false }).catch(() => ({ results: [], next: false }))
+      ]);
+
+      const rawGoogleBooks = Array.isArray(googleRes) ? googleRes : [];
+      const rawGutenbergBooks = gutenbergRes && Array.isArray(gutenbergRes.results) ? gutenbergRes.results : [];
+      setHasMore(gutenbergRes?.next || false);
+
+      const normalizedGoogle = rawGoogleBooks.map((b: GoogleBook) => normalizeBookData(b, 'google'));
+      const normalizedGutenberg = rawGutenbergBooks.map((b: GutenbergBook) => normalizeBookData(b, 'gutenberg'));
+      
+      const mergedBooks = mergeBookResults(normalizedGoogle, normalizedGutenberg);
+      setBooks(mergedBooks);
     } catch (err) {
-      console.error('Error fetching books:', err);
+      console.error('Error fetching/merging books:', err);
       setBooks([]);
     } finally {
       setLoadingBooks(false);
@@ -448,7 +529,8 @@ function LibraryPageContent() {
   useEffect(() => {
     setSearchQuery(queryParam);
     setActiveGenre(genreParam || (queryParam ? '' : 'fiction'));
-    fetchBooks(genreParam, queryParam);
+    setCurrentPage(1);
+    fetchBooks(genreParam, queryParam, 1);
   }, [queryParam, genreParam, fetchBooks]);
 
   const handleSearchSubmit = async (e: React.FormEvent) => {
@@ -457,9 +539,10 @@ function LibraryPageContent() {
     
     // Clear active genre sidebar selection when search is active
     setActiveGenre('');
+    setCurrentPage(1);
     
     // Call fetch directly and immediately
-    await fetchBooks('', query);
+    await fetchBooks('', query, 1);
 
     const params = new URLSearchParams();
     if (query) {
@@ -474,9 +557,10 @@ function LibraryPageContent() {
     const newGenre = activeGenre === genreId ? 'fiction' : genreId;
     setActiveGenre(newGenre);
     setSearchQuery('');
+    setCurrentPage(1);
 
     // Call fetch directly and immediately
-    await fetchBooks(newGenre, '');
+    await fetchBooks(newGenre, '', 1);
 
     const params = new URLSearchParams();
     if (newGenre) params.set('genre', newGenre);
@@ -847,6 +931,45 @@ function LibraryPageContent() {
                   );
                 })}
               </motion.div>
+            )}
+            
+            {/* Pagination Controls */}
+            {(hasMore || currentPage > 1) && (
+              <div className="flex justify-center items-center gap-4 mt-12 pt-6 border-t border-white/5 w-full">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={async () => {
+                    const newPage = currentPage - 1;
+                    setCurrentPage(newPage);
+                    await fetchBooks(activeGenre, searchQuery, newPage);
+                  }}
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold font-inter transition-all duration-200 border border-white/10 ${
+                    currentPage === 1
+                      ? 'text-cream/20 cursor-not-allowed'
+                      : 'text-cream hover:bg-white/5 hover:text-gold hover:border-gold/30'
+                  }`}
+                >
+                  ← Previous Page
+                </button>
+                <span className="text-xs font-semibold font-inter text-cream/60">
+                  Page <span className="text-gold">{currentPage}</span>
+                </span>
+                <button
+                  disabled={!hasMore}
+                  onClick={async () => {
+                    const newPage = currentPage + 1;
+                    setCurrentPage(newPage);
+                    await fetchBooks(activeGenre, searchQuery, newPage);
+                  }}
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold font-inter transition-all duration-200 border border-white/10 ${
+                    !hasMore
+                      ? 'text-cream/20 cursor-not-allowed'
+                      : 'text-cream hover:bg-white/5 hover:text-gold hover:border-gold/30'
+                  }`}
+                >
+                  Next Page →
+                </button>
+              </div>
             )}
           </AnimatePresence>
         </div>
