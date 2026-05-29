@@ -10,6 +10,7 @@ import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 
 interface Book {
   id: string;
+  gutenbergId?: number;
   volumeInfo: {
     title: string;
     authors?: string[];
@@ -44,6 +45,20 @@ const genres = [
   { id: 'classics', name: 'Classics', icon: '🏛️' },
   { id: 'sufi', name: 'Sufi', icon: '✨' },
 ];
+
+const normalizeTitle = (title: string) => {
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .trim()
+    .replace(/\s+/g, ' ');
+};
+
+const checkTitleMatch = (title1: string, title2: string) => {
+  const norm1 = normalizeTitle(title1);
+  const norm2 = normalizeTitle(title2);
+  return norm1 === norm2 || norm1.includes(norm2) || norm2.includes(norm1);
+};
 
 function LibraryPageContent() {
   const { user } = useAuth();
@@ -162,7 +177,44 @@ function LibraryPageContent() {
       const res = await fetch(url);
       const data = await res.json();
       console.log('Library data received:', data?.length, data?.[0]);
-      setBooks(Array.isArray(data) ? data : []);
+      
+      const booksList = Array.isArray(data) ? data : [];
+      // 1. Immediately render Google Books results to prevent blocking initial render
+      setBooks(booksList);
+
+      // 2. Perform Gutenberg matching asynchronously in background
+      if (booksList.length > 0) {
+        (async () => {
+          try {
+            const booksWithGutenberg = await Promise.all(
+              booksList.map(async (book) => {
+                try {
+                  const titleQuery = book.volumeInfo.title;
+                  const gutRes = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(titleQuery)}`);
+                  if (gutRes.ok) {
+                    const gutData = await gutRes.json();
+                    if (Array.isArray(gutData)) {
+                      const match = gutData.find((gBook: { title: string; id: number }) => checkTitleMatch(titleQuery, gBook.title));
+                      if (match) {
+                        return {
+                          ...book,
+                          gutenbergId: match.id
+                        };
+                      }
+                    }
+                  }
+                } catch (e) {
+                  console.error('Error matching single Gutenberg book:', e);
+                }
+                return book;
+              })
+            );
+            setBooks(booksWithGutenberg);
+          } catch (bgError) {
+            console.error('Background Gutenberg matching error:', bgError);
+          }
+        })();
+      }
     } catch (err) {
       console.error('Error fetching books:', err);
       setBooks([]);
@@ -502,9 +554,16 @@ function LibraryPageContent() {
                       {/* Details Box */}
                       <div className="p-4 flex-grow flex flex-col justify-between">
                         <div>
-                          <h4 className="font-playfair font-bold text-cream text-sm leading-snug group-hover:text-gold transition-colors line-clamp-2">
-                            {title}
-                          </h4>
+                          <div className="flex items-start gap-2 flex-wrap mb-1">
+                            <h4 className="font-playfair font-bold text-cream text-sm leading-snug group-hover:text-gold transition-colors line-clamp-2 inline">
+                              {title}
+                            </h4>
+                            {book.gutenbergId && (
+                              <span className="bg-emerald-500/20 border border-emerald-500 text-emerald-400 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider font-inter inline-block select-none shrink-0">
+                                Read Free
+                              </span>
+                            )}
+                          </div>
                           <p className="font-inter text-[11px] text-cream/50 mt-1 line-clamp-1">
                             by{' '}
                             {authors.map((authorName, index) => (
@@ -524,16 +583,29 @@ function LibraryPageContent() {
                           </p>
                         </div>
 
-                        {/* Discuss Button */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/chat/simple?book=${encodeURIComponent(book.volumeInfo.title)}&author=${encodeURIComponent(book.volumeInfo.authors?.[0] || 'Unknown')}`);
-                          }}
-                          className="mt-3 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-[#c9a84c]/40 text-[#c9a84c] text-xs font-inter hover:bg-[#c9a84c]/10 transition-all duration-200 w-full"
-                        >
-                          💬 Discuss with Companion
-                        </button>
+                        {/* Action Buttons */}
+                        <div className="mt-3 space-y-2">
+                          {book.gutenbergId && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/read/${book.gutenbergId}`);
+                              }}
+                              className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white text-xs font-semibold font-inter transition-all duration-200 w-full"
+                            >
+                              📖 Read Now
+                            </button>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/chat/simple?book=${encodeURIComponent(book.volumeInfo.title)}&author=${encodeURIComponent(book.volumeInfo.authors?.[0] || 'Unknown')}`);
+                            }}
+                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-[#c9a84c]/40 text-[#c9a84c] text-xs font-inter hover:bg-[#c9a84c]/10 transition-all duration-200 w-full"
+                          >
+                            💬 Discuss with Companion
+                          </button>
+                        </div>
 
                         {/* Categories footer */}
                         <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[9px] font-bold uppercase tracking-wider text-gold">
@@ -590,9 +662,16 @@ function LibraryPageContent() {
                 {/* Content right */}
                 <div className="flex-grow flex flex-col justify-between">
                   <div>
-                    <span className="text-[9px] uppercase tracking-widest text-gold font-bold font-inter block mb-1">
-                      {selectedBook.volumeInfo.categories?.[0] || 'Curated Volume'}
-                    </span>
+                    <div className="flex items-center gap-2.5 flex-wrap mb-1">
+                      <span className="text-[9px] uppercase tracking-widest text-gold font-bold font-inter block">
+                        {selectedBook.volumeInfo.categories?.[0] || 'Curated Volume'}
+                      </span>
+                      {selectedBook.gutenbergId && (
+                        <span className="bg-emerald-500/20 border border-emerald-500 text-emerald-400 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider font-inter">
+                          Read Free
+                        </span>
+                      )}
+                    </div>
                     <h2 className="font-playfair text-2xl font-bold text-cream leading-tight">
                       {selectedBook.volumeInfo.title}
                     </h2>
@@ -639,6 +718,16 @@ function LibraryPageContent() {
                     >
                       💬 Discuss with Companion
                     </button>
+
+                    {/* Read Now button (if gutenbergId exists) */}
+                    {selectedBook.gutenbergId && (
+                      <button
+                        onClick={() => router.push(`/read/${selectedBook.gutenbergId}`)}
+                        className="flex-1 py-3 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white rounded-xl text-center text-xs font-bold uppercase tracking-wider font-inter transition-all flex items-center justify-center gap-1.5"
+                      >
+                        📖 Read Now
+                      </button>
+                    )}
 
                     {/* Buy Link Button */}
                     <a
