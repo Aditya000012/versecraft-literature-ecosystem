@@ -495,6 +495,14 @@ export default function BookReaderPage() {
 
       {/* Styled overrides for Gutenberg HTML content */}
       <style dangerouslySetInnerHTML={{ __html: `
+        .reading-content ::selection {
+          background-color: #1a1a1a;
+          color: #F8F4E9;
+        }
+        .reading-content ::-moz-selection {
+          background-color: #1a1a1a;
+          color: #F8F4E9;
+        }
         .prose-gutenberg {
           font-family: 'Playfair Display', Georgia, serif;
           font-size: 1.125rem;
@@ -661,7 +669,7 @@ export default function BookReaderPage() {
           <div
             ref={readingAreaRef}
             onMouseUp={handleTextSelection}
-            className="w-full max-w-[680px] px-6 sm:px-10 md:px-14 py-16 flex flex-col justify-start select-text"
+            className="reading-content w-full max-w-[680px] px-6 sm:px-10 md:px-14 py-16 flex flex-col justify-start select-text"
           >
             {/* Header info */}
             <div className="mb-12 border-b border-[#1a1a1a]/10 pb-6 text-center select-none">
@@ -756,7 +764,7 @@ export default function BookReaderPage() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 320, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="fixed right-0 top-14 bottom-0 w-[320px] bg-[#F8F4E9] border-l border-[#1a1a1a]/10 flex flex-col z-20 shadow-2xl select-none"
+              className="fixed right-0 top-14 bottom-0 w-[320px] bg-[#F8F4E9] border-l border-[#1a1a1a]/10 flex flex-col z-50 shadow-2xl select-none"
             >
               {/* Drawer Header */}
               <div className="p-4 border-b border-[#1a1a1a]/10 flex justify-between items-center bg-[#F1ECE1] shrink-0 h-14">
@@ -813,7 +821,7 @@ export default function BookReaderPage() {
               </div>
 
               {/* Chat Input Container */}
-              <div className="p-4 border-t border-[#1a1a1a]/10 bg-[#F1ECE1] shrink-0">
+              <div className="p-4 pb-[72px] border-t border-[#1a1a1a]/10 bg-[#F1ECE1] shrink-0">
                 {selectedText && (
                   <div className="mb-2.5 p-2 bg-white/70 border border-[#1a1a1a]/10 rounded text-[9px] font-inter text-[#1a1a1a]/60 flex justify-between items-center select-none">
                     <span className="truncate max-w-[220px]">
@@ -857,7 +865,7 @@ export default function BookReaderPage() {
         {/* FLOATING COMPANION BUTTON */}
         <button
           onClick={() => setShowCompanion(!showCompanion)}
-          className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-[#1a1a1a] text-white shadow-xl flex items-center justify-center z-50 hover:scale-105 active:scale-95 transition-all select-none border border-[#F8F4E9]/20"
+          className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-[#1a1a1a] text-white shadow-xl flex items-center justify-center z-[60] hover:scale-105 active:scale-95 transition-all select-none border border-[#F8F4E9]/20"
           title={showCompanion ? 'Close Literary Companion' : 'Open Literary Companion'}
         >
           {showCompanion ? (
