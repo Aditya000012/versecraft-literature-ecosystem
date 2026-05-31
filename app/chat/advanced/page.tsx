@@ -100,64 +100,45 @@ interface LocalChatSidebarProps {
   chatType: 'simple' | 'advanced';
 }
 
-const getChatTheme = (genre: string, era: string) => {
+const getThemeTint = (genre: string, era: string): string => {
   const g = genre.toLowerCase();
   const e = era.toLowerCase();
-  
-  if (g === 'gothic' && e === 'victorian') {
-    return {
-      gradient: 'linear-gradient(135deg, #1a0505 0%, #2d0a0a 100%)',
-      textColor: '#f5f0e8',
-      isDark: true
-    };
+
+  if (g.includes('gothic') && e.includes('victorian')) return 'rgba(80, 10, 10, 0.06)';
+  if (g.includes('gothic')) return 'rgba(60, 10, 60, 0.05)';
+  if (g.includes('horror')) return 'rgba(40, 0, 0, 0.06)';
+  if (g.includes('noir')) return 'rgba(20, 20, 20, 0.07)';
+  if (g.includes('sufi') && e.includes('ancient')) return 'rgba(60, 20, 80, 0.05)';
+  if (g.includes('sufi')) return 'rgba(80, 40, 10, 0.05)';
+  if (g.includes('romance')) return 'rgba(120, 20, 40, 0.04)';
+  if (g.includes('fantasy') && e.includes('renaissance')) return 'rgba(10, 60, 10, 0.05)';
+  if (g.includes('fantasy')) return 'rgba(20, 40, 80, 0.04)';
+  if (g.includes('mystery')) return 'rgba(20, 20, 60, 0.05)';
+  if (g.includes('science fiction') || g.includes('dystopian')) return 'rgba(0, 40, 60, 0.05)';
+  if (g.includes('magical realism')) return 'rgba(40, 60, 20, 0.04)';
+  if (g.includes('historical')) return 'rgba(80, 60, 20, 0.04)';
+  if (g.includes('war')) return 'rgba(40, 30, 10, 0.05)';
+  if (g.includes('existential') || g.includes('philosophical')) return 'rgba(20, 20, 40, 0.04)';
+  if (e.includes('ancient') || e.includes('medieval')) return 'rgba(80, 60, 20, 0.04)';
+  if (e.includes('modernist')) return 'rgba(20, 20, 30, 0.04)';
+  return 'transparent';
+};
+
+const getMessageLeftBorder = (genre: string): string => {
+  const g = genre.toLowerCase();
+  if (g.includes('gothic') || g.includes('horror') || g.includes('noir')) {
+    return '2px solid rgba(120, 20, 20, 0.3)';
   }
-  if (g === 'gothic') {
-    return {
-      gradient: 'linear-gradient(135deg, #0d0d1a 0%, #1a0a1a 100%)',
-      textColor: '#f5f0e8',
-      isDark: true
-    };
+  if (g.includes('sufi') || g.includes('fantasy') || g.includes('magical realism')) {
+    return '2px solid rgba(80, 40, 120, 0.2)';
   }
-  if (g === 'sufi' && e === 'ancient') {
-    return {
-      gradient: 'linear-gradient(135deg, #0d0a1a 0%, #1a0d2e 100%)',
-      textColor: '#f5f0e8',
-      isDark: true
-    };
+  if (g.includes('romance')) {
+    return '2px solid rgba(150, 40, 60, 0.2)';
   }
-  if (g === 'fantasy' && e === 'renaissance') {
-    return {
-      gradient: 'linear-gradient(135deg, #0a1a0a 0%, #0d2b0d 100%)',
-      textColor: '#f5f0e8',
-      isDark: true
-    };
+  if (g.includes('mystery') || g.includes('existential')) {
+    return '2px solid rgba(40, 40, 100, 0.2)';
   }
-  if (g === 'romance') {
-    return {
-      gradient: 'linear-gradient(135deg, #1a0a0f 0%, #2d0d1a 100%)',
-      textColor: '#f5f0e8',
-      isDark: true
-    };
-  }
-  if (g === 'horror') {
-    return {
-      gradient: 'linear-gradient(135deg, #0a0a1a 0%, #1a0505 100%)',
-      textColor: '#f5f0e8',
-      isDark: true
-    };
-  }
-  if (g === 'noir') {
-    return {
-      gradient: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a1a 100%)',
-      textColor: '#f5f0e8',
-      isDark: true
-    };
-  }
-  return {
-    gradient: '#F8F4E9',
-    textColor: '#1a1a1a',
-    isDark: false
-  };
+  return '2px solid rgba(26, 26, 26, 0.1)';
 };
 
 function LocalChatSidebar({ currentChatId, chatType }: LocalChatSidebarProps) {
@@ -369,9 +350,6 @@ function AdvancedChatPageContent() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Dynamic Theme Styling Resolution
-  const theme = getChatTheme(selectedGenre, selectedEra);
 
   // Protected route check
   useEffect(() => {
@@ -705,7 +683,7 @@ function AdvancedChatPageContent() {
       <div className="min-h-screen bg-[#F8F4E9] flex items-center justify-center relative z-10">
         <div className="animate-pulse flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Attuning chamber frequencies...</span>
+          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Attuning advanced frequencies...</span>
         </div>
       </div>
     );
@@ -713,8 +691,22 @@ function AdvancedChatPageContent() {
 
   return (
     <div className="relative z-10 w-full min-h-screen bg-[#F8F4E9] flex flex-col pt-20 text-[#1a1a1a]">
-      {/* Ruled paper lines (only when paper theme is active) */}
-      {!theme.isDark && Array.from({ length: 12 }).map((_, i) => (
+      {/* Dynamic atmospheric tint wash */}
+      {!wizardActive && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: getThemeTint(selectedGenre, selectedEra),
+            pointerEvents: 'none',
+            zIndex: 0,
+            transition: 'background-color 1.2s ease'
+          }}
+        />
+      )}
+
+      {/* Ruled paper lines (always visible) */}
+      {Array.from({ length: 12 }).map((_, i) => (
         <div
           key={`ruled-line-${i}`}
           style={{
@@ -730,27 +722,25 @@ function AdvancedChatPageContent() {
         />
       ))}
 
-      {/* Watermark V (only when paper theme is active) */}
-      {!theme.isDark && (
-        <div
-          className="font-playfair"
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            fontSize: '320px',
-            fontWeight: 'bold',
-            fontStyle: 'italic',
-            color: 'rgba(26, 26, 26, 0.025)',
-            userSelect: 'none',
-            pointerEvents: 'none',
-            zIndex: 0
-          }}
-        >
-          V
-        </div>
-      )}
+      {/* Watermark V (always visible) */}
+      <div
+        className="font-playfair"
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          fontSize: '320px',
+          fontWeight: 'bold',
+          fontStyle: 'italic',
+          color: 'rgba(26, 26, 26, 0.025)',
+          userSelect: 'none',
+          pointerEvents: 'none',
+          zIndex: 0
+        }}
+      >
+        V
+      </div>
 
       <LocalChatSidebar currentChatId={chatId || null} chatType="advanced" />
       <AnimatePresence mode="wait">
@@ -911,14 +901,7 @@ function AdvancedChatPageContent() {
             </div>
 
             {/* Message Stream */}
-            <div 
-              style={{
-                background: theme.gradient,
-                color: theme.textColor,
-                minHeight: 'calc(100vh - 80px)'
-              }}
-              className="flex-grow overflow-y-auto pb-48 pt-20 px-4 transition-all duration-1000 select-text"
-            >
+            <div className="flex-grow overflow-y-auto pb-48 pt-20 px-4 transition-all duration-1000 select-text bg-transparent relative z-10">
               <div className="max-w-4xl w-full mx-auto flex flex-col justify-start space-y-6 pt-6">
                 {messages.map((msg, index) => {
                   const isUser = msg.role === 'user';
@@ -927,34 +910,19 @@ function AdvancedChatPageContent() {
                   let bubbleClass = '';
                   
                   if (isUser) {
-                    if (theme.isDark) {
-                      bubbleStyle = {
-                        background: 'rgba(255, 255, 255, 0.15)',
-                        color: '#f5f0e8',
-                        border: 'none'
-                      };
-                    } else {
-                      bubbleStyle = {
-                        background: '#1a1a1a',
-                        color: '#ffffff',
-                        border: 'none'
-                      };
-                    }
+                    bubbleStyle = {
+                      background: '#1a1a1a',
+                      color: '#ffffff',
+                      border: 'none'
+                    };
                     bubbleClass = 'rounded-br-none';
                   } else {
-                    if (theme.isDark) {
-                      bubbleStyle = {
-                        background: 'rgba(255, 255, 255, 0.08)',
-                        color: '#f5f0e8',
-                        border: '1px solid rgba(255, 255, 255, 0.1)'
-                      };
-                    } else {
-                      bubbleStyle = {
-                        background: '#ebdcb9',
-                        color: '#1a1a1a',
-                        border: '1px solid rgba(26, 26, 26, 0.15)'
-                      };
-                    }
+                    bubbleStyle = {
+                      background: '#ebdcb9',
+                      color: '#1a1a1a',
+                      border: '1px solid rgba(26, 26, 26, 0.15)',
+                      borderLeft: getMessageLeftBorder(selectedGenre)
+                    };
                     bubbleClass = 'rounded-bl-none shadow-sm';
                   }
                   
@@ -971,31 +939,19 @@ function AdvancedChatPageContent() {
                         className={`max-w-[85%] sm:max-w-xl p-5 rounded-2xl transition-all relative ${bubbleClass}`}
                       >
                         {msg.role === 'model' && (
-                          <div 
-                            className="flex justify-between items-center mb-3 pb-2"
-                            style={{ borderBottom: theme.isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(26, 26, 26, 0.1)' }}
-                          >
-                            <span 
-                              className="text-[9px] uppercase tracking-widest font-bold font-inter"
-                              style={{ color: theme.isDark ? 'rgba(255,255,255,0.4)' : '#6b6b6b' }}
-                            >
+                          <div className="flex justify-between items-center mb-3 pb-2 border-b border-black/10">
+                            <span className="text-[9px] uppercase tracking-widest font-bold font-inter text-[#6b6b6b]">
                               COMPANION
                             </span>
                           </div>
                         )}
 
-                        <p className={`font-inter text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'model' ? 'italic font-playfair text-base font-normal' : 'font-light'}`}>
+                        <p className={`font-inter text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'model' ? 'italic font-playfair text-base font-normal text-[#1a1a1a]' : ''}`}>
                           {msg.content}
                         </p>
 
                         {msg.role === 'model' && index > 0 && (
-                          <div 
-                            className="flex justify-end gap-3 mt-4 pt-2 text-[10px] font-bold font-inter"
-                            style={{ 
-                              borderTop: theme.isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(26, 26, 26, 0.1)',
-                              color: theme.isDark ? 'rgba(255,255,255,0.4)' : '#6b6b6b'
-                            }}
-                          >
+                          <div className="flex justify-end gap-3 mt-4 pt-2 text-[10px] font-bold font-inter border-t border-black/10 text-[#6b6b6b]">
                             <button
                               onClick={() => handleSaveToAnthology(msg.content, index)}
                               className="hover:text-gold flex items-center gap-1 transition-colors"
@@ -1022,16 +978,10 @@ function AdvancedChatPageContent() {
                     animate={{ opacity: 1 }}
                     className="flex justify-start"
                   >
-                    <div 
-                      style={{
-                        background: theme.isDark ? 'rgba(255, 255, 255, 0.08)' : '#ebdcb9',
-                        border: theme.isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(26, 26, 26, 0.15)'
-                      }}
-                      className="p-5 rounded-2xl rounded-bl-none flex items-center gap-2"
-                    >
-                      <div className="w-1.5 h-1.5 bg-black/40 dark:bg-white/40 rounded-full animate-bounce" />
-                      <div className="w-1.5 h-1.5 bg-black/40 dark:bg-white/40 rounded-full animate-bounce [animation-delay:0.2s]" />
-                      <div className="w-1.5 h-1.5 bg-black/40 dark:bg-white/40 rounded-full animate-bounce [animation-delay:0.4s]" />
+                    <div className="p-5 rounded-2xl rounded-bl-none flex items-center gap-2 bg-[#ebdcb9] border border-rgba(26,26,26,0.15)">
+                      <div className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce" />
+                      <div className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce [animation-delay:0.2s]" />
+                      <div className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce [animation-delay:0.4s]" />
                     </div>
                   </motion.div>
                 )}
