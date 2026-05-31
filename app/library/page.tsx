@@ -14,6 +14,7 @@ interface Book {
   source: 'google' | 'gutenberg' | 'merged';
   publicDomain?: boolean;
   epubUrl?: string;
+  _liveGutenbergId?: number;
   volumeInfo: {
     title: string;
     authors?: string[];
@@ -203,6 +204,7 @@ interface GutenbergBook {
 
 interface GoogleBook {
   id: string;
+  _liveGutenbergId?: number;
   volumeInfo?: {
     title?: string;
     authors?: string[];
@@ -264,6 +266,7 @@ function normalizeBookData(raw: GutenbergBook | GoogleBook, source: 'google' | '
       id: googleBook.id,
       source: 'google',
       publicDomain: false,
+      _liveGutenbergId: googleBook._liveGutenbergId,
       volumeInfo: {
         title: info.title || 'Untitled Work',
         authors: info.authors || ['Unknown Author'],
@@ -356,35 +359,48 @@ function mergeBookResults(googleBooks: Book[], gutenbergBooks: Book[]): Book[] {
         }
       });
     } else {
-      if (LOCAL_GUTENBERG_MAP[normGoogleTitle] !== undefined) {
-        const gId = LOCAL_GUTENBERG_MAP[normGoogleTitle];
+      // Check for live Gutenberg match injected above
+      const originalGoogleBook = gBook;
+      const liveId = originalGoogleBook._liveGutenbergId;
+      if (liveId) {
         mergedList.push({
           ...gBook,
           source: 'merged',
-          gutenbergId: gId,
+          gutenbergId: liveId,
           publicDomain: true,
-          epubUrl: `https://www.gutenberg.org/ebooks/${gId}.epub3.images`
+          epubUrl: `https://www.gutenberg.org/ebooks/${liveId}.epub3.images`
         });
       } else {
-        let matchedId: number | null = null;
-        for (const [key, id] of Object.entries(LOCAL_GUTENBERG_MAP)) {
-          if (key.length > 3 && normGoogleTitle.length > 3) {
-            if (normGoogleTitle.includes(key) || key.includes(normGoogleTitle)) {
-              matchedId = id;
-              break;
-            }
-          }
-        }
-        if (matchedId !== null) {
+        if (LOCAL_GUTENBERG_MAP[normGoogleTitle] !== undefined) {
+          const gId = LOCAL_GUTENBERG_MAP[normGoogleTitle];
           mergedList.push({
             ...gBook,
             source: 'merged',
-            gutenbergId: matchedId,
+            gutenbergId: gId,
             publicDomain: true,
-            epubUrl: `https://www.gutenberg.org/ebooks/${matchedId}.epub3.images`
+            epubUrl: `https://www.gutenberg.org/ebooks/${gId}.epub3.images`
           });
         } else {
-          mergedList.push(gBook);
+          let matchedId: number | null = null;
+          for (const [key, id] of Object.entries(LOCAL_GUTENBERG_MAP)) {
+            if (key.length > 3 && normGoogleTitle.length > 3) {
+              if (normGoogleTitle.includes(key) || key.includes(normGoogleTitle)) {
+                matchedId = id;
+                break;
+              }
+            }
+          }
+          if (matchedId !== null) {
+            mergedList.push({
+              ...gBook,
+              source: 'merged',
+              gutenbergId: matchedId,
+              publicDomain: true,
+              epubUrl: `https://www.gutenberg.org/ebooks/${matchedId}.epub3.images`
+            });
+          } else {
+            mergedList.push(gBook);
+          }
         }
       }
     }
@@ -530,6 +546,58 @@ function LibraryPageContent() {
       const rawGoogleBooks = Array.isArray(googleRes) ? googleRes : [];
       const rawGutenbergBooks = gutenbergRes && Array.isArray(gutenbergRes.results) ? gutenbergRes.results : [];
       setHasMore(gutenbergRes?.next || false);
+
+      // For Google Books results not found in LOCAL_GUTENBERG_MAP, check Gutenberg API live
+      const normalizedTitles = rawGoogleBooks.map((b: GoogleBook) => 
+        normalizeTitle(b.volumeInfo?.title || '')
+      );
+
+      const liveGutenbergMatches = await Promise.all(
+        rawGoogleBooks.map(async (b: GoogleBook, index: number) => {
+          const normTitle = normalizedTitles[index];
+          // Skip if already in local map
+          if (LOCAL_GUTENBERG_MAP[normTitle] !== undefined) return null;
+          
+          // Check partial matches in local map
+          for (const [key] of Object.entries(LOCAL_GUTENBERG_MAP)) {
+            if (key.length > 3 && normTitle.length > 3) {
+              if (normTitle.includes(key) || key.includes(normTitle)) return null;
+            }
+          }
+          
+          // Not in local map — search Gutenberg API live
+          try {
+            const author = b.volumeInfo?.authors?.[0]?.split(',')[0] || '';
+            const title = b.volumeInfo?.title || '';
+            const searchQuery = author ? `${title} ${author}` : title;
+            const res = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(searchQuery)}`);
+            if (!res.ok) return null;
+            const data = await res.json();
+            if (!data.results || data.results.length === 0) return null;
+            
+            const match = data.results.find((g: GutenbergBook) => {
+              if (!g.title) return false;
+              const gutTitle = normalizeTitle(g.title);
+              const firstThreeGoogle = normTitle.split(' ').slice(0, 3).join(' ');
+              const firstThreeGut = gutTitle.split(' ').slice(0, 3).join(' ');
+              return gutTitle.includes(normTitle) || 
+                     normTitle.includes(gutTitle) || 
+                     firstThreeGoogle === firstThreeGut;
+            });
+            
+            return match ? { bookIndex: index, gutenbergId: match.id } : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      // Inject live Gutenberg matches into Google Books results before merging
+      liveGutenbergMatches.forEach(match => {
+        if (match && rawGoogleBooks[match.bookIndex]) {
+          rawGoogleBooks[match.bookIndex]._liveGutenbergId = match.gutenbergId;
+        }
+      });
 
       const normalizedGoogle = rawGoogleBooks.map((b: GoogleBook) => normalizeBookData(b, 'google'));
       const normalizedGutenberg = rawGutenbergBooks.map((b: GutenbergBook) => normalizeBookData(b, 'gutenberg'));
