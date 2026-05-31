@@ -281,6 +281,31 @@ function normalizeBookData(raw: GutenbergBook | GoogleBook, source: 'google' | '
   }
 }
 
+const areTitlesMatching = (titleA: string, titleB: string): boolean => {
+  const normA = normalizeTitle(titleA);
+  const normB = normalizeTitle(titleB);
+  
+  if (normA === normB) return true;
+  if (normA.includes(normB) || normB.includes(normA)) return true;
+  
+  // Strip common filler words to check core overlap
+  const stopwords = new Set(['the', 'a', 'an', 'and', 'of', 'or', 'in', 'on', 'by', 'to', 'for', 'with', 'from', 'at']);
+  const wordsA = normA.split(' ').filter(w => !stopwords.has(w) && w.length > 0);
+  const wordsB = normB.split(' ').filter(w => !stopwords.has(w) && w.length > 0);
+  
+  if (wordsA.length === 0 || wordsB.length === 0) return false;
+  
+  // If first two core words are identical
+  const coreA2 = wordsA.slice(0, 2).join(' ');
+  const coreB2 = wordsB.slice(0, 2).join(' ');
+  if (coreA2 === coreB2) return true;
+  
+  // If first core word is identical and long enough (>= 4 chars)
+  if (wordsA[0] === wordsB[0] && wordsA[0].length >= 4) return true;
+  
+  return false;
+};
+
 function mergeBookResults(googleBooks: Book[], gutenbergBooks: Book[]): Book[] {
   const mergedList: Book[] = [];
   const matchedGutenbergIds = new Set<number>();
@@ -291,13 +316,7 @@ function mergeBookResults(googleBooks: Book[], gutenbergBooks: Book[]): Book[] {
     const match = gutenbergBooks.find(gutBook => {
       if (!gutBook.gutenbergId || matchedGutenbergIds.has(gutBook.gutenbergId)) return false;
       
-      const normGutTitle = normalizeTitle(gutBook.volumeInfo.title);
-      const firstThreeGoogle = normGoogleTitle.split(' ').slice(0, 3).join(' ');
-      const firstThreeGutenberg = normGutTitle.split(' ').slice(0, 3).join(' ');
-      
-      const titleMatch = normGutTitle.includes(normGoogleTitle) ||
-                         normGoogleTitle.includes(normGutTitle) ||
-                         firstThreeGoogle === firstThreeGutenberg;
+      const titleMatch = areTitlesMatching(gutBook.volumeInfo.title, gBook.volumeInfo.title);
                          
       if (!titleMatch) return false;
       
@@ -308,7 +327,7 @@ function mergeBookResults(googleBooks: Book[], gutenbergBooks: Book[]): Book[] {
         if (primaryAuthor.includes('various') || primaryAuthor.includes('anonymous')) {
           return true;
         }
-        const authorWords = primaryAuthor.replace(/[^a-z\s]/g, '').split(' ').filter(w => w.length > 2);
+        const authorWords = primaryAuthor.replace(/[^a-z\s]/g, '').split(' ').filter(w => w.length >= 2);
         if (authorWords.length === 0) return true;
         return gutAuthors.some(ga => {
           const gaLower = ga.toLowerCase();
@@ -747,6 +766,16 @@ function LibraryPageContent() {
                   const info = book.volumeInfo || {};
                   const title = info.title || 'Untitled Work';
                   const authors = info.authors || ['Unknown Author'];
+                  
+                  // Log every book object rendered in the library grid as required by the user
+                  console.log('Book in grid:', {
+                    title: title,
+                    source: book.source,
+                    gutenbergId: book.gutenbergId,
+                    isFree: !!book.gutenbergId,
+                    authors: authors
+                  });
+
                   const thumbnail = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80';
                   const inWishlist = isBookInWishlist(book.id);
 
