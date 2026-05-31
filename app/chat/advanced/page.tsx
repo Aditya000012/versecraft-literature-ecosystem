@@ -4,10 +4,22 @@ import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  arrayUnion, 
+  serverTimestamp,
+  collection,
+  getDocs,
+  deleteDoc,
+  orderBy,
+  query
+} from 'firebase/firestore';
 import html2canvas from 'html2canvas';
-import ChatSidebar from '@/components/ChatSidebar';
 
 interface Message {
   role: 'user' | 'model' | 'system';
@@ -16,23 +28,47 @@ interface Message {
 }
 
 const genres = [
-  { id: 'gothic', name: 'Gothic', desc: 'Dark shadows & ancient secrets' },
-  { id: 'sufi', name: 'Sufi', desc: 'Divine longing & mystical wisdom' },
-  { id: 'fantasy', name: 'Fantasy', desc: 'Mythic realms & courtly magic' },
-  { id: 'romance', name: 'Romance', desc: 'Nuanced connections & soft sighs' },
-  { id: 'horror', name: 'Horror', desc: 'Creeping dread & macabre wonders' },
-  { id: 'mystery', name: 'Mystery', desc: 'Conspiracies & deductive logic' },
-  { id: 'realism', name: 'Realism', desc: 'Unvarnished truth & human grit' },
-  { id: 'classical', name: 'Classical', desc: 'Symmetrical grace & high tragedy' },
+  { id: 'romance', name: 'Romance' },
+  { id: 'gothic', name: 'Gothic' },
+  { id: 'horror', name: 'Horror' },
+  { id: 'mystery', name: 'Mystery' },
+  { id: 'fantasy', name: 'Fantasy' },
+  { id: 'realism', name: 'Realism' },
+  { id: 'sufi', name: 'Sufi' },
+  { id: 'classical', name: 'Classical' },
+  { id: 'science-fiction', name: 'Science Fiction' },
+  { id: 'dystopian', name: 'Dystopian' },
+  { id: 'magical-realism', name: 'Magical Realism' },
+  { id: 'historical-fiction', name: 'Historical Fiction' },
+  { id: 'psychological-thriller', name: 'Psychological Thriller' },
+  { id: 'adventure', name: 'Adventure' },
+  { id: 'satire', name: 'Satire' },
+  { id: 'tragedy', name: 'Tragedy' },
+  { id: 'comedy', name: 'Comedy' },
+  { id: 'epic', name: 'Epic' },
+  { id: 'noir', name: 'Noir' },
+  { id: 'existential', name: 'Existential' },
+  { id: 'supernatural', name: 'Supernatural' },
+  { id: 'war-literature', name: 'War Literature' },
+  { id: 'political-fiction', name: 'Political Fiction' },
+  { id: 'philosophical-fiction', name: 'Philosophical Fiction' },
+  { id: 'literary-fiction', name: 'Literary Fiction' },
 ];
 
 const eras = [
-  { id: 'victorian', name: 'Victorian', desc: 'Formal elegance & industrial gloom' },
-  { id: 'ancient', name: 'Ancient', desc: 'Clay tablets, deserts & starlight' },
-  { id: 'renaissance', name: 'Renaissance', desc: 'Humanist rebirth & courtly rhetoric' },
-  { id: 'modernist', name: 'Modernist', desc: 'Fragmented streams & silver rain' },
-  { id: 'romantic', name: 'Romantic Period', desc: 'Sublime nature & intense passion' },
-  { id: 'contemporary', name: 'Contemporary', desc: 'Metamodern ironies & quiet mirrors' },
+  { id: 'ancient', name: 'Ancient (before 500 AD)' },
+  { id: 'medieval', name: 'Medieval (500-1400)' },
+  { id: 'renaissance', name: 'Renaissance (1400-1600)' },
+  { id: 'baroque', name: 'Baroque (1600-1700)' },
+  { id: 'enlightenment', name: 'Enlightenment (1700-1800)' },
+  { id: 'romantic', name: 'Romantic Period (1800-1850)' },
+  { id: 'victorian', name: 'Victorian (1850-1900)' },
+  { id: 'edwardian', name: 'Edwardian (1900-1914)' },
+  { id: 'modernist', name: 'Modernist (1914-1945)' },
+  { id: 'mid-century', name: 'Mid-Century (1945-1970)' },
+  { id: 'postmodern', name: 'Postmodern (1970-1990)' },
+  { id: 'contemporary', name: 'Contemporary (1990-2010)' },
+  { id: 'present-day', name: 'Present Day (2010 onwards)' },
 ];
 
 const languages = [
@@ -51,63 +87,263 @@ const companionModes = [
   { id: 'judgement', name: 'Judgement Mode', icon: '⚖️', desc: 'Rigorous critique' },
 ];
 
-// Theme configurations for background gradients and accent colors
-const themeStyles: Record<string, {
-  bgClass: string;
-  accentClass: string;
-  cardClass: string;
-  borderClass: string;
-  glowClass: string;
-  icon: string;
-  headingFont: string;
-}> = {
-  'gothic-victorian': {
-    bgClass: 'from-[#050000] via-[#100305] to-[#040103]',
-    accentClass: 'text-red-500 hover:text-red-400',
-    cardClass: 'bg-black/80 border-red-950/40 backdrop-blur-xl',
-    borderClass: 'border-red-900/30',
-    glowClass: 'shadow-[0_0_20px_rgba(185,28,28,0.07)]',
-    icon: '🕯️',
-    headingFont: 'font-serif tracking-tight',
-  },
-  'sufi-ancient': {
-    bgClass: 'from-[#0e071e] via-[#05020c] to-[#020105]',
-    accentClass: 'text-amber-500 hover:text-amber-400',
-    cardClass: 'bg-[#0a0518]/75 border-amber-900/30 backdrop-blur-xl',
-    borderClass: 'border-amber-700/20',
-    glowClass: 'shadow-[0_0_20px_rgba(245,158,11,0.07)]',
-    icon: '✨',
-    headingFont: 'font-serif tracking-widest',
-  },
-  'fantasy-renaissance': {
-    bgClass: 'from-[#021008] via-[#010502] to-[#010201]',
-    accentClass: 'text-emerald-500 hover:text-emerald-400',
-    cardClass: 'bg-black/75 border-emerald-950/40 backdrop-blur-xl',
-    borderClass: 'border-emerald-800/30',
-    glowClass: 'shadow-[0_0_20px_rgba(16,185,129,0.07)]',
-    icon: '🌲',
-    headingFont: 'font-serif',
-  },
-  'romance-modernist': {
-    bgClass: 'from-[#140b12] via-[#0b050c] to-[#050206]',
-    accentClass: 'text-rose-400 hover:text-rose-300',
-    cardClass: 'bg-black/70 border-rose-950/30 backdrop-blur-xl',
-    borderClass: 'border-rose-900/20',
-    glowClass: 'shadow-[0_0_20px_rgba(251,113,133,0.07)]',
-    icon: '🌧️',
-    headingFont: 'font-serif tracking-normal',
-  },
+interface SidebarChatSession {
+  id: string;
+  type: 'simple' | 'advanced';
+  mode: string;
+  createdAt?: { seconds: number; nanoseconds: number } | null;
+  messages: { role: string; content: string; timestamp?: Date | string | number | null }[];
+}
+
+interface LocalChatSidebarProps {
+  currentChatId: string | null;
+  chatType: 'simple' | 'advanced';
+}
+
+const getChatTheme = (genre: string, era: string) => {
+  const g = genre.toLowerCase();
+  const e = era.toLowerCase();
+  
+  if (g === 'gothic' && e === 'victorian') {
+    return {
+      gradient: 'linear-gradient(135deg, #1a0505 0%, #2d0a0a 100%)',
+      textColor: '#f5f0e8',
+      isDark: true
+    };
+  }
+  if (g === 'gothic') {
+    return {
+      gradient: 'linear-gradient(135deg, #0d0d1a 0%, #1a0a1a 100%)',
+      textColor: '#f5f0e8',
+      isDark: true
+    };
+  }
+  if (g === 'sufi' && e === 'ancient') {
+    return {
+      gradient: 'linear-gradient(135deg, #0d0a1a 0%, #1a0d2e 100%)',
+      textColor: '#f5f0e8',
+      isDark: true
+    };
+  }
+  if (g === 'fantasy' && e === 'renaissance') {
+    return {
+      gradient: 'linear-gradient(135deg, #0a1a0a 0%, #0d2b0d 100%)',
+      textColor: '#f5f0e8',
+      isDark: true
+    };
+  }
+  if (g === 'romance') {
+    return {
+      gradient: 'linear-gradient(135deg, #1a0a0f 0%, #2d0d1a 100%)',
+      textColor: '#f5f0e8',
+      isDark: true
+    };
+  }
+  if (g === 'horror') {
+    return {
+      gradient: 'linear-gradient(135deg, #0a0a1a 0%, #1a0505 100%)',
+      textColor: '#f5f0e8',
+      isDark: true
+    };
+  }
+  if (g === 'noir') {
+    return {
+      gradient: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a1a 100%)',
+      textColor: '#f5f0e8',
+      isDark: true
+    };
+  }
+  return {
+    gradient: '#F8F4E9',
+    textColor: '#1a1a1a',
+    isDark: false
+  };
 };
 
-const defaultTheme = {
-  bgClass: 'from-[#0a0a1a] via-[#05050f] to-[#020206]',
-  accentClass: 'text-gold hover:text-gold-light',
-  cardClass: 'bg-navy/65 border-white/5 backdrop-blur-xl',
-  borderClass: 'border-white/5',
-  glowClass: 'shadow-[0_0_20px_rgba(201,168,76,0.05)]',
-  icon: '📜',
-  headingFont: 'font-playfair',
-};
+function LocalChatSidebar({ currentChatId, chatType }: LocalChatSidebarProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const sidebarParam = searchParams.get('sidebar') === 'open';
+
+  const [isHovered, setIsHovered] = useState(false);
+  const [sessions, setSessions] = useState<SidebarChatSession[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (sidebarParam) {
+      setIsHovered(true);
+    }
+  }, [sidebarParam]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const chatsRef = collection(db, 'users', user.uid, 'chats');
+          const q = query(chatsRef, orderBy('createdAt', 'desc'));
+          const querySnap = await getDocs(q);
+          const chatsList: SidebarChatSession[] = [];
+          querySnap.forEach((docSnap) => {
+            const data = docSnap.data();
+            chatsList.push({
+              id: docSnap.id,
+              type: data.type || 'simple',
+              mode: data.mode || 'poetry',
+              createdAt: data.createdAt,
+              messages: data.messages || [],
+            });
+          });
+          setSessions(chatsList);
+        } catch (err) {
+          console.error('Error fetching sessions in sidebar:', err);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setSessions([]);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    try {
+      const docRef = doc(db, 'users', currentUser.uid, 'chats', sessionId);
+      await deleteDoc(docRef);
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    } catch (err) {
+      console.error('Error deleting session:', err);
+    }
+  };
+
+  const filteredSessions = sessions.filter(s => s.type === chatType);
+
+  return (
+    <motion.div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      animate={{ width: isHovered ? 280 : 28 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="fixed left-0 bottom-0 z-40 select-none overflow-hidden flex flex-col justify-between border-r border-[#1a1a1a]/10"
+      style={{
+        top: '80px',
+        height: 'calc(100vh - 80px)',
+        background: isHovered ? '#F8F4E9' : 'rgba(248, 244, 233, 0.95)',
+      }}
+    >
+      {!isHovered ? (
+        <div 
+          className="w-full h-full flex flex-col justify-center items-center cursor-pointer"
+        >
+          <span 
+            className="font-inter font-bold text-[9px] uppercase tracking-[2px] text-[#1a1a1a] select-none"
+            style={{
+              writingMode: 'vertical-rl',
+              transform: 'rotate(180deg)',
+            }}
+          >
+            HISTORY
+          </span>
+        </div>
+      ) : (
+        <div className="flex-grow flex flex-col min-w-[280px] p-5 overflow-hidden h-full text-[#1a1a1a]">
+          {/* Header */}
+          <div className="mb-6 flex-shrink-0">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[#1a1a1a] font-playfair">
+              Chat History
+            </h3>
+            <p className="font-inter text-[10px] text-[#6b6b6b] mt-1 font-light">
+              Your advanced sessions
+            </p>
+          </div>
+
+          {/* Session List */}
+          <div className="flex-grow overflow-y-auto pr-1 space-y-2 no-scrollbar">
+            {loading ? (
+              <div className="py-8 flex justify-center items-center">
+                <div className="w-4 h-4 border border-[#1a1a1a] border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : filteredSessions.length === 0 ? (
+              <p className="text-[11px] text-[#6b6b6b] font-inter italic text-center py-6">
+                No sessions recorded
+              </p>
+            ) : (
+              filteredSessions.map((s) => {
+                const isActive = s.id === currentChatId;
+                const firstUserMsg = s.messages.find(m => m.role === 'user');
+                const rawTitle = firstUserMsg?.content || `Session (${s.mode})`;
+                const sessionTitle = rawTitle.length > 40 ? rawTitle.slice(0, 40) + '...' : rawTitle;
+                
+                let sessionDate: Date;
+                if (s.createdAt) {
+                  if ('seconds' in s.createdAt && typeof s.createdAt.seconds === 'number') {
+                    sessionDate = new Date(s.createdAt.seconds * 1000);
+                  } else if (typeof s.createdAt === 'string' || typeof s.createdAt === 'number' || s.createdAt instanceof Date) {
+                    sessionDate = new Date(s.createdAt as string | number | Date);
+                  } else {
+                    sessionDate = new Date();
+                  }
+                } else {
+                  sessionDate = new Date();
+                }
+                const formattedDate = sessionDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+
+                return (
+                  <div
+                    key={s.id}
+                    onClick={() => router.push(`/chat/${s.type}?session=${s.id}`)}
+                    className={`group relative flex justify-between items-center p-3 rounded-lg border border-transparent transition-all cursor-pointer ${
+                      isActive 
+                        ? 'bg-[rgba(26,26,26,0.06)] border-l-2 border-l-[#1a1a1a]' 
+                        : 'hover:bg-[rgba(26,26,26,0.03)]'
+                    }`}
+                  >
+                    <div className="flex-grow min-w-0 pr-6">
+                      <h4 className="font-playfair text-xs text-[#1a1a1a] font-medium truncate">
+                        {sessionTitle}
+                      </h4>
+                      <span className="font-inter text-[9px] text-[#6b6b6b] block mt-1">
+                        {formattedDate} • <span className="capitalize">{s.mode}</span>
+                      </span>
+                    </div>
+
+                    {/* Delete row button */}
+                    <button
+                      onClick={(e) => handleDeleteSession(e, s.id)}
+                      style={{ color: '#cc0000' }}
+                      className="absolute right-2 opacity-0 group-hover:opacity-100 p-1 transition-opacity"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* New Chat Trigger */}
+          <div className="pt-4 border-t border-[#1a1a1a]/10 flex-shrink-0">
+            <button
+              onClick={() => router.push(`/chat/${chatType}`)}
+              className="w-full py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] rounded-lg text-[10px] uppercase font-bold tracking-wider font-inter text-white transition-all flex items-center justify-center gap-1.5"
+            >
+              <span>✦</span> New Chat
+            </button>
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+}
 
 function AdvancedChatPageContent() {
   const { user, loading } = useAuth();
@@ -135,14 +371,7 @@ function AdvancedChatPageContent() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Dynamic Theme Styling Resolution
-  const getActiveThemeKey = () => {
-    if (!selectedGenre || !selectedEra) return 'default';
-    const key = `${selectedGenre.toLowerCase()}-${selectedEra.toLowerCase()}`;
-    return themeStyles[key] ? key : 'default';
-  };
-
-  const themeKey = getActiveThemeKey();
-  const currentTheme = themeKey !== 'default' ? themeStyles[themeKey] : defaultTheme;
+  const theme = getChatTheme(selectedGenre, selectedEra);
 
   // Protected route check
   useEffect(() => {
@@ -483,8 +712,47 @@ function AdvancedChatPageContent() {
   }
 
   return (
-    <div className={`relative z-10 w-full min-h-screen flex flex-col pt-20 transition-all duration-1000 bg-gradient-to-br ${currentTheme.bgClass}`}>
-      <ChatSidebar currentChatId={chatId || null} chatType="advanced" />
+    <div className="relative z-10 w-full min-h-screen bg-[#F8F4E9] flex flex-col pt-20 text-[#1a1a1a]">
+      {/* Ruled paper lines (only when paper theme is active) */}
+      {!theme.isDark && Array.from({ length: 12 }).map((_, i) => (
+        <div
+          key={`ruled-line-${i}`}
+          style={{
+            position: 'absolute',
+            height: '1px',
+            background: 'rgba(26, 26, 26, 0.04)',
+            left: 0,
+            right: 0,
+            top: `${80 + i * 48}px`,
+            zIndex: 0,
+            pointerEvents: 'none'
+          }}
+        />
+      ))}
+
+      {/* Watermark V (only when paper theme is active) */}
+      {!theme.isDark && (
+        <div
+          className="font-playfair"
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            fontSize: '320px',
+            fontWeight: 'bold',
+            fontStyle: 'italic',
+            color: 'rgba(26, 26, 26, 0.025)',
+            userSelect: 'none',
+            pointerEvents: 'none',
+            zIndex: 0
+          }}
+        >
+          V
+        </div>
+      )}
+
+      <LocalChatSidebar currentChatId={chatId || null} chatType="advanced" />
       <AnimatePresence mode="wait">
         {wizardActive ? (
           /* PART A: The Selection Wizard */
@@ -494,33 +762,32 @@ function AdvancedChatPageContent() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.6 }}
-            className="flex-grow max-w-5xl w-full mx-auto px-4 py-8 flex flex-col justify-center"
+            className="flex-grow max-w-5xl w-full mx-auto px-4 py-8 flex flex-col justify-center bg-[#F8F4E9] text-[#1a1a1a]"
           >
-            <div className="text-center mb-10">
-              <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-gold/80 block mb-2 font-inter">THE SECRET ARCHIVES</span>
-              <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-cream">Advanced Literary Chamber</h1>
-              <p className="font-inter text-sm text-cream/60 mt-3 max-w-xl mx-auto font-light leading-relaxed">
-                Step inside the theme-locked room. Attune your creative companion with strict historical filters, specific writing styles, and regional cadences to create a completely custom-themed sandbox.
+            <div className="text-center mb-10 select-none">
+              <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-[#1a1a1a]/80 block mb-2 font-inter">THE SECRET ARCHIVES</span>
+              <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#1a1a1a]">Advanced Chambers</h1>
+              <p className="font-inter text-sm text-[#6b6b6b] mt-3 max-w-xl mx-auto font-light leading-relaxed italic">
+                Set your literary atmosphere before entering
               </p>
             </div>
 
-            <div className="glass-card border-white/5 rounded-2xl p-6 sm:p-8 space-y-8 shadow-2xl relative overflow-hidden">
+            <div className="bg-white border border-[#1a1a1a]/15 rounded-2xl p-6 sm:p-8 space-y-8 shadow-sm">
               {/* Genre Selector */}
               <div>
-                <label className="block text-xs uppercase tracking-widest text-gold font-bold mb-3 font-inter">1. Select Literary Genre</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <label className="block text-xs uppercase tracking-widest text-[#1a1a1a] font-bold mb-3 font-inter">1. Select Literary Genre</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-64 overflow-y-auto pr-1 no-scrollbar">
                   {genres.map((g) => (
                     <button
                       key={g.id}
                       onClick={() => setSelectedGenre(g.id)}
-                      className={`p-4 rounded-xl border text-left transition-all ${
+                      className={`p-3.5 rounded-lg border text-left transition-all font-inter text-xs ${
                         selectedGenre === g.id
-                          ? 'bg-gold/15 border-gold shadow-[0_0_12px_rgba(201,168,76,0.15)]'
-                          : 'bg-white/5 border-white/5 hover:border-gold/30 hover:bg-white/10'
+                          ? 'bg-[#1a1a1a] border-[#1a1a1a] text-white shadow-md'
+                          : 'bg-white border-[#1a1a1a]/15 text-[#1a1a1a] hover:bg-[#f0ebe0]'
                       }`}
                     >
-                      <span className="font-playfair font-bold text-cream block text-sm">{g.name}</span>
-                      <span className="text-[10px] text-cream/40 block mt-1 leading-snug font-light">{g.desc}</span>
+                      {g.name}
                     </button>
                   ))}
                 </div>
@@ -528,60 +795,54 @@ function AdvancedChatPageContent() {
 
               {/* Era Selector */}
               <div>
-                <label className="block text-xs uppercase tracking-widest text-gold font-bold mb-3 font-inter">2. Choose Historical Era</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <label className="block text-xs uppercase tracking-widest text-[#1a1a1a] font-bold mb-3 font-inter">2. Choose Historical Era</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto pr-1 no-scrollbar">
                   {eras.map((e) => (
                     <button
                       key={e.id}
                       onClick={() => setSelectedEra(e.id)}
-                      className={`p-4 rounded-xl border text-left transition-all ${
+                      className={`p-3.5 rounded-lg border text-left transition-all font-inter text-xs ${
                         selectedEra === e.id
-                          ? 'bg-gold/15 border-gold shadow-[0_0_12px_rgba(201,168,76,0.15)]'
-                          : 'bg-white/5 border-white/5 hover:border-gold/30 hover:bg-white/10'
+                          ? 'bg-[#1a1a1a] border-[#1a1a1a] text-white shadow-md'
+                          : 'bg-white border-[#1a1a1a]/15 text-[#1a1a1a] hover:bg-[#f0ebe0]'
                       }`}
                     >
-                      <span className="font-playfair font-bold text-cream block text-sm">{e.name}</span>
-                      <span className="text-[10px] text-cream/40 block mt-1 leading-snug font-light">{e.desc}</span>
+                      {e.name}
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Advanced Controls Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#1a1a1a]/10">
                 {/* Author Persona Mimicry */}
                 <div>
-                  <label className="block text-xs uppercase tracking-widest text-gold font-bold mb-2 font-inter">3. Author Style Mimicry (Optional)</label>
-                  <p className="text-[10px] text-cream/40 mb-3 font-light">Input a writer&apos;s name (e.g. John Milton, Virginia Woolf) to enforce their syntax and vocabulary structure.</p>
+                  <label className="block text-xs uppercase tracking-widest text-[#1a1a1a] font-bold mb-2 font-inter">3. Author Style Mimicry (Optional)</label>
+                  <p className="text-[10px] text-[#6b6b6b] mb-3 font-light">Input a writer&apos;s name to enforce their syntax and vocabulary structure.</p>
                   <input
                     type="text"
                     placeholder="e.g. Oscar Wilde, Edgar Allan Poe, Rumi..."
                     value={authorStyle}
                     onChange={(e) => setAuthorStyle(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl outline-none glass-input text-sm text-cream placeholder-cream/25"
+                    className="w-full px-4 py-3 rounded-xl border border-[#1a1a1a] bg-white text-[#1a1a1a] placeholder-[#9b9b9b] outline-none text-sm"
                   />
                 </div>
 
                 {/* Output Language */}
                 <div>
-                  <label className="block text-xs uppercase tracking-widest text-gold font-bold mb-2 font-inter">4. Output Language</label>
-                  <p className="text-[10px] text-cream/40 mb-3 font-light">Force the literary model to think and respond inside a specific dialect or language framework.</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <label className="block text-xs uppercase tracking-widest text-[#1a1a1a] font-bold mb-2 font-inter">4. Output Language</label>
+                  <p className="text-[10px] text-[#6b6b6b] mb-3 font-light">Force the literary model to think and respond inside a specific dialect or language framework.</p>
+                  <select
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-[#1a1a1a] bg-white text-[#1a1a1a] outline-none text-sm cursor-pointer"
+                  >
                     {languages.map((l) => (
-                      <button
-                        key={l.id}
-                        type="button"
-                        onClick={() => setSelectedLanguage(l.id)}
-                        className={`py-2 px-3 border rounded-xl text-xs font-semibold font-inter transition-all ${
-                          selectedLanguage === l.id
-                            ? 'bg-gold border-transparent text-navy'
-                            : 'bg-white/5 border-white/5 hover:border-gold/30 hover:bg-white/10'
-                        }`}
-                      >
+                      <option key={l.id} value={l.id} className="text-[#1a1a1a]">
                         {l.name}
-                      </button>
+                      </option>
                     ))}
-                  </div>
+                  </select>
                 </div>
               </div>
 
@@ -590,9 +851,9 @@ function AdvancedChatPageContent() {
                 <button
                   onClick={handleLaunchChamber}
                   disabled={!selectedGenre || !selectedEra}
-                  className="px-10 py-4 bg-gold disabled:bg-gray-800 disabled:text-cream/30 hover:bg-gold-light text-navy font-bold uppercase tracking-wider rounded-xl text-xs font-inter transition-all shadow-lg shadow-gold/15"
+                  className="w-full py-4 bg-[#1a1a1a] disabled:bg-[#ebdcb9] disabled:text-[#1a1a1a]/30 hover:bg-[#2d2d2d] text-white font-bold uppercase tracking-widest rounded-xl font-playfair text-base transition-all select-none shadow-md"
                 >
-                  Enter the Chamber
+                  Begin Session
                 </button>
               </div>
             </div>
@@ -608,26 +869,25 @@ function AdvancedChatPageContent() {
             className="flex-grow flex flex-col"
           >
             {/* Top Bar matching theme styles */}
-            <div className={`py-3 px-6 border-b transition-colors duration-1000 fixed top-20 left-0 right-0 z-30 flex justify-between items-center max-w-7xl mx-auto rounded-b-xl ${currentTheme.cardClass} ${currentTheme.borderClass} ${currentTheme.glowClass}`}>
+            <div className="py-3 px-6 border-b border-[#1a1a1a]/15 bg-[#F8F4E9] fixed top-20 left-0 right-0 z-30 flex justify-between items-center max-w-7xl mx-auto rounded-b-xl select-none">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setWizardActive(true)}
-                  className="text-xs text-cream/60 hover:text-gold transition-colors flex items-center gap-1 font-inter font-medium"
+                  className="text-xs text-[#1a1a1a] hover:underline transition-colors flex items-center gap-1 font-inter font-medium"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                   </svg>
                   Recalibrate Frequencies
                 </button>
-                <span className="text-white/20">|</span>
-                <span className="text-xs font-bold text-cream font-inter tracking-wide uppercase flex items-center gap-1.5">
-                  <span className="text-sm">{currentTheme.icon}</span>
+                <span className="text-[#1a1a1a]/20">|</span>
+                <span className="text-[10px] font-bold text-[#1a1a1a] font-inter tracking-wider uppercase flex items-center gap-1.5">
                   {selectedGenre} • {selectedEra}
                 </span>
                 {authorStyle && (
                   <>
-                    <span className="text-white/10 hidden sm:inline">•</span>
-                    <span className="text-[10px] text-gold font-bold uppercase font-inter hidden sm:inline">
+                    <span className="text-[#1a1a1a]/10 hidden sm:inline">•</span>
+                    <span className="text-[10px] text-[#1a1a1a]/60 font-bold uppercase font-inter hidden sm:inline">
                       Style: {authorStyle}
                     </span>
                   </>
@@ -644,62 +904,117 @@ function AdvancedChatPageContent() {
                     },
                   ]);
                 }}
-                className="px-3 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md text-[10px] uppercase font-bold tracking-wider font-inter text-cream transition-colors"
+                className="px-3 py-1 bg-white border border-[#1a1a1a] rounded-md text-[10px] uppercase font-bold tracking-wider font-inter text-[#1a1a1a] hover:bg-[#f0ebe0] transition-colors"
               >
                 Reset Scroll
               </button>
             </div>
 
             {/* Message Stream */}
-            <div className="flex-grow overflow-y-auto pb-32 pt-16 px-4 max-w-4xl w-full mx-auto flex flex-col justify-start">
-              <div className="flex-grow space-y-6 pt-6">
-                {messages.map((msg, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[85%] sm:max-w-xl p-5 rounded-2xl border transition-all ${
-                        msg.role === 'user'
-                          ? 'bg-gold/10 border-gold/30 text-cream rounded-br-none shadow shadow-gold/5'
-                          : `${currentTheme.cardClass} ${currentTheme.borderClass} ${currentTheme.glowClass} text-cream rounded-bl-none`
-                      }`}
+            <div 
+              style={{
+                background: theme.gradient,
+                color: theme.textColor,
+                minHeight: 'calc(100vh - 80px)'
+              }}
+              className="flex-grow overflow-y-auto pb-48 pt-20 px-4 transition-all duration-1000 select-text"
+            >
+              <div className="max-w-4xl w-full mx-auto flex flex-col justify-start space-y-6 pt-6">
+                {messages.map((msg, index) => {
+                  const isUser = msg.role === 'user';
+                  
+                  let bubbleStyle: React.CSSProperties = {};
+                  let bubbleClass = '';
+                  
+                  if (isUser) {
+                    if (theme.isDark) {
+                      bubbleStyle = {
+                        background: 'rgba(255, 255, 255, 0.15)',
+                        color: '#f5f0e8',
+                        border: 'none'
+                      };
+                    } else {
+                      bubbleStyle = {
+                        background: '#1a1a1a',
+                        color: '#ffffff',
+                        border: 'none'
+                      };
+                    }
+                    bubbleClass = 'rounded-br-none';
+                  } else {
+                    if (theme.isDark) {
+                      bubbleStyle = {
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        color: '#f5f0e8',
+                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                      };
+                    } else {
+                      bubbleStyle = {
+                        background: '#ebdcb9',
+                        color: '#1a1a1a',
+                        border: '1px solid rgba(26, 26, 26, 0.15)'
+                      };
+                    }
+                    bubbleClass = 'rounded-bl-none shadow-sm';
+                  }
+                  
+                  return (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6 }}
+                      className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
                     >
-                      {msg.role === 'model' && (
-                        <div className="flex justify-between items-center mb-3 border-b border-white/5 pb-2">
-                          <span className="text-[9px] uppercase tracking-wider text-gold font-bold font-inter flex items-center gap-1">
-                            <span>{currentTheme.icon}</span> {currentMode} Companion
-                          </span>
-                        </div>
-                      )}
-
-                      <p className={`font-inter text-sm leading-relaxed whitespace-pre-wrap font-light ${msg.role === 'model' ? `italic text-cream-light ${currentTheme.headingFont} text-base` : ''}`}>
-                        {msg.content}
-                      </p>
-
-                      {msg.role === 'model' && index > 0 && (
-                        <div className="flex justify-end gap-3 mt-4 border-t border-white/5 pt-2 text-[10px] font-bold font-inter text-cream/40">
-                          <button
-                            onClick={() => handleSaveToAnthology(msg.content, index)}
-                            className="hover:text-gold flex items-center gap-1 transition-colors"
+                      <div
+                        style={bubbleStyle}
+                        className={`max-w-[85%] sm:max-w-xl p-5 rounded-2xl transition-all relative ${bubbleClass}`}
+                      >
+                        {msg.role === 'model' && (
+                          <div 
+                            className="flex justify-between items-center mb-3 pb-2"
+                            style={{ borderBottom: theme.isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(26, 26, 26, 0.1)' }}
                           >
-                            {saveSuccessId === `save_${index}` ? '✅ Saved!' : '📜 Save to Anthology'}
-                          </button>
-                          <span>•</span>
-                          <button
-                            onClick={() => handleShareCard(msg.content)}
-                            className="hover:text-gold flex items-center gap-1 transition-colors"
+                            <span 
+                              className="text-[9px] uppercase tracking-widest font-bold font-inter"
+                              style={{ color: theme.isDark ? 'rgba(255,255,255,0.4)' : '#6b6b6b' }}
+                            >
+                              COMPANION
+                            </span>
+                          </div>
+                        )}
+
+                        <p className={`font-inter text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'model' ? 'italic font-playfair text-base font-normal' : 'font-light'}`}>
+                          {msg.content}
+                        </p>
+
+                        {msg.role === 'model' && index > 0 && (
+                          <div 
+                            className="flex justify-end gap-3 mt-4 pt-2 text-[10px] font-bold font-inter"
+                            style={{ 
+                              borderTop: theme.isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(26, 26, 26, 0.1)',
+                              color: theme.isDark ? 'rgba(255,255,255,0.4)' : '#6b6b6b'
+                            }}
                           >
-                            🎨 Share Card
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
+                            <button
+                              onClick={() => handleSaveToAnthology(msg.content, index)}
+                              className="hover:text-gold flex items-center gap-1 transition-colors"
+                            >
+                              {saveSuccessId === `save_${index}` ? '✅ Saved!' : '📜 Save to Anthology'}
+                            </button>
+                            <span>•</span>
+                            <button
+                              onClick={() => handleShareCard(msg.content)}
+                              className="hover:text-gold flex items-center gap-1 transition-colors"
+                            >
+                              🎨 Share Card
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
 
                 {aiLoading && (
                   <motion.div
@@ -707,10 +1022,16 @@ function AdvancedChatPageContent() {
                     animate={{ opacity: 1 }}
                     className="flex justify-start"
                   >
-                    <div className={`${currentTheme.cardClass} ${currentTheme.borderClass} ${currentTheme.glowClass} p-5 rounded-2xl rounded-bl-none flex items-center gap-2`}>
-                      <div className="w-1.5 h-1.5 bg-gold rounded-full animate-bounce" />
-                      <div className="w-1.5 h-1.5 bg-gold rounded-full animate-bounce [animation-delay:0.2s]" />
-                      <div className="w-1.5 h-1.5 bg-gold rounded-full animate-bounce [animation-delay:0.4s]" />
+                    <div 
+                      style={{
+                        background: theme.isDark ? 'rgba(255, 255, 255, 0.08)' : '#ebdcb9',
+                        border: theme.isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(26, 26, 26, 0.15)'
+                      }}
+                      className="p-5 rounded-2xl rounded-bl-none flex items-center gap-2"
+                    >
+                      <div className="w-1.5 h-1.5 bg-black/40 dark:bg-white/40 rounded-full animate-bounce" />
+                      <div className="w-1.5 h-1.5 bg-black/40 dark:bg-white/40 rounded-full animate-bounce [animation-delay:0.2s]" />
+                      <div className="w-1.5 h-1.5 bg-black/40 dark:bg-white/40 rounded-full animate-bounce [animation-delay:0.4s]" />
                     </div>
                   </motion.div>
                 )}
@@ -719,8 +1040,8 @@ function AdvancedChatPageContent() {
               </div>
             </div>
 
-            {/* Input Bar */}
-            <div className={`fixed bottom-0 left-0 right-0 border-t py-4 px-4 z-20 transition-all duration-1000 ${currentTheme.cardClass} ${currentTheme.borderClass}`}>
+            {/* Input Bar - Keeps clean paper aesthetic always */}
+            <div className="fixed bottom-0 left-0 right-0 bg-[#F8F4E9] border-t border-[#1a1a1a]/15 py-4 px-4 z-20 select-none">
               <div className="max-w-4xl mx-auto flex flex-col gap-3">
                 {/* Mode Selector Chips */}
                 <div className="flex gap-2 overflow-x-auto pb-1.5 no-scrollbar scroll-smooth">
@@ -728,10 +1049,13 @@ function AdvancedChatPageContent() {
                     <button
                       key={mode.id}
                       onClick={() => setCurrentMode(mode.id)}
+                      style={{
+                        border: currentMode === mode.id ? '1px solid #1a1a1a' : '1px solid rgba(26,26,26,0.15)',
+                      }}
                       className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-inter border transition-all flex-shrink-0 ${
                         currentMode === mode.id
-                          ? 'bg-gold border-transparent text-navy shadow shadow-gold/15'
-                          : 'bg-white/5 border-white/5 text-cream/60 hover:text-gold hover:border-gold/30'
+                          ? 'bg-[#1a1a1a] text-white shadow shadow-black/10'
+                          : 'bg-white text-[#6b6b6b] hover:bg-[#f0ebe0]'
                       }`}
                     >
                       <span>{mode.icon}</span>
@@ -749,13 +1073,18 @@ function AdvancedChatPageContent() {
                     onKeyDown={handleKeyPress}
                     placeholder={`Scribe your response inside the locked room... Mode: ${companionModes.find((m) => m.id === currentMode)?.name}`}
                     rows={1}
-                    className="flex-grow px-4 py-3.5 text-sm rounded-xl outline-none glass-input resize-none overflow-y-auto"
+                    style={{
+                      background: 'white',
+                      border: '1px solid rgba(26, 26, 26, 0.2)',
+                      color: '#1a1a1a',
+                    }}
+                    className="flex-grow px-4 py-3.5 text-sm rounded-xl outline-none resize-none overflow-y-auto placeholder-[#9b9b9b] focus:!border-[rgba(26,26,26,0.5)] focus:border-opacity-50 transition-colors"
                     disabled={aiLoading}
                   />
                   <button
                     type="submit"
                     disabled={aiLoading || !input.trim()}
-                    className="px-5 py-3.5 bg-gold hover:bg-gold-light disabled:bg-gray-800 disabled:text-cream/30 text-navy font-bold rounded-xl text-xs uppercase tracking-wider font-inter transition-all flex-shrink-0"
+                    className="px-5 py-3.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold rounded-xl text-xs uppercase tracking-wider font-inter transition-all flex-shrink-0"
                   >
                     Send
                   </button>
@@ -765,8 +1094,6 @@ function AdvancedChatPageContent() {
           </motion.div>
         )}
       </AnimatePresence>
-
-
     </div>
   );
 }
@@ -777,7 +1104,7 @@ export default function AdvancedChatPage() {
       <div className="min-h-screen bg-[#F8F4E9] flex items-center justify-center relative z-10">
         <div className="animate-pulse flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Attuning chamber frequencies...</span>
+          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Attuning advanced frequencies...</span>
         </div>
       </div>
     }>
