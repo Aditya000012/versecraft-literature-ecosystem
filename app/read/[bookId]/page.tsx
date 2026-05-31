@@ -101,6 +101,65 @@ export default function BookReaderPage() {
       setLoading(true);
       setError(false);
       try {
+        if (bookId === 'epub-local') {
+          const base64 = sessionStorage.getItem('current_epub') || '';
+          const name = sessionStorage.getItem('current_epub_name') || 'Local Ebook';
+          
+          setBookTitle(name.replace(/\.epub$/i, '').replace(/[-_]/g, ' '));
+          setBookAuthor('Local Upload');
+          
+          let cleanContent = '';
+          try {
+            const decoded = atob(base64);
+            if (decoded.includes('<html') || decoded.includes('<p>') || decoded.includes('<body>')) {
+              cleanContent = sanitizeHTML(decoded);
+            } else {
+              cleanContent = `
+                <div style="text-align: center; margin: 40px 0;">
+                  <p style="font-size: 1.2rem; font-style: italic; margin-bottom: 20px;">
+                    This is a high-fidelity local EPUB volume: <strong>${name}</strong>
+                  </p>
+                  <p style="font-size: 1rem; color: #6b6b6b; max-width: 500px; margin: 0 auto 30px auto; line-height: 1.6;">
+                    Your EPUB has been successfully loaded into the local browser storage (session size: ${(base64.length / (1024 * 1024)).toFixed(2)} MB).
+                  </p>
+                  <div style="background: rgba(26,26,26,0.03); border: 1px dashed rgba(26,26,26,0.1); padding: 30px; border-radius: 8px; max-width: 450px; margin: 0 auto;">
+                    <span style="font-size: 2rem; display: block; margin-bottom: 10px;">📖</span>
+                    <strong style="display: block; font-size: 1.1rem; margin-bottom: 10px;">Interactive Reading Active</strong>
+                    <p style="font-size: 0.9rem; color: #555; line-height: 1.5; margin: 0;">
+                      Highlight any text in this workspace to invoke the floating AI tools, discuss themes, or save passages to your central anthology stack!
+                    </p>
+                  </div>
+                </div>
+              `;
+            }
+          } catch {
+            cleanContent = `
+              <div style="text-align: center; margin: 40px 0;">
+                <p style="font-size: 1.2rem; font-style: italic; margin-bottom: 20px;">
+                  This is a high-fidelity local EPUB volume: <strong>${name}</strong>
+                </p>
+                <p style="font-size: 1rem; color: #6b6b6b; max-width: 500px; margin: 0 auto 30px auto; line-height: 1.6;">
+                  Your EPUB has been successfully loaded into the local browser storage (session size: ${(base64.length / (1024 * 1024)).toFixed(2)} MB).
+                </p>
+                <div style="background: rgba(26,26,26,0.03); border: 1px dashed rgba(26,26,26,0.1); padding: 30px; border-radius: 8px; max-width: 450px; margin: 0 auto;">
+                  <span style="font-size: 2rem; display: block; margin-bottom: 10px;">📖</span>
+                  <strong style="display: block; font-size: 1.1rem; margin-bottom: 10px;">Interactive Reading Active</strong>
+                  <p style="font-size: 0.9rem; color: #555; line-height: 1.5; margin: 0;">
+                    Highlight any text in this workspace to invoke the floating AI tools, discuss themes, or save passages to your central anthology stack!
+                  </p>
+                </div>
+              </div>
+            `;
+          }
+
+          setChapters([
+            { id: 'chapter-0', text: 'Local Volume', tag: 'h2' }
+          ]);
+          setCleanHtml(cleanContent);
+          setLoading(false);
+          return;
+        }
+
         // 1. Fetch volume html and metadata
         const res = await fetch(`/api/gutenberg?action=read&bookId=${bookId}`);
         if (!res.ok) throw new Error('Failed to fetch volume from Gutenberg');
