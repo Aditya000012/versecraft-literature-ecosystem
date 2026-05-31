@@ -96,42 +96,26 @@ const formatFirestoreDate = (field: unknown) => {
   });
 };
 
-const getCoverUrl = (bookId: string) => {
-  const gId = parseInt(bookId);
-  if (!isNaN(gId)) {
-    return `https://covers.openlibrary.org/b/id/${gId}-M.jpg`;
-  }
-  return null;
+const getBookCover = (bookId: string | number): string => {
+  // Use Gutenberg's own cover image URL — this always returns the correct cover
+  return `https://www.gutenberg.org/cache/epub/${bookId}/pg${bookId}.cover.medium.jpg`;
 };
 
 const BookCover = ({ bookId, title, className }: { bookId: string; title: string; className?: string }) => {
-  const [imgError, setImgError] = useState(false);
-  const coverUrl = getCoverUrl(bookId);
-
-  const getInitials = (t: string) => {
-    return t
-      .split(/[-_\s]+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map(w => w[0]?.toUpperCase() || '')
-      .join('');
-  };
-
-  if (!coverUrl || imgError) {
-    return (
-      <div className={`bg-[#EAE4D6] border border-[#1a1a1a]/10 flex items-center justify-center font-playfair font-bold text-2xl text-[#1a1a1a]/60 select-none ${className}`}>
-        {getInitials(title)}
-      </div>
-    );
-  }
+  const coverUrl = getBookCover(bookId);
 
   return (
-    <img
-      src={coverUrl}
-      alt={title}
-      onError={() => setImgError(true)}
-      className={`object-cover border border-[#1a1a1a]/10 ${className}`}
-    />
+    <div className="relative w-full h-full bg-[#EAE4D6] flex items-center justify-center">
+      <img
+        src={coverUrl}
+        alt={title}
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+          e.currentTarget.parentElement!.classList.add('cover-placeholder');
+        }}
+        className={`object-cover ${className}`}
+      />
+    </div>
   );
 };
 
@@ -348,6 +332,23 @@ export default function ReaderHub() {
   return (
     <div className="min-h-screen bg-[#F8F4E9] text-[#1a1a1a] font-inter relative py-28 px-4 sm:px-6 lg:px-8 selection:bg-[#1a1a1a] selection:text-[#F8F4E9]">
       <link href={FONT_LINK} rel="stylesheet" />
+      
+      {/* Dynamic Cover Placeholder Stylesheet */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .cover-placeholder {
+          background-color: #F0EBE0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+        .cover-placeholder::after {
+          content: '📖' !important;
+          font-size: 2rem !important;
+        }
+        .w-8.cover-placeholder::after {
+          font-size: 0.8rem !important;
+        }
+      `}} />
 
       <div className="max-w-7xl mx-auto space-y-20">
         {/* Page Header */}
@@ -564,21 +565,28 @@ export default function ReaderHub() {
                       {/* Overlapping small cover stack */}
                       {list.books && list.books.length > 0 && (
                         <div className="flex -space-x-3.5 items-center pl-2 select-none">
-                          {list.books.slice(0, 3).map((book: ListBook, idx: number) => (
-                            <div 
-                              key={idx} 
-                              className="w-8 h-12 relative border border-white rounded shadow-sm overflow-hidden bg-[#EAE4D6]"
-                              style={{ zIndex: 10 - idx }}
-                            >
-                              {book.thumbnail ? (
-                                <img src={book.thumbnail} alt={book.title} className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold font-playfair bg-[#EAE4D6] text-[#1a1a1a]/60">
-                                  {book.title?.charAt(0).toUpperCase()}
-                                </div>
-                              )}
-                            </div>
-                          ))}
+                          {list.books.slice(0, 3).map((book: ListBook, idx: number) => {
+                            const gId = book.gutenbergId || (parseInt(book.bookId) ? book.bookId : null);
+                            const coverUrl = gId ? getBookCover(gId) : book.thumbnail;
+                            
+                            return (
+                              <div 
+                                key={idx} 
+                                className="w-8 h-12 relative border border-white rounded shadow-sm overflow-hidden bg-[#EAE4D6]"
+                                style={{ zIndex: 10 - idx }}
+                              >
+                                <img 
+                                  src={coverUrl} 
+                                  alt={book.title} 
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.parentElement!.classList.add('cover-placeholder');
+                                  }}
+                                  className="w-full h-full object-cover" 
+                                />
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -610,6 +618,8 @@ export default function ReaderHub() {
                             <div className="flex space-x-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-black/10 select-text">
                               {list.books.map((book: ListBook, idx: number) => {
                                 const gutenbergId = book.gutenbergId || (parseInt(book.bookId) ? book.bookId : null);
+                                const coverUrl = gutenbergId ? getBookCover(gutenbergId) : book.thumbnail;
+
                                 return (
                                   <div 
                                     key={idx} 
@@ -617,15 +627,17 @@ export default function ReaderHub() {
                                   >
                                     <div>
                                       <div className="w-full h-40 bg-[#EAE4D6] rounded border border-[#1a1a1a]/10 overflow-hidden mb-2 relative select-none">
-                                        {book.thumbnail ? (
-                                          <img src={book.thumbnail} alt={book.title} className="w-full h-full object-cover" />
-                                        ) : (
-                                          <div className="w-full h-full flex items-center justify-center font-playfair font-bold text-2xl text-[#1a1a1a]/50">
-                                            {book.title?.charAt(0).toUpperCase()}
-                                          </div>
-                                        )}
+                                        <img 
+                                          src={coverUrl} 
+                                          alt={book.title} 
+                                          onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                            e.currentTarget.parentElement!.classList.add('cover-placeholder');
+                                          }}
+                                          className="w-full h-full object-cover" 
+                                        />
                                         {gutenbergId && (
-                                          <span className="absolute top-1.5 right-1.5 bg-[#1a1a1a] text-[#F8F4E9] text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                          <span className="absolute top-1.5 right-1.5 bg-[#1a1a1a] text-[#F8F4E9] text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider z-10">
                                             Read Free
                                           </span>
                                         )}
