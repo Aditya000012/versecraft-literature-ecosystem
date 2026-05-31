@@ -666,6 +666,43 @@ function SimpleChatPageContent() {
 
   return (
     <div className="relative z-10 w-full min-h-screen bg-[#F8F4E9] flex flex-col pt-20">
+      {/* Ruled paper lines */}
+      {Array.from({ length: 12 }).map((_, i) => (
+        <div
+          key={`ruled-line-${i}`}
+          style={{
+            position: 'absolute',
+            height: '1px',
+            background: 'rgba(26, 26, 26, 0.04)',
+            left: 0,
+            right: 0,
+            top: `${80 + i * 48}px`,
+            zIndex: 0,
+            pointerEvents: 'none'
+          }}
+        />
+      ))}
+
+      {/* Watermark V */}
+      <div
+        className="font-playfair"
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          fontSize: '320px',
+          fontWeight: 'bold',
+          fontStyle: 'italic',
+          color: 'rgba(26, 26, 26, 0.025)',
+          userSelect: 'none',
+          pointerEvents: 'none',
+          zIndex: 0
+        }}
+      >
+        V
+      </div>
+
       {/* Cinematic Gateway Open/Reveal Transition Overlay */}
       {showGateway && (
         <div className="fixed inset-0 z-50 pointer-events-none flex overflow-hidden">
@@ -774,7 +811,7 @@ function SimpleChatPageContent() {
       </div>
 
       {/* Main Chat Stream */}
-      <div className="flex-grow overflow-y-auto pb-36 pt-16 px-4 max-w-4xl w-full mx-auto flex flex-col justify-start">
+      <div className="relative z-10 flex-grow overflow-y-auto pb-36 pt-16 px-4 max-w-4xl w-full mx-auto flex flex-col justify-start">
         <div className="flex-grow space-y-6 pt-6">
           {messages.map((msg, index) => (
             <motion.div
