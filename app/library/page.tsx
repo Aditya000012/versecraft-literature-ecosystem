@@ -524,24 +524,24 @@ function LibraryPageContent() {
     setLoadingBooks(true);
     try {
       let googleUrl = '/api/library';
-      let gutenbergUrl = `/api/gutenberg?action=popular&page=${pageNumber}`;
 
       if (queryText.trim()) {
         const encQ = encodeURIComponent(queryText.trim());
         googleUrl = `/api/library?q=${encQ}`;
-        gutenbergUrl = `/api/gutenberg?action=search&query=${encQ}&page=${pageNumber}`;
       } else if (genreName) {
         const encG = encodeURIComponent(genreName);
         googleUrl = `/api/library?genre=${encG}`;
-        gutenbergUrl = `/api/gutenberg?action=search&topic=${encG}&page=${pageNumber}`;
       }
       
-      console.log('Fetching parallel content sources:', { googleUrl, gutenbergUrl });
+      console.log('Fetching parallel content sources:', { googleUrl });
       
-      const [googleRes, gutenbergRes] = await Promise.all([
+      const [googleRes, gutenbergResponse] = await Promise.all([
         fetch(googleUrl).then(r => r.ok ? r.json() : []).catch(() => []),
-        fetch(gutenbergUrl).then(r => r.ok ? r.json() : { results: [], next: false }).catch(() => ({ results: [], next: false }))
+        fetch(
+          `https://gutendex.com/books/?languages=en&search=${encodeURIComponent(queryText || genreName || 'classic literature')}&page=${pageNumber}`
+        ).then(r => r.ok ? r.json() : { results: [], next: false }).catch(() => ({ results: [], next: false }))
       ]);
+      const gutenbergRes = gutenbergResponse;
 
       const rawGoogleBooks = Array.isArray(googleRes) ? googleRes : [];
       const rawGutenbergBooks = gutenbergRes && Array.isArray(gutenbergRes.results) ? gutenbergRes.results : [];
@@ -570,7 +570,9 @@ function LibraryPageContent() {
             const author = b.volumeInfo?.authors?.[0]?.split(',')[0] || '';
             const title = b.volumeInfo?.title || '';
             const searchQuery = author ? `${title} ${author}` : title;
-            const res = await fetch(`/api/gutenberg?action=search&query=${encodeURIComponent(searchQuery)}`);
+            const res = await fetch(
+              `https://gutendex.com/books/?search=${encodeURIComponent(searchQuery)}&languages=en`
+            );
             if (!res.ok) return null;
             const data = await res.json();
             if (!data.results || data.results.length === 0) return null;
