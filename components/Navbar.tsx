@@ -191,6 +191,14 @@ export default function Navbar() {
               </div>
             </div>
 
+            {/* Reader Link */}
+            <Link 
+              href="/reader" 
+              className="transition-colors hover:text-[#1a1a1a] font-medium"
+            >
+              Reader
+            </Link>
+
             {/* Authors Link */}
             <Link 
               href="/authors" 
