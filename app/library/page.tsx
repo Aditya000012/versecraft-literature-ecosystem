@@ -754,7 +754,7 @@ function LibraryPageContent() {
                 }
               }
             }}
-            className="w-full px-4 py-3 pl-11 rounded-xl outline-none glass-input text-sm text-cream shadow-inner"
+            className="w-full px-4 py-3 pl-11 rounded-xl outline-none glass-input text-sm text-black shadow-inner"
           />
           <button
             type="submit"
@@ -876,7 +876,7 @@ function LibraryPageContent() {
                           title={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
                         >
                           <svg
-                            className="w-4 h-4 fill-current"
+                            className="w-4 h-4 fill-none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
                             strokeWidth={2}
@@ -896,8 +896,7 @@ function LibraryPageContent() {
                           title="Save to List"
                         >
                           <svg
-                            className="w-4 h-4"
-                            fill="none"
+                            className="w-4 h-4 fill-none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
                             strokeWidth={2}
@@ -1095,7 +1094,7 @@ function LibraryPageContent() {
               {/* Close Button */}
               <button
                 onClick={() => setSelectedBook(null)}
-                className="absolute top-4 right-4 text-cream/40 hover:text-cream transition-colors text-lg"
+                className="absolute top-4 right-4 text-white hover:text-white/80 transition-colors text-lg"
               >
                 ✕
               </button>
@@ -1142,9 +1141,12 @@ function LibraryPageContent() {
                       ))}
                     </p>
 
-                    <div className="flex gap-2.5 mt-3">
+                    <div className="flex gap-2.5 mt-3 flex-wrap">
                       <span className="bg-white/5 border border-white/5 rounded px-2.5 py-0.5 text-[10px] font-bold text-gold uppercase tracking-wider font-inter">
                         {synthesizeEra(selectedBook.volumeInfo.publishedDate)}
+                      </span>
+                      <span className="bg-white/5 border border-white/5 rounded px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider font-inter">
+                        {selectedBook.volumeInfo.categories?.[0] || 'Literature'}
                       </span>
                       {selectedBook.volumeInfo.publishedDate && (
                         <span className="bg-white/5 border border-white/5 rounded px-2.5 py-0.5 text-[10px] font-bold text-cream/50 font-inter">
@@ -1155,7 +1157,7 @@ function LibraryPageContent() {
 
                     {/* Book description scrolling */}
                     <div className="mt-4 border-t border-white/5 pt-3 max-h-[160px] overflow-y-auto pr-2">
-                      <p className="font-inter text-xs text-cream/80 leading-relaxed font-light whitespace-pre-line">
+                      <p className="font-inter text-xs text-white leading-relaxed font-light whitespace-pre-line">
                         {selectedBook.volumeInfo.description || 'No description available for this volume in the central archives.'}
                       </p>
                     </div>
@@ -1213,7 +1215,7 @@ function LibraryPageContent() {
                           : 'bg-white/5 border-white/10 text-cream hover:bg-white/10 hover:border-gold/50 hover:text-gold'
                       }`}
                     >
-                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <svg className="w-3.5 h-3.5 fill-none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                       </svg>
                       {isBookInWishlist(selectedBook.id) ? 'Saved' : 'Add to Wishlist'}
