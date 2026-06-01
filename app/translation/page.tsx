@@ -277,7 +277,7 @@ export default function TranslationChamberPage() {
         initial={{ opacity: 0.8 }}
         animate={{ opacity: [0.8, 1, 0.8] }}
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute inset-0 w-full h-full pointer-events-none select-none z-0 overflow-hidden"
+        className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden"
       >
         <svg
           className="w-full h-full text-[#1a1a1a]"
@@ -286,36 +286,36 @@ export default function TranslationChamberPage() {
           preserveAspectRatio="xMidYMid slice"
         >
           {/* Delicately connected thin constellation lines */}
-          <line x1="100" y1="150" x2="220" y2="100" stroke="currentColor" strokeWidth="0.8" opacity="0.08" />
-          <line x1="100" y1="150" x2="150" y2="250" stroke="currentColor" strokeWidth="0.8" opacity="0.08" />
-          <line x1="150" y1="250" x2="80" y2="450" stroke="currentColor" strokeWidth="0.8" opacity="0.08" />
-          <line x1="80" y1="450" x2="180" y2="520" stroke="currentColor" strokeWidth="0.8" opacity="0.08" />
-          <line x1="180" y1="520" x2="120" y2="750" stroke="currentColor" strokeWidth="0.8" opacity="0.08" />
-          <line x1="120" y1="750" x2="250" y2="820" stroke="currentColor" strokeWidth="0.8" opacity="0.08" />
+          <line x1="100" y1="280" x2="220" y2="220" stroke="currentColor" strokeWidth="0.8" opacity="0.14" />
+          <line x1="100" y1="280" x2="150" y2="360" stroke="currentColor" strokeWidth="0.8" opacity="0.14" />
+          <line x1="150" y1="360" x2="80" y2="450" stroke="currentColor" strokeWidth="0.8" opacity="0.14" />
+          <line x1="80" y1="450" x2="180" y2="520" stroke="currentColor" strokeWidth="0.8" opacity="0.14" />
+          <line x1="180" y1="520" x2="120" y2="750" stroke="currentColor" strokeWidth="0.8" opacity="0.14" />
+          <line x1="120" y1="750" x2="250" y2="820" stroke="currentColor" strokeWidth="0.8" opacity="0.14" />
           
-          <line x1="1050" y1="120" x2="950" y2="220" stroke="currentColor" strokeWidth="0.8" opacity="0.08" />
-          <line x1="950" y1="220" x2="1100" y2="280" stroke="currentColor" strokeWidth="0.8" opacity="0.08" />
-          <line x1="1100" y1="280" x2="1120" y2="480" stroke="currentColor" strokeWidth="0.8" opacity="0.08" />
-          <line x1="1120" y1="480" x2="980" y2="560" stroke="currentColor" strokeWidth="0.8" opacity="0.08" />
-          <line x1="980" y1="560" x2="1050" y2="780" stroke="currentColor" strokeWidth="0.8" opacity="0.08" />
-          <line x1="1050" y1="780" x2="920" y2="850" stroke="currentColor" strokeWidth="0.8" opacity="0.08" />
+          <line x1="1050" y1="120" x2="950" y2="220" stroke="currentColor" strokeWidth="0.8" opacity="0.14" />
+          <line x1="950" y1="220" x2="1100" y2="280" stroke="currentColor" strokeWidth="0.8" opacity="0.14" />
+          <line x1="1100" y1="280" x2="1120" y2="480" stroke="currentColor" strokeWidth="0.8" opacity="0.14" />
+          <line x1="1120" y1="480" x2="980" y2="560" stroke="currentColor" strokeWidth="0.8" opacity="0.14" />
+          <line x1="980" y1="560" x2="1050" y2="780" stroke="currentColor" strokeWidth="0.8" opacity="0.14" />
+          <line x1="1050" y1="780" x2="920" y2="850" stroke="currentColor" strokeWidth="0.8" opacity="0.14" />
 
           {/* Multilingual Nodes in Margins */}
-          <text x="100" y="150" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.12" textAnchor="middle">love</text>
-          <text x="220" y="100" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.12" textAnchor="middle">amour</text>
-          <text x="150" y="250" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.12" textAnchor="middle">amor</text>
-          <text x="80" y="450" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.12" textAnchor="middle">silence</text>
-          <text x="180" y="520" fontFamily="System-UI, sans-serif" fontSize="12" fill="currentColor" opacity="0.12" textAnchor="middle">静けさ</text>
-          <text x="120" y="750" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.12" textAnchor="middle">dream</text>
-          <text x="250" y="820" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.12" textAnchor="middle">sueño</text>
+          <text x="100" y="280" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.22" textAnchor="middle">love</text>
+          <text x="220" y="220" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.22" textAnchor="middle">amour</text>
+          <text x="150" y="360" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.22" textAnchor="middle">amor</text>
+          <text x="80" y="450" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.22" textAnchor="middle">silence</text>
+          <text x="180" y="520" fontFamily="System-UI, sans-serif" fontSize="12" fill="currentColor" opacity="0.22" textAnchor="middle">静けさ</text>
+          <text x="120" y="750" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.22" textAnchor="middle">dream</text>
+          <text x="250" y="820" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.22" textAnchor="middle">sueño</text>
 
-          <text x="1050" y="120" fontFamily="System-UI, sans-serif" fontSize="13" fill="currentColor" opacity="0.12" textAnchor="middle">प्रेम</text>
-          <text x="950" y="220" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.12" textAnchor="middle">λόγος</text>
-          <text x="1100" y="280" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.12" textAnchor="middle">word</text>
-          <text x="1120" y="480" fontFamily="System-UI, sans-serif" fontSize="13" fill="currentColor" opacity="0.12" textAnchor="middle">روح</text>
-          <text x="980" y="560" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.12" textAnchor="middle">soul</text>
-          <text x="1050" y="780" fontFamily="System-UI, sans-serif" fontSize="13" fill="currentColor" opacity="0.12" textAnchor="middle">حب</text>
-          <text x="920" y="850" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.12" textAnchor="middle">palabra</text>
+          <text x="1050" y="120" fontFamily="System-UI, sans-serif" fontSize="13" fill="currentColor" opacity="0.22" textAnchor="middle">प्रेम</text>
+          <text x="950" y="220" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.22" textAnchor="middle">λόγος</text>
+          <text x="1100" y="280" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.22" textAnchor="middle">word</text>
+          <text x="1120" y="480" fontFamily="System-UI, sans-serif" fontSize="13" fill="currentColor" opacity="0.22" textAnchor="middle">روح</text>
+          <text x="980" y="560" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.22" textAnchor="middle">soul</text>
+          <text x="1050" y="780" fontFamily="System-UI, sans-serif" fontSize="13" fill="currentColor" opacity="0.22" textAnchor="middle">حب</text>
+          <text x="920" y="850" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.22" textAnchor="middle">palabra</text>
         </svg>
       </motion.div>
 
