@@ -849,29 +849,196 @@ const getGenrePatternRaw = (genre: string): string | null => {
   return null;
 };
 
-const getPanelTint = (genre: string): string => {
-  const g = genre.toLowerCase();
-  if (g.includes('gothic')) return 'rgba(250, 230, 230, 0.85)';
-  if (g.includes('horror')) return 'rgba(240, 230, 230, 0.85)';
-  if (g.includes('noir')) return 'rgba(235, 235, 235, 0.85)';
-  if (g.includes('sufi')) return 'rgba(250, 240, 230, 0.85)';
-  if (g.includes('romance')) return 'rgba(252, 235, 240, 0.85)';
-  if (g.includes('fantasy')) return 'rgba(235, 240, 252, 0.85)';
-  if (g.includes('mystery')) return 'rgba(235, 235, 245, 0.85)';
-  if (g.includes('science fiction') || g.includes('dystopian')) return 'rgba(230, 245, 250, 0.85)';
-  if (g.includes('magical realism')) return 'rgba(240, 250, 235, 0.85)';
-  if (g.includes('historical')) return 'rgba(250, 242, 230, 0.85)';
-  if (g.includes('war')) return 'rgba(242, 238, 230, 0.85)';
-  if (g.includes('existential') || g.includes('philosophical')) return 'rgba(235, 235, 245, 0.85)';
-  if (g.includes('adventure')) return 'rgba(230, 248, 240, 0.85)';
-  if (g.includes('satire') || g.includes('comedy')) return 'rgba(252, 250, 230, 0.85)';
-  if (g.includes('tragedy')) return 'rgba(245, 235, 235, 0.85)';
-  if (g.includes('epic')) return 'rgba(248, 242, 230, 0.85)';
-  if (g.includes('supernatural')) return 'rgba(245, 230, 250, 0.85)';
-  if (g.includes('political')) return 'rgba(230, 238, 250, 0.85)';
-  if (g.includes('psychological')) return 'rgba(242, 232, 248, 0.85)';
-  if (g.includes('classical') || g.includes('realism') || g.includes('literary')) return 'rgba(248, 245, 235, 0.85)';
-  return 'rgba(255, 255, 255, 0.8)';
+const hashString = (str: string): number => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash);
+};
+
+const genreProfiles: Record<string, {
+  hue: number;
+  saturation: number;
+  lightness: number;
+  darkMood: boolean;
+}> = {
+  romance: { hue: 345, saturation: 85, lightness: 96, darkMood: false },
+  gothic: { hue: 350, saturation: 60, lightness: 10, darkMood: true },
+  horror: { hue: 0, saturation: 80, lightness: 5, darkMood: true },
+  mystery: { hue: 240, saturation: 50, lightness: 12, darkMood: true },
+  fantasy: { hue: 150, saturation: 70, lightness: 8, darkMood: true },
+  realism: { hue: 28, saturation: 30, lightness: 45, darkMood: false },
+  sufi: { hue: 260, saturation: 80, lightness: 8, darkMood: true },
+  classical: { hue: 40, saturation: 15, lightness: 90, darkMood: false },
+  'science-fiction': { hue: 190, saturation: 90, lightness: 6, darkMood: true },
+  dystopian: { hue: 45, saturation: 80, lightness: 6, darkMood: true },
+  'magical-realism': { hue: 280, saturation: 40, lightness: 85, darkMood: false },
+  'historical-fiction': { hue: 35, saturation: 45, lightness: 30, darkMood: true },
+  'psychological-thriller': { hue: 210, saturation: 10, lightness: 15, darkMood: true },
+  adventure: { hue: 175, saturation: 65, lightness: 25, darkMood: true },
+  satire: { hue: 60, saturation: 70, lightness: 45, darkMood: false },
+  tragedy: { hue: 210, saturation: 25, lightness: 20, darkMood: true },
+  comedy: { hue: 24, saturation: 85, lightness: 60, darkMood: false },
+  epic: { hue: 40, saturation: 50, lightness: 15, darkMood: true },
+  noir: { hue: 0, saturation: 0, lightness: 8, darkMood: true },
+  existential: { hue: 220, saturation: 40, lightness: 4, darkMood: true },
+  supernatural: { hue: 275, saturation: 70, lightness: 10, darkMood: true },
+  'war-literature': { hue: 90, saturation: 20, lightness: 15, darkMood: true },
+  'political-fiction': { hue: 220, saturation: 45, lightness: 35, darkMood: true },
+  'philosophical-fiction': { hue: 195, saturation: 30, lightness: 40, darkMood: true },
+  'literary-fiction': { hue: 30, saturation: 10, lightness: 88, darkMood: false }
+};
+
+interface AtmosphereConfig {
+  themeName: string;
+  isDark: boolean;
+  bgStyle: React.CSSProperties;
+  panelBg: string;
+  panelText: string;
+  chatText: string;
+  bubbleModelStyle: React.CSSProperties;
+  bubbleUserStyle: React.CSSProperties;
+  inputBarStyle: React.CSSProperties;
+  bgDecorations: React.ReactNode;
+}
+
+const getAtmosphereConfig = (genre: string): AtmosphereConfig => {
+  const gId = (genre || '').toLowerCase().trim().replace(/\s+/g, '-');
+  
+  let gConfig = genreProfiles[gId];
+  if (!gConfig) {
+    const matchedKey = Object.keys(genreProfiles).find(k => gId.includes(k) || k.includes(gId));
+    if (matchedKey) {
+      gConfig = genreProfiles[matchedKey];
+    } else {
+      const hash = hashString(gId);
+      const isDark = hash % 2 === 0;
+      gConfig = {
+        hue: hash % 360,
+        saturation: 50 + (hash % 40),
+        lightness: isDark ? 8 + (hash % 8) : 88 + (hash % 8),
+        darkMood: isDark
+      };
+    }
+  }
+
+  const isDarkTheme = gConfig.darkMood;
+  const baseHue = gConfig.hue;
+  const baseSat = Math.max(10, Math.min(100, gConfig.saturation));
+
+  let finalBg: string;
+  let panelBg: string;
+  let panelText: string;
+  let chatText: string;
+  let bubbleModelStyle: React.CSSProperties;
+  let bubbleUserStyle: React.CSSProperties;
+  let inputBarStyle: React.CSSProperties;
+
+  if (isDarkTheme) {
+    const mainLightness = Math.min(gConfig.lightness, 12);
+    finalBg = `radial-gradient(circle at 75% 25%, hsl(${baseHue}, ${baseSat}%, ${mainLightness + 8}%) 0%, hsl(${baseHue}, ${Math.max(10, baseSat - 15)}%, ${mainLightness}%) 60%, hsl(${baseHue}, ${Math.max(5, baseSat - 25)}%, ${Math.max(1, mainLightness - 4)}%) 100%)`;
+    panelBg = `hsla(${baseHue}, ${Math.max(10, baseSat - 15)}%, ${mainLightness - 2}%, 0.95)`;
+    panelText = `hsl(${baseHue}, 50%, 75%)`;
+    
+    if (gId.includes('sufi') || gId.includes('gothic') || gId.includes('epic') || gId.includes('fantasy')) {
+      panelText = '#d4af37';
+    }
+    chatText = `hsl(${baseHue}, 15%, 92%)`;
+
+    bubbleModelStyle = {
+      background: `hsla(${baseHue}, ${baseSat}%, 15%, 0.45)`,
+      color: `hsl(${baseHue}, 15%, 92%)`,
+      border: `1px solid hsla(${baseHue}, ${baseSat}%, 60%, 0.22)`,
+      borderLeft: `4px solid ${panelText}`,
+      backdropFilter: 'blur(16px)',
+      fontFamily: `'Playfair Display', Georgia, serif`
+    };
+
+    bubbleUserStyle = {
+      background: panelText,
+      color: `hsl(${baseHue}, ${baseSat}%, 4%)`,
+      fontWeight: 600,
+    };
+
+    inputBarStyle = {
+      background: `hsla(${baseHue}, ${Math.max(5, baseSat - 20)}%, 3%, 0.98)`,
+      borderTop: `1px solid hsla(${baseHue}, ${baseSat}%, 60%, 0.15)`,
+    };
+  } else {
+    const mainLightness = Math.max(gConfig.lightness, 85);
+    finalBg = `radial-gradient(circle at 25% 75%, hsl(${baseHue}, ${Math.min(40, baseSat)}%, ${mainLightness}%) 0%, hsl(${(baseHue + 20) % 360}, ${Math.min(30, baseSat - 10)}%, ${mainLightness - 4}%) 60%, hsl(${(baseHue + 40) % 360}, ${Math.min(20, baseSat - 15)}%, ${mainLightness - 8}%) 100%)`;
+    panelBg = `hsla(${baseHue}, 20%, ${mainLightness - 2}%, 0.95)`;
+    panelText = `hsl(${baseHue}, 60%, 25%)`;
+    chatText = `hsl(${baseHue}, 40%, 12%)`;
+
+    bubbleModelStyle = {
+      background: `hsla(${baseHue}, 30%, 95%, 0.7)`,
+      color: `hsl(${baseHue}, 40%, 12%)`,
+      border: `1px solid hsla(${baseHue}, 30%, 75%, 0.35)`,
+      borderLeft: `4px solid ${panelText}`,
+      backdropFilter: 'blur(12px)',
+      fontFamily: `'Playfair Display', Georgia, serif`
+    };
+
+    bubbleUserStyle = {
+      background: panelText,
+      color: '#ffffff',
+      fontWeight: 500,
+    };
+
+    inputBarStyle = {
+      background: `hsla(${baseHue}, 20%, 93%, 0.98)`,
+      borderTop: `1px solid hsla(${baseHue}, 30%, 75%, 0.25)`,
+    };
+  }
+
+  // Create ambient circle decorations
+  const bgDecorations = (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      <div 
+        style={{
+          position: 'absolute',
+          right: '15%',
+          top: '20%',
+          width: '550px',
+          height: '550px',
+          borderRadius: '50%',
+          background: `hsla(${baseHue}, ${baseSat}%, ${isDarkTheme ? '12%' : '82%'}, 0.25)`,
+          filter: 'blur(120px)',
+        }}
+        className="animate-pulse"
+      />
+      <div 
+        style={{
+          position: 'absolute',
+          left: '10%',
+          bottom: '15%',
+          width: '450px',
+          height: '450px',
+          borderRadius: '50%',
+          background: `hsla(${(baseHue + 120) % 360}, ${baseSat}%, ${isDarkTheme ? '10%' : '88%'}, 0.2)`,
+          filter: 'blur(100px)',
+        }}
+      />
+    </div>
+  );
+
+  return {
+    themeName: gId,
+    isDark: isDarkTheme,
+    bgStyle: {
+      background: finalBg,
+      color: chatText,
+    },
+    panelBg,
+    panelText,
+    chatText,
+    bubbleModelStyle,
+    bubbleUserStyle,
+    inputBarStyle,
+    bgDecorations,
+  };
 };
 
 
@@ -923,6 +1090,8 @@ export default function WriteWithMePage() {
   const [genre, setGenre] = useState('Literary Fiction');
   const [tone, setTone] = useState('Suspenseful');
   const [aiFirst, setAiFirst] = useState(true);
+
+  const atmConfig = getAtmosphereConfig(genre);
 
   const [story, setStory] = useState<StoryTurn[]>([]);
   const [userInput, setUserInput] = useState('');
@@ -1173,18 +1342,58 @@ export default function WriteWithMePage() {
 
   return (
     <>
-      {/* Background Tint */}
+      {/* Cream background for setup screen, or transparent for active writing screen to let the dynamic theme show through */}
       <div
         style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: getPanelTint(genre),
+          background: '#F8F4E9',
           zIndex: 0,
-          transition: 'background 1.5s ease',
           pointerEvents: 'none',
         }}
       />
-      {/* Background Pattern */}
+      {/* Dynamic atmospheric background gradient for writing/ended screens */}
+      {screen !== 'setup' && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: atmConfig.bgStyle.background,
+            zIndex: 0,
+            transition: 'background 1.5s ease',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+      {/* Dynamic ambient circle decorations */}
+      {screen !== 'setup' && atmConfig.bgDecorations}
+      
+      {/* Dynamic navbar theme overrides */}
+      {screen !== 'setup' && (
+        <style dangerouslySetInnerHTML={{ __html: `
+          /* Override global Navbar when in active writing room */
+          nav {
+            background-color: ${atmConfig.panelBg} !important;
+            border-color: ${atmConfig.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(26, 26, 26, 0.15)'} !important;
+            box-shadow: none !important;
+            transition: background-color 1.5s ease, border-color 1.5s ease !important;
+          }
+          nav a, nav button, nav span, nav div {
+            color: ${atmConfig.panelText} !important;
+          }
+          nav input {
+            background-color: ${atmConfig.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'} !important;
+            color: ${atmConfig.panelText} !important;
+            border-color: ${atmConfig.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'} !important;
+          }
+          nav svg {
+            stroke: ${atmConfig.panelText} !important;
+            color: ${atmConfig.panelText} !important;
+          }
+        `}} />
+      )}
+
+      {/* Background Pattern - Do not touch, leave as it is */}
       {getGenrePattern(genre) && (
         <div 
           style={{
@@ -1205,7 +1414,8 @@ export default function WriteWithMePage() {
       <div className="mb-4 text-left">
         <Link
           href="/dashboard"
-          className="text-xs text-[#1a1a1a] hover:opacity-75 transition-all inline-flex items-center gap-1 font-inter font-semibold"
+          style={{ color: screen !== 'setup' ? atmConfig.panelText : '#1a1a1a' }}
+          className="text-xs hover:opacity-75 transition-all inline-flex items-center gap-1 font-inter font-semibold transition-colors duration-1000"
         >
           ← Dashboard
         </Link>
@@ -1213,10 +1423,16 @@ export default function WriteWithMePage() {
 
       {/* Heading block */}
       <div className="text-center mb-10 select-none">
-        <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#1a1a1a] tracking-wide">
+        <h1 
+          style={{ color: screen !== 'setup' ? atmConfig.panelText : '#1a1a1a' }}
+          className="font-playfair text-4xl sm:text-5xl font-bold tracking-wide transition-colors duration-1000"
+        >
           Write With Me
         </h1>
-        <p className="font-playfair italic text-[#6b6b6b] text-sm mt-3 max-w-xl mx-auto leading-relaxed">
+        <p 
+          style={{ color: screen !== 'setup' ? (atmConfig.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(26,26,26,0.6)') : '#6b6b6b' }}
+          className="font-playfair italic text-sm mt-3 max-w-xl mx-auto leading-relaxed transition-colors duration-1000"
+        >
           You write a line. I write the next. Together we make something neither of us could alone.
         </p>
       </div>
@@ -1368,10 +1584,22 @@ export default function WriteWithMePage() {
           >
             {/* Story Flow view */}
             <div 
-              className="bg-white/60 backdrop-blur-md border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-xl min-h-[300px] flex flex-col justify-between text-[#1a1a1a] transition-all duration-500"
+              style={{
+                background: atmConfig.panelBg,
+                borderColor: atmConfig.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(26,26,26,0.15)',
+                color: atmConfig.chatText,
+              }}
+              className="backdrop-blur-md border rounded-2xl p-6 sm:p-8 shadow-xl min-h-[300px] flex flex-col justify-between transition-all duration-500"
             >
               <div>
-                <div className="flex justify-between items-center mb-6 pb-2 border-b border-[#1a1a1a]/10 text-[9px] font-bold uppercase tracking-wider text-[#1a1a1a]/60">
+                <div 
+                  style={{
+                    borderColor: atmConfig.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(26,26,26,0.15)',
+                    color: atmConfig.panelText,
+                    opacity: 0.8
+                  }}
+                  className="flex justify-between items-center mb-6 pb-2 border-b text-[9px] font-bold uppercase tracking-wider"
+                >
                   <span>Genre: {genre} • Tone: {tone}</span>
                   <span>Interactive Flow</span>
                 </div>
@@ -1383,10 +1611,13 @@ export default function WriteWithMePage() {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4 }}
+                      style={{
+                        color: turn.role === 'user' ? atmConfig.chatText : atmConfig.panelText
+                      }}
                       className={`leading-relaxed text-sm sm:text-base text-left ${
                         turn.role === 'user'
-                          ? 'font-inter text-[#1a1a1a]'
-                          : 'font-playfair italic text-[#1a1a1a]/80 font-medium'
+                          ? 'font-inter'
+                          : 'font-playfair italic font-medium'
                       }`}
                     >
                       {turn.content}
@@ -1398,7 +1629,8 @@ export default function WriteWithMePage() {
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="font-playfair italic text-[#1a1a1a]/60 text-sm animate-pulse text-left"
+                      style={{ color: atmConfig.panelText, opacity: 0.6 }}
+                      className="font-playfair italic text-sm animate-pulse text-left"
                     >
                       The muse is writing...
                     </motion.div>
@@ -1408,11 +1640,21 @@ export default function WriteWithMePage() {
               </div>
 
               {/* Live counts */}
-              <div className="flex justify-between items-center border-t border-[#1a1a1a]/10 pt-4 text-[10px] font-bold uppercase tracking-wider text-[#1a1a1a]/75 font-inter">
+              <div 
+                style={{
+                  borderColor: atmConfig.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(26,26,26,0.15)',
+                  color: atmConfig.panelText,
+                }}
+                className="flex justify-between items-center border-t pt-4 text-[10px] font-bold uppercase tracking-wider font-inter"
+              >
                 <span>Story Word Count: {getWordCount()}</span>
                 <button
                   onClick={handleEndSession}
-                  className="px-4 py-1.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-[10px] font-bold uppercase tracking-wider rounded-lg font-inter transition-all shadow"
+                  style={{
+                    background: atmConfig.panelText,
+                    color: atmConfig.isDark ? '#1a1a1a' : '#ffffff',
+                  }}
+                  className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg font-inter transition-all shadow hover:opacity-90"
                 >
                   I&apos;m done writing
                 </button>
@@ -1421,11 +1663,19 @@ export default function WriteWithMePage() {
 
             {/* Input Form area */}
             <div 
-              className="bg-white/60 backdrop-blur-md border border-[#1a1a1a]/10 rounded-2xl p-6 shadow-xl text-[#1a1a1a] transition-all duration-500"
+              style={{
+                background: atmConfig.panelBg,
+                borderColor: atmConfig.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(26,26,26,0.15)',
+                color: atmConfig.chatText,
+              }}
+              className="backdrop-blur-md border rounded-2xl p-6 shadow-xl transition-all duration-500"
             >
               <form onSubmit={handleAddPart} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] uppercase font-bold tracking-widest text-[#1a1a1a]/85 mb-2 font-inter">
+                  <label 
+                    style={{ color: atmConfig.panelText }}
+                    className="block text-[10px] uppercase font-bold tracking-widest mb-2 font-inter"
+                  >
                     Your Turn
                   </label>
                   <textarea
@@ -1433,8 +1683,13 @@ export default function WriteWithMePage() {
                     value={userInput}
                     onChange={handleTextareaInput}
                     placeholder="Write the next line, sentence, or paragraph..."
-                    style={{ minHeight: '60px' }}
-                    className="w-full px-4 py-3 rounded-xl outline-none bg-white border border-[#1a1a1a]/15 text-sm text-[#1a1a1a] placeholder-[#1a1a1a]/30 resize-none leading-relaxed transition-all focus:border-[#1a1a1a]"
+                    style={{ 
+                      minHeight: '60px',
+                      background: atmConfig.isDark ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.6)',
+                      borderColor: atmConfig.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(26,26,26,0.2)',
+                      color: atmConfig.chatText,
+                    }}
+                    className="w-full px-4 py-3 rounded-xl outline-none text-sm placeholder-current/30 resize-none leading-relaxed transition-all focus:border-current"
                   />
                 </div>
 
@@ -1442,9 +1697,11 @@ export default function WriteWithMePage() {
                   <button
                     type="submit"
                     disabled={aiLoading || !userInput.trim()}
-                    className={`px-6 py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow flex items-center gap-2 ${
-                      aiLoading || !userInput.trim() ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
+                    style={{
+                      background: aiLoading || !userInput.trim() ? 'rgba(128,128,128,0.2)' : atmConfig.panelText,
+                      color: aiLoading || !userInput.trim() ? 'rgba(128,128,128,0.5)' : (atmConfig.isDark ? '#1a1a1a' : '#ffffff'),
+                    }}
+                    className="px-6 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow flex items-center gap-2 hover:opacity-90"
                   >
                     Add My Part
                   </button>
@@ -1472,9 +1729,20 @@ export default function WriteWithMePage() {
           >
             {/* Story Prose container */}
             <div 
-              className="bg-white/60 backdrop-blur-md border border-[#1a1a1a]/10 rounded-2xl p-8 sm:p-10 shadow-xl space-y-6 text-[#1a1a1a] transition-all duration-500"
+              style={{
+                background: atmConfig.panelBg,
+                borderColor: atmConfig.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(26,26,26,0.15)',
+                color: atmConfig.chatText,
+              }}
+              className="backdrop-blur-md border rounded-2xl p-8 sm:p-10 shadow-xl space-y-6 transition-all duration-500"
             >
-              <h2 className="font-playfair text-2xl font-bold text-[#1a1a1a] text-center border-b border-[#1a1a1a]/10 pb-4">
+              <h2 
+                style={{
+                  color: atmConfig.panelText,
+                  borderColor: atmConfig.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(26,26,26,0.15)',
+                }}
+                className="font-playfair text-2xl font-bold text-center border-b pb-4"
+              >
                 Synthesized Manuscript
               </h2>
 
@@ -1482,10 +1750,13 @@ export default function WriteWithMePage() {
                 {story.map((turn, index) => (
                   <p
                     key={index}
+                    style={{
+                      color: turn.role === 'user' ? atmConfig.chatText : atmConfig.panelText
+                    }}
                     className={`leading-relaxed text-sm sm:text-base text-left ${
                       turn.role === 'user'
-                        ? 'font-inter text-[#1a1a1a]'
-                        : 'font-playfair italic text-[#1a1a1a]/80 font-light'
+                        ? 'font-inter'
+                        : 'font-playfair italic font-light'
                     }`}
                   >
                     {turn.content}
@@ -1494,7 +1765,13 @@ export default function WriteWithMePage() {
               </div>
 
               {/* Manuscript metrics */}
-              <div className="flex justify-between items-center border-t border-[#1a1a1a]/10 pt-4 text-[10px] font-bold uppercase tracking-wider text-[#1a1a1a]/75 font-inter">
+              <div 
+                style={{
+                  borderColor: atmConfig.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(26,26,26,0.15)',
+                  color: atmConfig.panelText,
+                }}
+                className="flex justify-between items-center border-t pt-4 text-[10px] font-bold uppercase tracking-wider font-inter"
+              >
                 <span>Total Words: {getWordCount()}</span>
                 <span>Collaboration complete</span>
               </div>
@@ -1502,18 +1779,31 @@ export default function WriteWithMePage() {
 
             {/* Ending action controls */}
             <div 
-              className="bg-white/60 backdrop-blur-md border border-[#1a1a1a]/10 rounded-2xl p-6 shadow-xl flex flex-wrap gap-4 items-center justify-between text-[#1a1a1a] transition-all duration-500"
+              style={{
+                background: atmConfig.panelBg,
+                borderColor: atmConfig.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(26,26,26,0.15)',
+                color: atmConfig.chatText,
+              }}
+              className="backdrop-blur-md border rounded-2xl p-6 shadow-xl flex flex-wrap gap-4 items-center justify-between transition-all duration-500"
             >
               <div className="flex gap-3">
                 <button
                   onClick={handleSaveToAnthology}
-                  className="px-5 py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-xs font-bold uppercase tracking-wider rounded-xl font-inter transition-all shadow shadow-black/5"
+                  style={{
+                    background: atmConfig.panelText,
+                    color: atmConfig.isDark ? '#1a1a1a' : '#ffffff',
+                  }}
+                  className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl font-inter transition-all shadow shadow-black/5 hover:opacity-90"
                 >
                   {saveSuccess ? '✅ Saved!' : '📜 Save to Anthology'}
                 </button>
                 <button
                   onClick={handleDownloadCard}
-                  className="px-5 py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-xs font-bold uppercase tracking-wider rounded-xl font-inter transition-all shadow shadow-black/5"
+                  style={{
+                    background: atmConfig.panelText,
+                    color: atmConfig.isDark ? '#1a1a1a' : '#ffffff',
+                  }}
+                  className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl font-inter transition-all shadow shadow-black/5 hover:opacity-90"
                 >
                   🎨 Download as Card
                 </button>
@@ -1521,7 +1811,11 @@ export default function WriteWithMePage() {
 
               <button
                 onClick={() => setScreen('setup')}
-                className="px-5 py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-xs font-bold uppercase tracking-wider rounded-xl font-inter transition-all shadow shadow-black/5"
+                style={{
+                  background: atmConfig.panelText,
+                  color: atmConfig.isDark ? '#1a1a1a' : '#ffffff',
+                }}
+                className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl font-inter transition-all shadow shadow-black/5 hover:opacity-90"
               >
                 Start New Story
               </button>
