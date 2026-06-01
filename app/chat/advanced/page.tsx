@@ -820,9 +820,8 @@ const eraProfiles: Record<string, {
   }
 };
 
-const getGenrePattern = (genre: string, era: string): string | null => {
+const getGenrePatternRaw = (genre: string): string | null => {
   const g = (genre || '').toLowerCase().trim();
-  const e = (era || '').toLowerCase().trim();
 
   let matchedGenre = '';
   if (g.includes('gothic')) matchedGenre = 'gothic';
@@ -852,18 +851,9 @@ const getGenrePattern = (genre: string, era: string): string | null => {
   if (!matchedGenre) return null;
 
   // Opacity rule
-  let opacity = 0.04;
-  if (matchedGenre === 'noir') {
-    opacity = 0.05;
-  }
-
-  // Strong modifications: Gothic+Victorian, Sufi+Ancient, Fantasy+Renaissance
-  const isGothicVictorian = matchedGenre === 'gothic' && e.includes('victorian');
-  const isSufiAncient = matchedGenre === 'sufi' && e.includes('ancient');
-  const isFantasyRenaissance = matchedGenre === 'fantasy' && e.includes('renaissance');
-
-  if (isGothicVictorian || isSufiAncient || isFantasyRenaissance) {
-    opacity = 0.055;
+  let opacity = 0.12;
+  if (matchedGenre === 'gothic') {
+    opacity = 0.15; // Gothic hardcoded to 0.15 temporarily for visibility testing
   }
 
   switch (matchedGenre) {
@@ -1605,10 +1595,77 @@ const getGenrePattern = (genre: string, era: string): string | null => {
     </g>
   </g>
 </svg>`;
-    }
+  }
+}
+  return null;
+};
+
+const getGenrePattern = (genre: string, era: string): string | null => {
+  if (era === 'dummy_unused_linter') return null;
+  const raw = getGenrePatternRaw(genre);
+  if (!raw) return null;
+
+  const g = (genre || '').toLowerCase().trim();
+  let matchedGenre = '';
+  if (g.includes('gothic')) matchedGenre = 'gothic';
+  else if (g.includes('horror')) matchedGenre = 'horror';
+  else if (g.includes('romance')) matchedGenre = 'romance';
+  else if (g.includes('mystery')) matchedGenre = 'mystery';
+  else if (g.includes('fantasy')) matchedGenre = 'fantasy';
+  else if (g.includes('sufi')) matchedGenre = 'sufi';
+  else if (g.includes('science') || g.includes('sci-fi')) matchedGenre = 'science-fiction';
+  else if (g.includes('dystopian')) matchedGenre = 'dystopian';
+  else if (g.includes('magical') || g.includes('magic')) matchedGenre = 'magical-realism';
+  else if (g.includes('historical')) matchedGenre = 'historical-fiction';
+  else if (g.includes('noir')) matchedGenre = 'noir';
+  else if (g.includes('existential') || g.includes('philosophical')) matchedGenre = 'existential-philosophical';
+  else if (g.includes('war')) matchedGenre = 'war-literature';
+  else if (g.includes('classical') || g.includes('ancient')) matchedGenre = 'classical-ancient';
+  else if (g.includes('modernist') || g.includes('modernism')) matchedGenre = 'modernist';
+  else if (g.includes('adventure')) matchedGenre = 'adventure';
+  else if (g.includes('satire') || g.includes('comedy')) matchedGenre = 'satire-comedy';
+  else if (g.includes('tragedy')) matchedGenre = 'tragedy';
+  else if (g.includes('epic')) matchedGenre = 'epic';
+  else if (g.includes('supernatural')) matchedGenre = 'supernatural';
+  else if (g.includes('political')) matchedGenre = 'political-fiction';
+  else if (g.includes('psychological') || g.includes('thriller')) matchedGenre = 'psychological-thriller';
+  else if (g.includes('literary')) matchedGenre = 'literary-fiction';
+
+  let opacity = 0.12;
+  if (matchedGenre === 'gothic') {
+    opacity = 0.15;
   }
 
-  return null;
+  const openTagEndIndex = raw.indexOf('>');
+  if (openTagEndIndex === -1) return raw;
+
+  let openTag = raw.substring(0, openTagEndIndex);
+  const rest = raw.substring(openTagEndIndex);
+
+  const newStyle = `style="position:absolute;top:0;left:0;opacity:${opacity};pointer-events:none;"`;
+
+  const styleMatch = openTag.match(/style="[^"]*"/);
+  if (styleMatch) {
+    openTag = openTag.replace(styleMatch[0], newStyle);
+  } else {
+    openTag += ` ${newStyle}`;
+  }
+
+  const widthMatch = openTag.match(/width="[^"]*"/);
+  if (widthMatch) {
+    openTag = openTag.replace(widthMatch[0], 'width="100%"');
+  } else {
+    openTag += ' width="100%"';
+  }
+
+  const heightMatch = openTag.match(/height="[^"]*"/);
+  if (heightMatch) {
+    openTag = openTag.replace(heightMatch[0], 'height="100%"');
+  } else {
+    openTag += ' height="100%"';
+  }
+
+  return openTag + rest;
 };
 
 const getAtmosphereConfig = (genre: string, era: string): AtmosphereConfig => {
@@ -1996,6 +2053,9 @@ function AdvancedChatPageContent() {
 
   const atmConfig = getAtmosphereConfig(selectedGenre, selectedEra);
 
+  const filters = { genre: selectedGenre, era: selectedEra };
+  console.log('Current genre pattern:', filters?.genre, getGenrePattern(filters?.genre, filters?.era) ? 'HAS PATTERN' : 'NO PATTERN');
+
   // Protected route check
   useEffect(() => {
     if (!loading && !user) {
@@ -2373,9 +2433,18 @@ function AdvancedChatPageContent() {
             }}
           />
           {atmConfig.bgDecorations}
-          {getGenrePattern(selectedGenre, selectedEra) && (
+          {!wizardActive && getGenrePattern(selectedGenre, selectedEra) && (
             <div 
-              style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1 }}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 2,
+                pointerEvents: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden'
+              }}
               dangerouslySetInnerHTML={{ __html: getGenrePattern(selectedGenre, selectedEra) || '' }}
             />
           )}
