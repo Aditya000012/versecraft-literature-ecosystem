@@ -100,45 +100,438 @@ interface LocalChatSidebarProps {
   chatType: 'simple' | 'advanced';
 }
 
-const getThemeTint = (genre: string, era: string): string => {
-  const g = genre.toLowerCase();
-  const e = era.toLowerCase();
+interface AtmosphereConfig {
+  themeName: string;
+  bgStyle: React.CSSProperties;
+  panelBg: string;
+  panelText: string;
+  chatText: string;
+  bubbleModelStyle: React.CSSProperties;
+  bubbleUserStyle: React.CSSProperties;
+  inputBarStyle: React.CSSProperties;
+  companionBubbleTextItalic: boolean;
+  bgDecorations: React.ReactNode;
+}
 
-  if (g.includes('gothic') && e.includes('victorian')) return 'rgba(80, 10, 10, 0.06)';
-  if (g.includes('gothic')) return 'rgba(60, 10, 60, 0.05)';
-  if (g.includes('horror')) return 'rgba(40, 0, 0, 0.06)';
-  if (g.includes('noir')) return 'rgba(20, 20, 20, 0.07)';
-  if (g.includes('sufi') && e.includes('ancient')) return 'rgba(60, 20, 80, 0.05)';
-  if (g.includes('sufi')) return 'rgba(80, 40, 10, 0.05)';
-  if (g.includes('romance')) return 'rgba(120, 20, 40, 0.04)';
-  if (g.includes('fantasy') && e.includes('renaissance')) return 'rgba(10, 60, 10, 0.05)';
-  if (g.includes('fantasy')) return 'rgba(20, 40, 80, 0.04)';
-  if (g.includes('mystery')) return 'rgba(20, 20, 60, 0.05)';
-  if (g.includes('science fiction') || g.includes('dystopian')) return 'rgba(0, 40, 60, 0.05)';
-  if (g.includes('magical realism')) return 'rgba(40, 60, 20, 0.04)';
-  if (g.includes('historical')) return 'rgba(80, 60, 20, 0.04)';
-  if (g.includes('war')) return 'rgba(40, 30, 10, 0.05)';
-  if (g.includes('existential') || g.includes('philosophical')) return 'rgba(20, 20, 40, 0.04)';
-  if (e.includes('ancient') || e.includes('medieval')) return 'rgba(80, 60, 20, 0.04)';
-  if (e.includes('modernist')) return 'rgba(20, 20, 30, 0.04)';
-  return 'transparent';
-};
+const getAtmosphereConfig = (genre: string, era: string): AtmosphereConfig => {
+  const g = (genre || '').toLowerCase();
+  const e = (era || '').toLowerCase();
 
-const getMessageLeftBorder = (genre: string): string => {
-  const g = genre.toLowerCase();
-  if (g.includes('gothic') || g.includes('horror') || g.includes('noir')) {
-    return '2px solid rgba(120, 20, 20, 0.3)';
+  const isGothic = g.includes('gothic');
+  const isSufi = g.includes('sufi');
+  const isHorror = g.includes('horror');
+  const isNoir = g.includes('noir');
+  const isRomance = g.includes('romance');
+  const isFantasy = g.includes('fantasy');
+  const isSciFi = g.includes('science fiction') || g.includes('dystopian');
+  const isMagicalRealism = g.includes('magical realism');
+  const isHistory = g.includes('historical') || g.includes('realism') || g.includes('classical') || g.includes('epic') || g.includes('war') || e.includes('ancient') || e.includes('medieval');
+
+  // Default: Classic Paper
+  let themeName = 'classic-paper';
+  let bgStyle: React.CSSProperties = {
+    background: '#F8F4E9',
+    color: '#1a1a1a',
+  };
+  let panelBg = '#F8F4E9';
+  let panelText = '#1a1a1a';
+  let chatText = '#1a1a1a';
+  let bubbleModelStyle: React.CSSProperties = {
+    background: '#ebdcb9',
+    color: '#1a1a1a',
+    border: '1px solid rgba(26, 26, 26, 0.15)',
+    borderLeft: '4px solid rgba(26, 26, 26, 0.3)',
+  };
+  let bubbleUserStyle: React.CSSProperties = {
+    background: '#1a1a1a',
+    color: '#ffffff',
+  };
+  let inputBarStyle: React.CSSProperties = {
+    background: '#F8F4E9',
+    borderTop: '1px solid rgba(26, 26, 26, 0.15)',
+  };
+  let companionBubbleTextItalic = true;
+  let bgDecorations: React.ReactNode = null;
+
+  if (isGothic) {
+    themeName = 'gothic-melancholy';
+    bgStyle = {
+      background: 'radial-gradient(circle at 80% 20%, #2a0b12 0%, #0d0408 60%, #050103 100%)',
+      color: '#ebdcb9',
+    };
+    panelBg = 'rgba(13, 4, 8, 0.95)';
+    panelText = '#ebdcb9';
+    chatText = '#ebdcb9';
+    bubbleModelStyle = {
+      background: 'rgba(42, 11, 18, 0.45)',
+      color: '#ebdcb9',
+      border: '1px solid rgba(199, 168, 76, 0.25)',
+      borderLeft: '4px solid #c7a84c',
+      backdropFilter: 'blur(12px)',
+    };
+    bubbleUserStyle = {
+      background: '#ebdcb9',
+      color: '#0d0408',
+      fontWeight: 500,
+    };
+    inputBarStyle = {
+      background: '#0d0408',
+      borderTop: '1px solid rgba(199, 168, 76, 0.2)',
+    };
+    bgDecorations = (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-15">
+        {/* Gothic Cathedral Window outline */}
+        <svg className="absolute right-10 top-1/4 w-[450px] h-[650px] text-[#c7a84c]" fill="none" viewBox="0 0 100 150" stroke="currentColor" strokeWidth="0.5">
+          <path d="M50,10 C20,30 20,80 20,140 L80,140 C80,80 80,30 50,10 Z" />
+          <path d="M50,10 L50,140" />
+          <path d="M50,30 C35,45 35,80 35,140 M50,30 C65,45 65,80 65,140" />
+          <circle cx="50" cy="50" r="15" />
+          <path d="M50,35 A15,15 0 0,0 35,50 M50,35 A15,15 0 0,1 65,50" />
+          <path d="M20,100 L80,100 M20,120 L80,120 M20,80 L80,80" />
+        </svg>
+        {/* Melancholic misty glow */}
+        <div className="absolute left-1/4 top-1/3 w-[500px] h-[500px] rounded-full bg-purple-900/10 blur-[120px]" />
+      </div>
+    );
+  } else if (isSufi) {
+    themeName = 'sufi-cosmos';
+    bgStyle = {
+      background: 'radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.12), rgba(15, 8, 30, 0.98)), #090412',
+      color: '#f5f0e8',
+    };
+    panelBg = 'rgba(9, 4, 18, 0.95)';
+    panelText = '#c7a84c';
+    chatText = '#f5f0e8';
+    bubbleModelStyle = {
+      background: 'rgba(212, 175, 55, 0.08)',
+      color: '#f5f0e8',
+      border: '1px solid rgba(212, 175, 55, 0.3)',
+      borderLeft: '4px solid #d4af37',
+      backdropFilter: 'blur(10px)',
+    };
+    bubbleUserStyle = {
+      background: '#d4af37',
+      color: '#090412',
+      fontWeight: 600,
+    };
+    inputBarStyle = {
+      background: '#090412',
+      borderTop: '1px solid rgba(212, 175, 55, 0.2)',
+    };
+    bgDecorations = (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-20">
+        {/* Concentric rotating orbits for cosmic Sufi vibe */}
+        <motion.svg 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+          className="absolute left-10 bottom-10 w-[500px] h-[500px] text-[#d4af37]" 
+          fill="none" 
+          viewBox="0 0 200 200" 
+          stroke="currentColor" 
+          strokeWidth="0.3"
+        >
+          <circle cx="100" cy="100" r="80" strokeDasharray="2, 4" />
+          <circle cx="100" cy="100" r="60" />
+          <circle cx="100" cy="100" r="40" strokeDasharray="5, 5" />
+          <circle cx="100" cy="100" r="20" />
+          <line x1="20" y1="100" x2="180" y2="100" />
+          <line x1="100" y1="20" x2="100" y2="180" />
+          <polygon points="100,60 140,100 100,140 60,100" />
+        </motion.svg>
+        {/* Shimmering spiritual portals */}
+        <div className="absolute right-1/4 top-1/4 w-[350px] h-[350px] rounded-full bg-amber-500/5 blur-[80px] animate-pulse" />
+      </div>
+    );
+  } else if (isHorror) {
+    themeName = 'horror-macabre';
+    bgStyle = {
+      background: 'linear-gradient(135deg, #09090b 0%, #1e0606 50%, #020202 100%)',
+      color: '#ebdcb9',
+    };
+    panelBg = 'rgba(9, 9, 11, 0.95)';
+    panelText = '#ff4444';
+    chatText = '#ebdcb9';
+    bubbleModelStyle = {
+      background: 'rgba(30, 6, 6, 0.5)',
+      color: '#ebdcb9',
+      border: '1px solid rgba(255, 68, 68, 0.2)',
+      borderLeft: '4px solid #ff4444',
+      backdropFilter: 'blur(8px)',
+    };
+    bubbleUserStyle = {
+      background: '#ff4444',
+      color: '#09090b',
+      fontWeight: 600,
+    };
+    inputBarStyle = {
+      background: '#020202',
+      borderTop: '1px solid rgba(255, 68, 68, 0.15)',
+    };
+    bgDecorations = (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-20">
+        {/* Creepy abstract splatter outlines */}
+        <svg className="absolute left-1/3 top-1/4 w-[600px] h-[450px] text-[#ff4444]" fill="none" viewBox="0 0 100 100" stroke="currentColor" strokeWidth="0.4">
+          <path d="M10,50 Q20,30 40,40 T70,30 T90,60 T60,80 T20,70 Z" />
+          <path d="M45,45 Q50,20 60,35 T70,70 T40,65 Z" strokeDasharray="3, 3" />
+          {/* Organic drip structures */}
+          <line x1="20" y1="70" x2="20" y2="95" />
+          <line x1="40" y1="65" x2="40" y2="85" />
+          <line x1="60" y1="80" x2="60" y2="99" />
+          <line x1="75" y1="68" x2="75" y2="88" />
+        </svg>
+        <div className="absolute right-10 top-10 w-[400px] h-[400px] rounded-full bg-red-950/20 blur-[100px]" />
+      </div>
+    );
+  } else if (isNoir) {
+    themeName = 'noir-detective';
+    bgStyle = {
+      background: 'linear-gradient(to bottom, #0f0f13, #15151b 50%, #09090b 100%)',
+      color: '#f3f4f6',
+    };
+    panelBg = 'rgba(15, 15, 19, 0.95)';
+    panelText = '#ffffff';
+    chatText = '#f3f4f6';
+    bubbleModelStyle = {
+      background: 'rgba(255, 255, 255, 0.03)',
+      color: '#f3f4f6',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      borderLeft: '4px solid #ffffff',
+      backdropFilter: 'blur(10px)',
+    };
+    bubbleUserStyle = {
+      background: '#ffffff',
+      color: '#0f0f13',
+      fontWeight: 500,
+    };
+    inputBarStyle = {
+      background: '#09090b',
+      borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+    };
+    companionBubbleTextItalic = false;
+    bgDecorations = (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-10">
+        {/* Venetian Blinds shadow projection */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent" style={{
+          background: 'repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255, 255, 255, 0.03) 40px, rgba(255, 255, 255, 0.03) 80px)'
+        }} />
+        {/* Stark searchlight beam */}
+        <svg className="absolute left-[-200px] bottom-[-200px] w-[800px] h-[800px] text-white/5" viewBox="0 0 100 100">
+          <polygon points="0,100 100,0 80,0" fill="currentColor" />
+        </svg>
+      </div>
+    );
+  } else if (isRomance) {
+    themeName = 'watercolor-romance';
+    bgStyle = {
+      background: 'radial-gradient(circle at 50% 50%, #fdf5f6 0%, #f7e2e4 60%, #eec4c9 100%)',
+      color: '#1a1a1a',
+    };
+    panelBg = 'rgba(247, 226, 228, 0.95)';
+    panelText = '#9d3246';
+    chatText = '#1a1a1a';
+    bubbleModelStyle = {
+      background: 'rgba(255, 255, 255, 0.65)',
+      color: '#1a1a1a',
+      border: '1px solid rgba(157, 50, 70, 0.15)',
+      borderLeft: '4px solid #9d3246',
+      backdropFilter: 'blur(10px)',
+    };
+    bubbleUserStyle = {
+      background: '#9d3246',
+      color: '#ffffff',
+      fontWeight: 500,
+    };
+    inputBarStyle = {
+      background: '#f7e2e4',
+      borderTop: '1px solid rgba(157, 50, 70, 0.15)',
+    };
+    bgDecorations = (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-30">
+        {/* Soft watercolor floral blobs */}
+        <div className="absolute right-[-100px] top-1/4 w-[400px] h-[400px] rounded-full bg-pink-300/30 blur-[70px] animate-pulse" />
+        <div className="absolute left-[-100px] bottom-1/4 w-[450px] h-[450px] rounded-full bg-rose-400/20 blur-[80px]" />
+        {/* Fine heart/petal sketch lines */}
+        <svg className="absolute right-12 bottom-12 w-[300px] h-[300px] text-[#9d3246]/20" fill="none" viewBox="0 0 100 100" stroke="currentColor" strokeWidth="0.5">
+          <path d="M50,30 C50,30 35,10 20,25 C5,40 25,75 50,90 C75,75 95,40 80,25 C65,10 50,30 50,30 Z" />
+          <path d="M50,40 C50,40 38,25 27,35 C16,45 30,70 50,82 C70,70 84,45 73,35 C62,25 50,40 50,40 Z" strokeDasharray="3, 3" />
+        </svg>
+      </div>
+    );
+  } else if (isFantasy) {
+    themeName = 'emerald-fantasy';
+    bgStyle = {
+      background: 'radial-gradient(circle at 10% 10%, #0d281a 0%, #04090b 60%, #010204 100%)',
+      color: '#dfebdd',
+    };
+    panelBg = 'rgba(13, 40, 26, 0.95)';
+    panelText = '#82c97a';
+    chatText = '#dfebdd';
+    bubbleModelStyle = {
+      background: 'rgba(13, 40, 26, 0.4)',
+      color: '#dfebdd',
+      border: '1px solid rgba(130, 201, 122, 0.25)',
+      borderLeft: '4px solid #82c97a',
+      backdropFilter: 'blur(12px)',
+    };
+    bubbleUserStyle = {
+      background: '#82c97a',
+      color: '#0d281a',
+      fontWeight: 600,
+    };
+    inputBarStyle = {
+      background: '#04090b',
+      borderTop: '1px solid rgba(130, 201, 122, 0.2)',
+    };
+    bgDecorations = (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-15">
+        {/* Constellations map outline */}
+        <svg className="absolute left-10 top-1/4 w-[500px] h-[500px] text-[#82c97a]" fill="none" viewBox="0 0 100 100" stroke="currentColor" strokeWidth="0.3">
+          <circle cx="20" cy="30" r="1.5" fill="currentColor" />
+          <circle cx="50" cy="20" r="1" fill="currentColor" />
+          <circle cx="80" cy="40" r="2" fill="currentColor" />
+          <circle cx="35" cy="65" r="1.5" fill="currentColor" />
+          <circle cx="65" cy="75" r="1" fill="currentColor" />
+          <line x1="20" y1="30" x2="50" y2="20" />
+          <line x1="50" y1="20" x2="80" y2="40" />
+          <line x1="20" y1="30" x2="35" y2="65" />
+          <line x1="35" y1="65" x2="65" y2="75" />
+          <line x1="80" y1="40" x2="65" y2="75" />
+          <circle cx="50" cy="50" r="15" strokeDasharray="2, 2" />
+        </svg>
+        <div className="absolute right-12 bottom-12 w-[350px] h-[350px] rounded-full bg-emerald-500/5 blur-[80px] animate-pulse" />
+      </div>
+    );
+  } else if (isSciFi) {
+    themeName = 'cyber-terminal';
+    bgStyle = {
+      background: '#030712',
+      color: '#22d3ee',
+    };
+    panelBg = '#0b0f19';
+    panelText = '#22d3ee';
+    chatText = '#22d3ee';
+    bubbleModelStyle = {
+      background: 'rgba(11, 15, 25, 0.8)',
+      color: '#e2f8fd',
+      border: '1px solid rgba(34, 211, 238, 0.4)',
+      borderLeft: '4px solid #22d3ee',
+    };
+    bubbleUserStyle = {
+      background: '#22d3ee',
+      color: '#030712',
+      fontWeight: 700,
+    };
+    inputBarStyle = {
+      background: '#030712',
+      borderTop: '1px solid rgba(34, 211, 238, 0.3)',
+    };
+    bgDecorations = (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-10">
+        {/* Cyber perspective grid */}
+        <svg className="absolute bottom-0 left-0 right-0 h-[300px] w-full text-[#22d3ee]/20" fill="none" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="0" y1="50" x2="100" y2="50" stroke="currentColor" strokeWidth="0.1" />
+          <line x1="0" y1="65" x2="100" y2="65" stroke="currentColor" strokeWidth="0.2" />
+          <line x1="0" y1="80" x2="100" y2="80" stroke="currentColor" strokeWidth="0.3" />
+          <line x1="0" y1="95" x2="100" y2="95" stroke="currentColor" strokeWidth="0.4" />
+          <line x1="50" y1="30" x2="-50" y2="100" stroke="currentColor" strokeWidth="0.2" />
+          <line x1="50" y1="30" x2="20" y2="100" stroke="currentColor" strokeWidth="0.2" />
+          <line x1="50" y1="30" x2="50" y2="100" stroke="currentColor" strokeWidth="0.2" />
+          <line x1="50" y1="30" x2="80" y2="100" stroke="currentColor" strokeWidth="0.2" />
+          <line x1="50" y1="30" x2="150" y2="100" stroke="currentColor" strokeWidth="0.2" />
+        </svg>
+      </div>
+    );
+  } else if (isMagicalRealism) {
+    themeName = 'surreal-dreamscape';
+    bgStyle = {
+      background: 'radial-gradient(circle at 75% 25%, #e6dcf5 0%, #d2ebe1 60%, #c4ebd9 100%)',
+      color: '#2c2536',
+    };
+    panelBg = 'rgba(230, 220, 245, 0.95)';
+    panelText = '#8561a7';
+    chatText = '#2c2536';
+    bubbleModelStyle = {
+      background: 'rgba(255, 255, 255, 0.65)',
+      color: '#2c2536',
+      border: '1px solid rgba(133, 97, 167, 0.25)',
+      borderLeft: '4px solid #8561a7',
+      backdropFilter: 'blur(10px)',
+    };
+    bubbleUserStyle = {
+      background: '#8561a7',
+      color: '#ffffff',
+      fontWeight: 500,
+    };
+    inputBarStyle = {
+      background: '#d2ebe1',
+      borderTop: '1px solid rgba(133, 97, 167, 0.2)',
+    };
+    bgDecorations = (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-25">
+        <svg className="absolute right-[10%] top-[15%] w-[250px] h-[250px] text-[#8561a7]/30" fill="none" viewBox="0 0 100 100" stroke="currentColor" strokeWidth="0.5">
+          <circle cx="50" cy="50" r="30" />
+          <circle cx="50" cy="50" r="10" fill="currentColor" />
+          <path d="M10,50 Q50,15 90,50 Q50,85 10,50 Z" />
+        </svg>
+        <div className="absolute left-[5%] bottom-[10%] w-[350px] h-[350px] rounded-full bg-purple-300/30 blur-[60px] animate-pulse" />
+        <div className="absolute right-[5%] bottom-[20%] w-[300px] h-[300px] rounded-full bg-emerald-300/20 blur-[50px]" />
+      </div>
+    );
+  } else if (isHistory) {
+    themeName = 'aged-parchment';
+    bgStyle = {
+      background: 'radial-gradient(circle at 50% 50%, #f4edd8 0%, #e8dbc3 100%)',
+      color: '#2e1e0f',
+    };
+    panelBg = 'rgba(232, 219, 195, 0.98)';
+    panelText = '#80552d';
+    chatText = '#2e1e0f';
+    bubbleModelStyle = {
+      background: 'rgba(255, 255, 255, 0.45)',
+      color: '#2e1e0f',
+      border: '1px solid rgba(128, 85, 45, 0.25)',
+      borderLeft: '4px solid #80552d',
+      backdropFilter: 'blur(6px)',
+    };
+    bubbleUserStyle = {
+      background: '#80552d',
+      color: '#ffffff',
+      fontWeight: 500,
+    };
+    inputBarStyle = {
+      background: '#e8dbc3',
+      borderTop: '1px solid rgba(128, 85, 45, 0.25)',
+    };
+    bgDecorations = (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-20">
+        <svg className="absolute right-12 top-1/4 w-[380px] h-[380px] text-[#80552d]" fill="none" viewBox="0 0 120 120" stroke="currentColor" strokeWidth="0.4">
+          <circle cx="60" cy="60" r="50" />
+          <circle cx="60" cy="60" r="46" strokeDasharray="2, 2" />
+          <circle cx="60" cy="60" r="25" />
+          <circle cx="60" cy="60" r="5" fill="currentColor" />
+          <line x1="60" y1="10" x2="60" y2="110" />
+          <line x1="10" y1="60" x2="110" y2="60" />
+          <polygon points="60,35 65,60 60,60" fill="currentColor" opacity="0.3" />
+          <polygon points="60,85 55,60 60,60" fill="currentColor" opacity="0.3" />
+          <polygon points="35,60 60,65 60,60" fill="currentColor" opacity="0.3" />
+          <polygon points="85,60 60,55 60,60" fill="currentColor" opacity="0.3" />
+        </svg>
+      </div>
+    );
   }
-  if (g.includes('sufi') || g.includes('fantasy') || g.includes('magical realism')) {
-    return '2px solid rgba(80, 40, 120, 0.2)';
-  }
-  if (g.includes('romance')) {
-    return '2px solid rgba(150, 40, 60, 0.2)';
-  }
-  if (g.includes('mystery') || g.includes('existential')) {
-    return '2px solid rgba(40, 40, 100, 0.2)';
-  }
-  return '2px solid rgba(26, 26, 26, 0.1)';
+
+  return {
+    themeName,
+    bgStyle,
+    panelBg,
+    panelText,
+    chatText,
+    bubbleModelStyle,
+    bubbleUserStyle,
+    inputBarStyle,
+    companionBubbleTextItalic,
+    bgDecorations,
+  };
 };
 
 function LocalChatSidebar({ currentChatId, chatType }: LocalChatSidebarProps) {
@@ -356,6 +749,8 @@ function AdvancedChatPageContent() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const atmConfig = getAtmosphereConfig(selectedGenre, selectedEra);
 
   // Protected route check
   useEffect(() => {
@@ -696,19 +1091,24 @@ function AdvancedChatPageContent() {
   }
 
   return (
-    <div className="relative z-10 w-full min-h-screen bg-[#F8F4E9] flex flex-col pt-20 text-[#1a1a1a]">
-      {/* Dynamic atmospheric tint wash */}
+    <div 
+      style={{ color: wizardActive ? '#1a1a1a' : atmConfig.chatText }}
+      className={`relative z-10 w-full min-h-screen flex flex-col pt-20 transition-all duration-1000 ${wizardActive ? 'bg-[#F8F4E9]' : 'bg-transparent'}`}
+    >
+      {/* Dynamic atmospheric background decorations & painting */}
       {!wizardActive && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: getThemeTint(selectedGenre, selectedEra),
-            pointerEvents: 'none',
-            zIndex: 0,
-            transition: 'background-color 1.2s ease'
-          }}
-        />
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              ...atmConfig.bgStyle,
+              zIndex: 0,
+              transition: 'background 1.5s ease, color 1.5s ease',
+            }}
+          />
+          {atmConfig.bgDecorations}
+        </>
       )}
 
       {/* Ruled paper lines (always visible) */}
@@ -718,7 +1118,7 @@ function AdvancedChatPageContent() {
           style={{
             position: 'absolute',
             height: '1px',
-            background: 'rgba(26, 26, 26, 0.04)',
+            background: wizardActive ? 'rgba(26, 26, 26, 0.04)' : (atmConfig.themeName === 'classic-paper' || atmConfig.themeName === 'watercolor-romance' || atmConfig.themeName === 'surreal-dreamscape' || atmConfig.themeName === 'aged-parchment' ? 'rgba(26, 26, 26, 0.04)' : 'rgba(255, 255, 255, 0.04)'),
             left: 0,
             right: 0,
             top: `${80 + i * 48}px`,
@@ -739,7 +1139,7 @@ function AdvancedChatPageContent() {
           fontSize: '320px',
           fontWeight: 'bold',
           fontStyle: 'italic',
-          color: 'rgba(26, 26, 26, 0.025)',
+          color: wizardActive ? 'rgba(26, 26, 26, 0.025)' : (atmConfig.themeName === 'classic-paper' || atmConfig.themeName === 'watercolor-romance' || atmConfig.themeName === 'surreal-dreamscape' || atmConfig.themeName === 'aged-parchment' ? 'rgba(26, 26, 26, 0.025)' : 'rgba(255, 255, 255, 0.025)'),
           userSelect: 'none',
           pointerEvents: 'none',
           zIndex: 0
@@ -865,25 +1265,33 @@ function AdvancedChatPageContent() {
             className="flex-grow flex flex-col"
           >
             {/* Top Bar matching theme styles */}
-            <div className="py-3 px-6 border-b border-[#1a1a1a]/15 bg-[#F8F4E9] fixed top-20 left-0 right-0 z-30 flex justify-between items-center max-w-7xl mx-auto rounded-b-xl select-none">
+            <div 
+              style={{
+                background: atmConfig.panelBg,
+                color: atmConfig.panelText,
+                borderColor: atmConfig.themeName === 'classic-paper' ? 'rgba(26, 26, 26, 0.15)' : 'rgba(255, 255, 255, 0.1)',
+              }}
+              className="py-3 px-6 border-b fixed top-20 left-0 right-0 z-30 flex justify-between items-center max-w-7xl mx-auto rounded-b-xl select-none transition-all duration-1000"
+            >
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setWizardActive(true)}
-                  className="text-xs text-[#1a1a1a] hover:underline transition-colors flex items-center gap-1 font-inter font-medium"
+                  style={{ color: atmConfig.panelText }}
+                  className="text-xs hover:underline transition-colors flex items-center gap-1 font-inter font-medium"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                   </svg>
                   Recalibrate Frequencies
                 </button>
-                <span className="text-[#1a1a1a]/20">|</span>
-                <span className="text-[10px] font-bold text-[#1a1a1a] font-inter tracking-wider uppercase flex items-center gap-1.5">
+                <span style={{ color: atmConfig.panelText, opacity: 0.2 }}>|</span>
+                <span style={{ color: atmConfig.panelText }} className="text-[10px] font-bold font-inter tracking-wider uppercase flex items-center gap-1.5">
                   {selectedGenre} • {selectedEra}
                 </span>
                 {authorStyle && (
                   <>
-                    <span className="text-[#1a1a1a]/10 hidden sm:inline">•</span>
-                    <span className="text-[10px] text-[#1a1a1a]/60 font-bold uppercase font-inter hidden sm:inline">
+                    <span style={{ color: atmConfig.panelText, opacity: 0.1 }} className="hidden sm:inline">•</span>
+                    <span style={{ color: atmConfig.panelText, opacity: 0.6 }} className="text-[10px] font-bold uppercase font-inter hidden sm:inline">
                       Style: {authorStyle}
                     </span>
                   </>
@@ -900,7 +1308,12 @@ function AdvancedChatPageContent() {
                     },
                   ]);
                 }}
-                className="px-3 py-1 bg-white border border-[#1a1a1a] rounded-md text-[10px] uppercase font-bold tracking-wider font-inter text-[#1a1a1a] hover:bg-[#f0ebe0] transition-colors"
+                style={{
+                  background: 'transparent',
+                  borderColor: atmConfig.panelText,
+                  color: atmConfig.panelText,
+                }}
+                className="px-3 py-1 border rounded-md text-[10px] uppercase font-bold tracking-wider font-inter hover:bg-white/5 transition-colors"
               >
                 Reset Scroll
               </button>
@@ -917,17 +1330,12 @@ function AdvancedChatPageContent() {
                   
                   if (isUser) {
                     bubbleStyle = {
-                      background: '#1a1a1a',
-                      color: '#ffffff',
-                      border: 'none'
+                      ...atmConfig.bubbleUserStyle,
                     };
                     bubbleClass = 'rounded-br-none';
                   } else {
                     bubbleStyle = {
-                      background: '#ebdcb9',
-                      color: '#1a1a1a',
-                      border: '1px solid rgba(26, 26, 26, 0.15)',
-                      borderLeft: getMessageLeftBorder(selectedGenre)
+                      ...atmConfig.bubbleModelStyle,
                     };
                     bubbleClass = 'rounded-bl-none shadow-sm';
                   }
@@ -946,18 +1354,18 @@ function AdvancedChatPageContent() {
                       >
                         {msg.role === 'model' && (
                           <div className="flex justify-between items-center mb-3 pb-2 border-b border-black/10">
-                            <span className="text-[9px] uppercase tracking-widest font-bold font-inter text-[#6b6b6b]">
+                            <span className="text-[9px] uppercase tracking-widest font-bold font-inter opacity-60">
                               COMPANION
                             </span>
                           </div>
                         )}
 
-                        <p className={`font-inter text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'model' ? 'italic font-playfair text-base font-normal text-[#1a1a1a]' : ''}`}>
+                        <p className={`font-inter text-sm leading-relaxed whitespace-pre-wrap ${msg.role === 'model' ? `${atmConfig.companionBubbleTextItalic ? 'italic' : ''} font-playfair text-base font-normal` : ''}`} style={{ color: isUser ? atmConfig.bubbleUserStyle.color : atmConfig.bubbleModelStyle.color }}>
                           {msg.content}
                         </p>
 
                         {msg.role === 'model' && index > 0 && (
-                          <div className="flex justify-end gap-3 mt-4 pt-2 text-[10px] font-bold font-inter border-t border-black/10 text-[#6b6b6b]">
+                          <div className="flex justify-end gap-3 mt-4 pt-2 text-[10px] font-bold font-inter border-t border-black/10 opacity-60">
                             <button
                               onClick={() => handleSaveToAnthology(msg.content, index)}
                               className="hover:text-gold flex items-center gap-1 transition-colors"
@@ -984,10 +1392,13 @@ function AdvancedChatPageContent() {
                     animate={{ opacity: 1 }}
                     className="flex justify-start"
                   >
-                    <div className="p-5 rounded-2xl rounded-bl-none flex items-center gap-2 bg-[#ebdcb9] border border-rgba(26,26,26,0.15)">
-                      <div className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce" />
-                      <div className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce [animation-delay:0.2s]" />
-                      <div className="w-1.5 h-1.5 bg-black/40 rounded-full animate-bounce [animation-delay:0.4s]" />
+                    <div 
+                      style={atmConfig.bubbleModelStyle}
+                      className="p-5 rounded-2xl rounded-bl-none flex items-center gap-2"
+                    >
+                      <div className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" />
+                      <div className="w-1.5 h-1.5 bg-current rounded-full animate-bounce [animation-delay:0.2s]" />
+                      <div className="w-1.5 h-1.5 bg-current rounded-full animate-bounce [animation-delay:0.4s]" />
                     </div>
                   </motion.div>
                 )}
@@ -997,7 +1408,10 @@ function AdvancedChatPageContent() {
             </div>
 
             {/* Input Bar - Keeps clean paper aesthetic always */}
-            <div className="fixed bottom-0 left-0 right-0 bg-[#F8F4E9] border-t border-[#1a1a1a]/15 py-4 px-4 z-20 select-none">
+            <div 
+              style={atmConfig.inputBarStyle}
+              className="fixed bottom-0 left-0 right-0 py-4 px-4 z-20 select-none transition-all duration-1000"
+            >
               <div className="max-w-4xl mx-auto flex flex-col gap-3">
                 {/* Mode Selector Chips */}
                 <div className="flex gap-2 overflow-x-auto pb-1.5 no-scrollbar scroll-smooth">
@@ -1006,13 +1420,11 @@ function AdvancedChatPageContent() {
                       key={mode.id}
                       onClick={() => setCurrentMode(mode.id)}
                       style={{
-                        border: currentMode === mode.id ? '1px solid #1a1a1a' : '1px solid rgba(26,26,26,0.15)',
+                        border: currentMode === mode.id ? `1px solid ${atmConfig.panelText}` : '1px solid rgba(255, 255, 255, 0.15)',
+                        background: currentMode === mode.id ? atmConfig.panelText : 'rgba(255,255,255,0.05)',
+                        color: currentMode === mode.id ? (atmConfig.themeName === 'classic-paper' || atmConfig.themeName === 'watercolor-romance' || atmConfig.themeName === 'surreal-dreamscape' || atmConfig.themeName === 'aged-parchment' ? 'white' : '#1a1a1a') : atmConfig.panelText,
                       }}
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-inter border transition-all flex-shrink-0 ${
-                        currentMode === mode.id
-                          ? 'bg-[#1a1a1a] text-white shadow shadow-black/10'
-                          : 'bg-white text-[#6b6b6b] hover:bg-[#f0ebe0]'
-                      }`}
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-inter border transition-all flex-shrink-0"
                     >
                       <span>{mode.icon}</span>
                       {mode.name}
@@ -1030,7 +1442,7 @@ function AdvancedChatPageContent() {
                     placeholder={`Scribe your response inside the locked room... Mode: ${companionModes.find((m) => m.id === currentMode)?.name}`}
                     rows={1}
                     style={{
-                      background: 'white',
+                      background: 'rgba(255, 255, 255, 0.95)',
                       border: '1px solid rgba(26, 26, 26, 0.2)',
                       color: '#1a1a1a',
                     }}
@@ -1040,7 +1452,11 @@ function AdvancedChatPageContent() {
                   <button
                     type="submit"
                     disabled={aiLoading || !input.trim()}
-                    className="px-5 py-3.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold rounded-xl text-xs uppercase tracking-wider font-inter transition-all flex-shrink-0"
+                    style={{
+                      background: atmConfig.panelText,
+                      color: atmConfig.themeName === 'classic-paper' || atmConfig.themeName === 'watercolor-romance' || atmConfig.themeName === 'surreal-dreamscape' || atmConfig.themeName === 'aged-parchment' ? 'white' : '#1a1a1a',
+                    }}
+                    className="px-5 py-3.5 font-bold rounded-xl text-xs uppercase tracking-wider font-inter transition-all flex-shrink-0 hover:opacity-90 animate-pulse"
                   >
                     Send
                   </button>
