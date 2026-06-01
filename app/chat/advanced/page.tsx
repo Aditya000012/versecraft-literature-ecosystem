@@ -871,7 +871,7 @@ const getAtmosphereConfig = (genre: string, era: string): AtmosphereConfig => {
   }
 
   const isDarkTheme = gConfig.darkMood || eConfig.lightnessLimit < 40;
-  const baseHue = (gConfig.hue + eConfig.hueShift + 360) % 360;
+  const baseHue = gConfig.hue;
   const baseSat = Math.max(10, Math.min(100, gConfig.saturation));
 
   let finalBg: string;
@@ -979,10 +979,10 @@ const getAtmosphereConfig = (genre: string, era: string): AtmosphereConfig => {
       </div>
 
       <div 
-        style={{ color: isDarkTheme ? `hsla(${baseHue}, 60%, 75%, 0.16)` : `hsla(${baseHue}, 50%, 30%, 0.16)` }}
+        style={{ color: isDarkTheme ? `hsla(${baseHue}, 80%, 75%, 0.28)` : `hsla(${baseHue}, 70%, 25%, 0.24)` }}
         className="absolute inset-0 flex items-center justify-center pointer-events-none"
       >
-        {gConfig.motif(isDarkTheme ? `hsla(${baseHue}, 60%, 75%, 0.2)` : `hsla(${baseHue}, 50%, 30%, 0.2)`)}
+        {gConfig.motif(isDarkTheme ? `hsla(${baseHue}, 85%, 75%, 0.32)` : `hsla(${baseHue}, 75%, 22%, 0.28)`)}
       </div>
     </div>
   );
@@ -1568,6 +1568,27 @@ function AdvancedChatPageContent() {
       {/* Dynamic atmospheric background decorations & painting */}
       {!wizardActive && (
         <>
+          <style dangerouslySetInnerHTML={{ __html: `
+            /* Override global Navbar when in Chat room */
+            nav {
+              background-color: ${atmConfig.panelBg} !important;
+              border-color: ${atmConfig.themeName.includes('classic-paper') ? 'rgba(26, 26, 26, 0.15)' : 'rgba(255, 255, 255, 0.1)'} !important;
+              box-shadow: none !important;
+              transition: background-color 1.5s ease, border-color 1.5s ease !important;
+            }
+            nav a, nav button, nav span, nav div {
+              color: ${atmConfig.panelText} !important;
+            }
+            nav input {
+              background-color: ${atmConfig.themeName.includes('classic-paper') ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.08)'} !important;
+              color: ${atmConfig.panelText} !important;
+              border-color: ${atmConfig.themeName.includes('classic-paper') ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)'} !important;
+            }
+            nav svg {
+              stroke: ${atmConfig.panelText} !important;
+              color: ${atmConfig.panelText} !important;
+            }
+          `}} />
           <div
             style={{
               position: 'fixed',
