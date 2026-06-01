@@ -533,149 +533,304 @@ function ProfilePageContent() {
   const wishlistItems = profileData?.wishlist || [];
 
   return (
-    <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-[#F8F4E9] text-[#1a1a1a]">
-      {/* Dashboard Back Link */}
-      <div className="mb-4 text-left">
-        <Link
-          href="/dashboard"
-          className="text-xs text-[#1a1a1a]/60 hover:text-[#1a1a1a] hover:underline transition-all inline-flex items-center gap-1 font-inter font-medium"
+    <>
+      {/* Cream background base */}
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#F8F4E9',
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Connected-word background overlay */}
+      <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden opacity-[0.03] text-[#1a1a1a]">
+        <svg
+          className="w-full h-full"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1200 800"
+          preserveAspectRatio="xMidYMid slice"
         >
-          ← Dashboard
-        </Link>
+          {/* Paths connecting words */}
+          <path d="M 150 150 L 350 250 L 200 450 L 400 600 Z" fill="none" stroke="currentColor" strokeWidth="0.8" />
+          <path d="M 1050 120 L 950 320 L 1100 480 L 850 650" fill="none" stroke="currentColor" strokeWidth="0.8" />
+          <path d="M 500 50 L 700 150 L 600 350" fill="none" stroke="currentColor" strokeWidth="0.8" />
+
+          {/* Drifting literary words text nodes */}
+          <text x="150" y="140" className="font-playfair italic text-xs tracking-widest font-bold fill-current">solitude</text>
+          <text x="350" y="240" className="font-playfair italic text-xs tracking-widest font-bold fill-current">memory</text>
+          <text x="200" y="440" className="font-playfair italic text-xs tracking-widest font-bold fill-current">wonder</text>
+          <text x="400" y="590" className="font-playfair italic text-xs tracking-widest font-bold fill-current">silence</text>
+
+          <text x="1050" y="110" className="font-playfair italic text-xs tracking-widest font-bold fill-current">myth</text>
+          <text x="950" y="310" className="font-playfair italic text-xs tracking-widest font-bold fill-current">longing</text>
+          <text x="1100" y="470" className="font-playfair italic text-xs tracking-widest font-bold fill-current">devotion</text>
+          <text x="850" y="640" className="font-playfair italic text-xs tracking-widest font-bold fill-current">grief</text>
+
+          <text x="500" y="40" className="font-playfair italic text-xs tracking-widest font-bold fill-current">echo</text>
+          <text x="700" y="140" className="font-playfair italic text-xs tracking-widest font-bold fill-current">midnight</text>
+        </svg>
       </div>
 
-      {/* Header Profile Info card */}
-      <div className="bg-white border border-[rgba(26,26,26,0.1)] rounded-2xl p-6 sm:p-8 shadow-sm mb-10 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-4 text-center sm:text-left">
-          <div className="w-16 h-16 rounded-full border border-[rgba(26,26,26,0.1)] bg-[#F8F4E9] flex items-center justify-center text-[#1a1a1a] font-playfair font-bold text-2xl tracking-widest shadow-inner">
-            {profileData?.displayName?.charAt(0).toUpperCase() || 'R'}
+      <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-[#1a1a1a]">
+        {/* Dashboard Back Link */}
+        <div className="mb-4 text-left">
+          <Link
+            href="/dashboard"
+            className="text-xs text-[#1a1a1a]/60 hover:text-[#1a1a1a] hover:underline transition-all inline-flex items-center gap-1 font-inter font-medium"
+          >
+            ← Dashboard
+          </Link>
+        </div>
+
+        {/* Header Profile Info card */}
+        <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-xs mb-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4 text-center sm:text-left">
+            <div className="w-16 h-16 rounded-full border border-[#1a1a1a]/10 bg-[#FAF7F0] flex items-center justify-center text-[#1a1a1a] font-playfair font-bold text-2xl tracking-widest shadow-inner">
+              {profileData?.displayName?.charAt(0).toUpperCase() || 'R'}
+            </div>
+            <div>
+              <h1 className="font-playfair text-2xl sm:text-3xl font-bold text-[#1a1a1a] tracking-tight">
+                {profileData?.displayName || 'Reader Sanctuary'}
+              </h1>
+              <p className="font-inter text-xs text-[#1a1a1a]/60 mt-0.5">{profileData?.email}</p>
+              <p className="font-playfair italic text-xs text-[#1a1a1a]/60 mt-2 tracking-wide font-light">
+                “{profileData?.preferences?.customNote ? (profileData.preferences.customNote.length > 60 ? `${profileData.preferences.customNote.slice(0, 60)}...` : profileData.preferences.customNote) : 'Drawn toward silence, memory, and stories.'}”
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-playfair text-2xl sm:text-3xl font-bold text-[#1a1a1a]">
-              {profileData?.displayName || 'Reader Sanctuary'}
-            </h1>
-            <p className="font-inter text-xs text-[#1a1a1a]/60 mt-0.5">{profileData?.email}</p>
+
+          {/* Live Explorer summary details */}
+          <div className="flex gap-4 sm:gap-8 justify-around w-full sm:w-auto border-t sm:border-t-0 border-[#1a1a1a]/5 pt-4 sm:pt-0 text-center">
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 font-inter block">Preserved Verses</span>
+              <span className="font-playfair text-xl sm:text-2xl text-[#1a1a1a] block mt-0.5">{anthologyItems.length}</span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 font-inter block">Cataloged Volumes</span>
+              <span className="font-playfair text-xl sm:text-2xl text-[#1a1a1a] block mt-0.5">{wishlistItems.length}</span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 font-inter block">Hours in Silence</span>
+              <span className="font-playfair text-sm text-[#1a1a1a] block mt-1.5 uppercase font-bold tracking-wider">
+                {timeSpent < 60 ? `${timeSpent}m` : `${Math.floor(timeSpent / 60)}h ${timeSpent % 60}m`}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Live Explorer summary details */}
-        <div className="flex gap-4 sm:gap-8 justify-around w-full sm:w-auto border-t sm:border-t-0 border-[rgba(26,26,26,0.06)] pt-4 sm:pt-0">
-          <div className="text-center">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 font-inter block">Saved Verses</span>
-            <span className="font-playfair text-xl sm:text-2xl text-[#1a1a1a] block mt-0.5">{anthologyItems.length}</span>
+        {/* Currently Reading Strip */}
+        <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-2xl p-4 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-inter shadow-xs">
+          <div className="flex items-center gap-3">
+            <span className="text-[9px] uppercase font-bold tracking-[0.2em] text-[#1a1a1a]/40 bg-[#1a1a1a]/5 px-2.5 py-1 rounded-md">CURRENTLY READING</span>
+            <span className="font-playfair font-bold text-sm text-[#1a1a1a]">Frankenstein</span>
+            <span className="text-[#1a1a1a]/40 select-none">✦</span>
+            <span className="text-[#1a1a1a]/70 italic">Mary Shelley</span>
+            <span className="text-[#1a1a1a]/30">•</span>
+            <span className="text-[#1a1a1a]/60 font-medium">28% explored</span>
           </div>
-          <div className="text-center">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 font-inter block">Wishlist Volumes</span>
-            <span className="font-playfair text-xl sm:text-2xl text-[#1a1a1a] block mt-0.5">{wishlistItems.length}</span>
-          </div>
-          <div className="text-center">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 font-inter block">Time Active</span>
-            <span className="font-playfair text-sm text-[#1a1a1a] block mt-1.5 uppercase font-bold tracking-wider">
-              {timeSpent} mins
-            </span>
+          <div className="flex items-center gap-4 w-full sm:w-48">
+            <div className="flex-grow h-1 bg-[#1a1a1a]/10 rounded-full overflow-hidden">
+              <div className="w-[28%] h-full bg-[#1a1a1a]" />
+            </div>
+            <Link
+              href="https://books.google.com/books?id=39tBDwAAQBAJ"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] font-bold uppercase tracking-wider text-[#1a1a1a] hover:underline flex-shrink-0"
+            >
+              Continue Reading →
+            </Link>
           </div>
         </div>
-      </div>
 
-      {/* Tabs Toolbar */}
-      <div className="flex border-b border-[rgba(26,26,26,0.1)] gap-6 mb-8 overflow-x-auto no-scrollbar pb-1">
-        {[
-          { id: 'my-profile', name: '👤 My Profile' },
-          { id: 'anthology', name: '📜 Personal Anthology' },
-          { id: 'timeline', name: '📅 Timeline' },
-          { id: 'wishlist', name: '❤️ Wishlist' },
-          { id: 'preferences', name: '⚙️ Preferences' },
-          { id: 'timeSpent', name: '⏳ Exploration Timer' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabChange(tab.id)}
-            className={`pb-3 text-xs uppercase font-bold tracking-wider font-inter border-b-2 transition-all flex-shrink-0 ${
-              activeTab === tab.id
-                ? 'border-[#1a1a1a] text-[#1a1a1a] font-bold'
-                : 'border-transparent text-[#1a1a1a]/50 hover:text-[#1a1a1a]'
-            }`}
-          >
-            {tab.name}
-          </button>
-        ))}
-      </div>
+        {/* Tabs Toolbar */}
+        <div className="flex border-b border-[#1a1a1a]/10 gap-6 mb-8 overflow-x-auto no-scrollbar pb-1">
+          {[
+            { id: 'my-profile', name: '👤 My Profile' },
+            { id: 'anthology', name: '📜 Personal Anthology' },
+            { id: 'timeline', name: '📅 Timeline' },
+            { id: 'wishlist', name: '❤️ Wishlist' },
+            { id: 'preferences', name: '⚙️ Preferences' },
+            { id: 'timeSpent', name: '⏳ Exploration Timer' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`pb-3 text-xs uppercase font-bold tracking-wider font-inter border-b-2 transition-all flex-shrink-0 ${
+                activeTab === tab.id
+                  ? 'border-[#1a1a1a] text-[#1a1a1a] font-bold'
+                  : 'border-transparent text-[#1a1a1a]/50 hover:text-[#1a1a1a]'
+              }`}
+            >
+              {tab.name}
+            </button>
+          ))}
+        </div>
 
-      {/* Dynamic Tab content boxes */}
-      <AnimatePresence mode="wait">
-        {/* 0. MY PROFILE TAB */}
-        {activeTab === 'my-profile' && (
-          <motion.div
-            key="my-profile"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            className="space-y-12"
-          >
-            {/* Top public card style overview */}
-            <div className="bg-white border border-[rgba(26,26,26,0.1)] p-8 sm:p-10 rounded-2xl flex flex-col items-center text-center space-y-6 shadow-sm">
-              <div className="w-20 h-20 rounded-full bg-[#F8F4E9] border border-[rgba(26,26,26,0.1)] flex items-center justify-center text-[#1a1a1a] shadow-inner">
-                <span className="font-playfair text-3xl font-bold uppercase">
-                  {(profileData?.displayName || 'R').charAt(0)}
-                </span>
+        {/* Dynamic Tab content boxes */}
+        <AnimatePresence mode="wait">
+          {/* 0. MY PROFILE TAB */}
+          {activeTab === 'my-profile' && (
+            <motion.div
+              key="my-profile"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              className="space-y-12"
+            >
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Column: Literary Identity */}
+              <div className="lg:col-span-2 bg-[#FAF7F0] border border-[#1a1a1a]/10 p-8 sm:p-10 rounded-2xl space-y-8 shadow-xs relative">
+                <div>
+                  <span className="text-[9px] uppercase font-bold tracking-[0.25em] text-[#1a1a1a]/40 block mb-2 font-inter">THE PORTRAIT</span>
+                  <h2 className="font-playfair text-3xl font-bold text-[#1a1a1a] tracking-tight">Literary Identity</h2>
+                  <p className="font-playfair italic text-xs text-[#1a1a1a]/50 mt-1">“A portrait shaped by books.”</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 text-xs font-inter">
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-[#1a1a1a]/40 font-bold uppercase tracking-wider block">Member Since</span>
+                    <span className="font-playfair text-sm font-semibold text-[#1a1a1a]">{formatMemberSince(profileData?.createdAt)}</span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-[#1a1a1a]/40 font-bold uppercase tracking-wider block">Preferred Language</span>
+                    <span className="font-playfair text-sm font-semibold text-[#1a1a1a]">English (Global)</span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-[#1a1a1a]/40 font-bold uppercase tracking-wider block">Favorite Genres</span>
+                    <span className="font-playfair text-sm font-semibold text-[#1a1a1a]">
+                      {profileData?.interestedGenres && profileData.interestedGenres.length > 0 
+                        ? profileData.interestedGenres.map(g => g.charAt(0).toUpperCase() + g.slice(1)).join(', ') 
+                        : 'Classics, Poetry'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-[#1a1a1a]/40 font-bold uppercase tracking-wider block">Explored Movement</span>
+                    <span className="font-playfair text-sm font-semibold text-[#1a1a1a] capitalize">
+                      {profileData?.preferences?.favoriteEra || 'Modernist'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-[#1a1a1a]/40 font-bold uppercase tracking-wider block">Hours Counted</span>
+                    <span className="font-playfair text-sm font-semibold text-[#1a1a1a]">{timeSpent} mins</span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-[#1a1a1a]/40 font-bold uppercase tracking-wider block">Preserved Verses</span>
+                    <span className="font-playfair text-sm font-semibold text-[#1a1a1a]">{anthologyItems.length} fragments</span>
+                  </div>
+                </div>
+
+                <div className="pt-6 border-t border-[#1a1a1a]/8">
+                  <span className="text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/40 block mb-2 font-inter">LITERARY FOCUS & PROFILE</span>
+                  <p className="font-playfair italic text-sm text-[#1a1a1a]/80 leading-relaxed">
+                    {profileData?.preferences?.customNote 
+                      ? `“${profileData.preferences.customNote}”` 
+                      : '“Drawn toward gothic introspection, realism, lyrical melancholy, and philosophical fiction.”'}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <h2 className="font-playfair text-2xl font-bold text-[#1a1a1a]">
-                  {profileData?.displayName || 'Anonymous Reader'}
-                </h2>
-                <p className="font-inter text-xs text-[#1a1a1a]/60">{profileData?.email}</p>
-                <p className="text-[10px] text-[#1a1a1a]/40 font-inter font-bold tracking-wide uppercase mt-1">
-                  MEMBER SINCE {formatMemberSince(profileData?.createdAt).toUpperCase()}
-                </p>
-              </div>
 
-              {/* Stats clickable row */}
-              <div className="grid grid-cols-4 gap-4 pt-6 border-t border-[rgba(26,26,26,0.06)] w-full max-w-lg">
-                <button
-                  onClick={() => document.getElementById('my-posts-section')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="text-center group focus:outline-none"
-                >
-                  <span className="text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 group-hover:text-[#1a1a1a] font-inter block transition-colors">Posts</span>
-                  <span className="font-playfair text-lg font-bold text-[#1a1a1a] group-hover:underline block mt-1">
-                    {userPostsCount}
-                  </span>
-                </button>
+              {/* Right Column: Stats & Reading Fingerprint */}
+              <div className="space-y-6 flex flex-col justify-between">
+                {/* Stats clickable panel */}
+                <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 p-6 rounded-2xl space-y-4 shadow-xs">
+                  <span className="text-[9px] uppercase font-bold tracking-[0.25em] text-[#1a1a1a]/40 block font-inter">THE NETWORK</span>
+                  
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <button
+                      onClick={() => document.getElementById('my-posts-section')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="p-3 border border-[#1a1a1a]/5 hover:border-[#1a1a1a]/20 bg-white/40 rounded-xl transition-all"
+                    >
+                      <span className="text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 block font-inter">Essays / Verses</span>
+                      <span className="font-playfair text-lg font-bold text-[#1a1a1a] block mt-1">{userPostsCount}</span>
+                    </button>
 
-                <button
-                  onClick={() => setActiveModal('followers')}
-                  className="text-center group focus:outline-none"
-                >
-                  <span className="text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 group-hover:text-[#1a1a1a] font-inter block transition-colors">Followers</span>
-                  <span className="font-playfair text-lg font-bold text-[#1a1a1a] group-hover:underline block mt-1">
-                    {profileData?.followers?.length || 0}
-                  </span>
-                </button>
+                    <button
+                      onClick={() => setActiveModal('followers')}
+                      className="p-3 border border-[#1a1a1a]/5 hover:border-[#1a1a1a]/20 bg-white/40 rounded-xl transition-all"
+                    >
+                      <span className="text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 block font-inter">Circle</span>
+                      <span className="font-playfair text-lg font-bold text-[#1a1a1a] block mt-1">{profileData?.followers?.length || 0}</span>
+                    </button>
 
-                <button
-                  onClick={() => setActiveModal('following')}
-                  className="text-center group focus:outline-none"
-                >
-                  <span className="text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 group-hover:text-[#1a1a1a] font-inter block transition-colors">Following</span>
-                  <span className="font-playfair text-lg font-bold text-[#1a1a1a] group-hover:underline block mt-1">
-                    {profileData?.following?.length || 0}
-                  </span>
-                </button>
+                    <button
+                      onClick={() => setActiveModal('following')}
+                      className="p-3 border border-[#1a1a1a]/5 hover:border-[#1a1a1a]/20 bg-white/40 rounded-xl transition-all"
+                    >
+                      <span className="text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 block font-inter">Companions</span>
+                      <span className="font-playfair text-lg font-bold text-[#1a1a1a] block mt-1">{profileData?.following?.length || 0}</span>
+                    </button>
+                  </div>
+                </div>
 
-                <div className="text-center">
-                  <span className="text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 font-inter block">Time Spent</span>
-                  <span className="font-playfair text-sm font-bold text-[#1a1a1a] block mt-1.5 uppercase">
-                    {timeSpent} mins
-                  </span>
+                {/* Reading Fingerprint Section */}
+                <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 p-6 rounded-2xl space-y-4 shadow-xs flex-grow">
+                  <div>
+                    <span className="text-[9px] uppercase font-bold tracking-[0.25em] text-[#1a1a1a]/40 block font-inter">THE TENDENCIES</span>
+                    <h3 className="font-playfair text-lg font-bold text-[#1a1a1a]">Reading Fingerprint</h3>
+                    <p className="font-playfair italic text-[10px] text-[#1a1a1a]/50">“The tendencies of your literary self.”</p>
+                  </div>
+
+                  <div className="space-y-3 pt-2 text-xs font-inter">
+                    <div className="space-y-1">
+                      <div className="flex justify-between font-medium text-[#1a1a1a]/80">
+                        <span>Gothic Introspection</span>
+                        <span>33%</span>
+                      </div>
+                      <div className="h-1 bg-[#1a1a1a]/5 rounded-full overflow-hidden">
+                        <div className="w-[33%] h-full bg-[#1a1a1a]" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between font-medium text-[#1a1a1a]/80">
+                        <span>Realism & Prose</span>
+                        <span>28%</span>
+                      </div>
+                      <div className="h-1 bg-[#1a1a1a]/5 rounded-full overflow-hidden">
+                        <div className="w-[28%] h-full bg-[#1a1a1a]" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between font-medium text-[#1a1a1a]/80">
+                        <span>Lyrical Poetry</span>
+                        <span>21%</span>
+                      </div>
+                      <div className="h-1 bg-[#1a1a1a]/5 rounded-full overflow-hidden">
+                        <div className="w-[21%] h-full bg-[#1a1a1a]" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between font-medium text-[#1a1a1a]/80">
+                        <span>Philosophy & Theory</span>
+                        <span>18%</span>
+                      </div>
+                      <div className="h-1 bg-[#1a1a1a]/5 rounded-full overflow-hidden">
+                        <div className="w-[18%] h-full bg-[#1a1a1a]" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Personal Works / Posts section */}
             <div id="my-posts-section" className="space-y-6">
-              <div className="pb-3 border-b border-[rgba(26,26,26,0.1)]">
+              <div className="pb-2 border-b border-[#1a1a1a]/10">
                 <h3 className="font-playfair text-2xl font-bold text-[#1a1a1a]">
                   🖋️ Your Literary Posts
                 </h3>
+                <p className="font-playfair italic text-xs text-[#1a1a1a]/60 mt-1 font-light">“Thoughts left in the margins of books.”</p>
               </div>
 
               {loadingUserPosts ? (
@@ -693,7 +848,7 @@ function ProfilePageContent() {
                   {userPosts.map((post) => (
                     <div
                       key={post.id}
-                      className="bg-white border border-[rgba(26,26,26,0.1)] p-6 sm:p-8 rounded-2xl space-y-4 hover:border-[rgba(26,26,26,0.2)] transition-all inline-block w-full break-inside-avoid shadow-sm"
+                      className="bg-[#FAF7F0] border border-[#1a1a1a]/10 p-6 sm:p-8 rounded-2xl space-y-4 hover:border-[#1a1a1a]/20 transition-all inline-block w-full break-inside-avoid shadow-xs"
                     >
                       <div className="flex justify-between items-center w-full">
                         <span className="text-[9px] text-[#1a1a1a]/40 font-inter font-bold uppercase">
@@ -712,7 +867,7 @@ function ProfilePageContent() {
                         {post.content}
                       </p>
 
-                      <div className="flex justify-between items-center pt-3 border-t border-[rgba(26,26,26,0.06)] w-full text-xs text-[#1a1a1a]/60">
+                      <div className="flex justify-between items-center pt-3 border-t border-[#1a1a1a]/5 w-full text-xs text-[#1a1a1a]/60">
                         <span>❤️ {post.likes?.length || 0} Likes • 💬 {post.comments?.length || 0} Comments</span>
                         
                         <div className="flex gap-2">
@@ -747,8 +902,15 @@ function ProfilePageContent() {
             exit={{ opacity: 0, y: -15 }}
             className="space-y-6"
           >
+            <div className="pb-2 border-b border-[#1a1a1a]/10 mb-6">
+              <h3 className="font-playfair text-2xl font-bold text-[#1a1a1a]">
+                📜 Personal Anthology
+              </h3>
+              <p className="font-playfair italic text-xs text-[#1a1a1a]/60 mt-1 font-light">“Fragments worth preserving.”</p>
+            </div>
+
             {anthologyItems.length === 0 ? (
-              <div className="bg-white border border-[rgba(26,26,26,0.1)] rounded-xl p-12 text-center max-w-lg mx-auto">
+              <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-xl p-12 text-center max-w-lg mx-auto">
                 <span className="text-3xl block mb-2">📜</span>
                 <p className="font-playfair text-lg text-[#1a1a1a]/70 italic">Your anthology stands completely blank.</p>
                 <p className="text-xs text-[#1a1a1a]/40 mt-1 font-inter">
@@ -760,11 +922,11 @@ function ProfilePageContent() {
                 {anthologyItems.map((item: AnthologyItem) => (
                   <div
                     key={item.id}
-                    className="bg-white border border-[rgba(26,26,26,0.1)] hover:border-[rgba(26,26,26,0.2)] rounded-2xl p-6 shadow-sm relative flex flex-col justify-between group"
+                    className="bg-[#FAF7F0] border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/20 rounded-2xl p-6 shadow-xs relative flex flex-col justify-between group transition-all"
                   >
                     <div>
                       {/* Meta header */}
-                      <div className="flex justify-between items-center mb-3 pb-2 border-b border-[rgba(26,26,26,0.1)] text-[9px] font-bold uppercase tracking-wider text-[#1a1a1a]/60">
+                      <div className="flex justify-between items-center mb-3 pb-2 border-b border-[#1a1a1a]/10 text-[9px] font-bold uppercase tracking-wider text-[#1a1a1a]/60">
                         <span>Mode: {item.mode} {item.genre && `• ${item.genre}/${item.era}`}</span>
                         <button
                           onClick={() => handleRemoveFromAnthology(item.id)}
@@ -781,7 +943,7 @@ function ProfilePageContent() {
                       </div>
 
                       {/* Response */}
-                      <div className="p-4 bg-[#F8F4E9]/50 border border-[rgba(26,26,26,0.06)] rounded-xl mt-3 shadow-inner">
+                      <div className="p-4 bg-[#F8F4E9]/50 border border-[#1a1a1a]/5 rounded-xl mt-3 shadow-inner">
                         <p className="font-playfair italic text-xs leading-relaxed text-[#1a1a1a] font-light">
                           “ {item.response} ”
                         </p>
@@ -789,7 +951,7 @@ function ProfilePageContent() {
                     </div>
 
                     {/* Exporter triggers */}
-                    <div className="mt-6 pt-3 border-t border-[rgba(26,26,26,0.06)] flex justify-end">
+                    <div className="mt-6 pt-3 border-t border-[#1a1a1a]/5 flex justify-end">
                       <button
                         onClick={() => handleAnthologyShareCard(item.response)}
                         className="text-[10px] uppercase font-bold tracking-wider font-inter text-[#1a1a1a]/60 hover:text-[#1a1a1a] transition-colors flex items-center gap-1"
@@ -811,9 +973,17 @@ function ProfilePageContent() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
+            className="space-y-6"
           >
+            <div className="pb-2 border-b border-[#1a1a1a]/10 mb-6">
+              <h3 className="font-playfair text-2xl font-bold text-[#1a1a1a]">
+                ❤️ Wishlist
+              </h3>
+              <p className="font-playfair italic text-xs text-[#1a1a1a]/60 mt-1 font-light">“Volumes waiting on the horizon.”</p>
+            </div>
+
             {wishlistItems.length === 0 ? (
-              <div className="bg-white border border-[rgba(26,26,26,0.1)] rounded-xl p-12 text-center max-w-lg mx-auto">
+              <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-xl p-12 text-center max-w-lg mx-auto">
                 <span className="text-3xl block mb-2">❤️</span>
                 <p className="font-playfair text-lg text-[#1a1a1a]/70 italic">Your wishlist catalog is empty.</p>
                 <p className="text-xs text-[#1a1a1a]/40 mt-1 font-inter">
@@ -825,7 +995,7 @@ function ProfilePageContent() {
                 {wishlistItems.map((book: WishlistItem) => (
                   <div
                     key={book.bookId}
-                    className="bg-white border border-[rgba(26,26,26,0.1)] hover:border-[rgba(26,26,26,0.2)] rounded-xl overflow-hidden shadow-sm flex flex-col group relative"
+                    className="bg-[#FAF7F0] border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/20 rounded-xl overflow-hidden shadow-xs flex flex-col group relative transition-all"
                   >
                     {/* Cover */}
                     <div className="relative aspect-[3/4] bg-[#1a1a1a]/5">
@@ -837,7 +1007,7 @@ function ProfilePageContent() {
                       {/* Delete cross absolute */}
                       <button
                         onClick={() => handleRemoveFromWishlist(book.bookId)}
-                        className="absolute top-2 right-2 p-1.5 rounded-full bg-white/95 border border-[rgba(26,26,26,0.1)] text-red-600 hover:text-red-500 transition-colors shadow-sm"
+                        className="absolute top-2 right-2 p-1.5 rounded-full bg-white/95 border border-[#1a1a1a]/10 text-red-600 hover:text-red-500 transition-colors shadow-xs"
                         title="Remove Volume"
                       >
                         ✕
@@ -856,7 +1026,7 @@ function ProfilePageContent() {
                       </div>
 
                       {/* Buy link */}
-                      <div className="mt-4 pt-2 border-t border-[rgba(26,26,26,0.06)]">
+                      <div className="mt-4 pt-2 border-t border-[#1a1a1a]/5">
                         <a
                           href={book.infoLink || '#'}
                           target="_blank"
@@ -883,8 +1053,13 @@ function ProfilePageContent() {
             exit={{ opacity: 0, y: -15 }}
             className="max-w-3xl mx-auto"
           >
-            <form onSubmit={handleSavePreferences} className="bg-white border border-[rgba(26,26,26,0.1)] rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm">
-              <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] border-b border-[rgba(26,26,26,0.1)] pb-2">Attune Literary Preferences</h3>
+            <form onSubmit={handleSavePreferences} className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
+              <div className="pb-2 border-b border-[#1a1a1a]/10 mb-4">
+                <h3 className="font-playfair text-2xl font-bold text-[#1a1a1a]">
+                  ⚙️ Preferences
+                </h3>
+                <p className="font-playfair italic text-xs text-[#1a1a1a]/60 mt-1 font-light">“The shape of your literary world.”</p>
+              </div>
 
               {/* Genre selections */}
               <div>
@@ -941,11 +1116,11 @@ function ProfilePageContent() {
                   <select
                     value={favoriteGenre}
                     onChange={(e) => setFavoriteGenre(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl outline-none border border-[rgba(26,26,26,0.1)] bg-[#F8F4E9] text-xs font-semibold text-[#1a1a1a]"
+                    className="w-full px-3 py-2 rounded-xl outline-none border border-[#1a1a1a]/20 bg-white text-xs font-semibold text-[#1a1a1a] focus:border-[#1a1a1a] transition-all cursor-pointer"
                   >
-                    <option value="" className="bg-white text-[#1a1a1a]">Select Primary Genre</option>
+                    <option value="" className="bg-[#FAF7F0] text-[#1a1a1a]">Select Primary Genre</option>
                     {genresList.map((g) => (
-                      <option key={g} value={g.toLowerCase()} className="bg-white text-[#1a1a1a]">{g}</option>
+                      <option key={g} value={g.toLowerCase()} className="bg-[#FAF7F0] text-[#1a1a1a]">{g}</option>
                     ))}
                   </select>
                 </div>
@@ -955,11 +1130,11 @@ function ProfilePageContent() {
                   <select
                     value={favoriteEra}
                     onChange={(e) => setFavoriteEra(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl outline-none border border-[rgba(26,26,26,0.1)] bg-[#F8F4E9] text-xs font-semibold text-[#1a1a1a]"
+                    className="w-full px-3 py-2 rounded-xl outline-none border border-[#1a1a1a]/20 bg-white text-xs font-semibold text-[#1a1a1a] focus:border-[#1a1a1a] transition-all cursor-pointer"
                   >
-                    <option value="" className="bg-white text-[#1a1a1a]">Select Primary Era</option>
+                    <option value="" className="bg-[#FAF7F0] text-[#1a1a1a]">Select Primary Era</option>
                     {erasList.map((e) => (
-                      <option key={e} value={e.toLowerCase()} className="bg-white text-[#1a1a1a]">{e}</option>
+                      <option key={e} value={e.toLowerCase()} className="bg-[#FAF7F0] text-[#1a1a1a]">{e}</option>
                     ))}
                   </select>
                 </div>
@@ -973,15 +1148,15 @@ function ProfilePageContent() {
                   onChange={(e) => setCustomNote(e.target.value)}
                   placeholder="e.g. I am seeking dense gothic metaphors combined with Urdu romantic poetry cadences. I love the style of Sylvia Plath and John Keats."
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl outline-none border border-[rgba(26,26,26,0.1)] bg-[#F8F4E9] text-xs text-[#1a1a1a] placeholder-[#1a1a1a]/30 resize-none leading-relaxed"
+                  className="w-full px-4 py-3 rounded-xl outline-none border border-[#1a1a1a]/20 bg-white text-xs text-[#1a1a1a] placeholder-[#1a1a1a]/30 resize-none leading-relaxed focus:border-[#1a1a1a] transition-all font-serif"
                 />
               </div>
 
               {/* Action save */}
-              <div className="flex items-center gap-4 pt-4 border-t border-[rgba(26,26,26,0.1)]">
+              <div className="flex items-center gap-4 pt-4 border-t border-[#1a1a1a]/10">
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white font-bold uppercase tracking-wider rounded-xl text-xs font-inter transition-all"
+                  className="px-6 py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white font-bold uppercase tracking-wider rounded-xl text-xs font-inter transition-all shadow-xs"
                 >
                   Save Attunements
                 </button>
@@ -1006,12 +1181,19 @@ function ProfilePageContent() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
-            className="max-w-2xl mx-auto"
+            className="max-w-2xl mx-auto space-y-6"
           >
-            <div className="bg-white border border-[rgba(26,26,26,0.1)] rounded-2xl p-6 sm:p-8 shadow-sm text-center relative overflow-hidden space-y-6">
+            <div className="pb-2 border-b border-[#1a1a1a]/10 mb-6">
+              <h3 className="font-playfair text-2xl font-bold text-[#1a1a1a]">
+                ⏳ Exploration Timer
+              </h3>
+              <p className="font-playfair italic text-xs text-[#1a1a1a]/60 mt-1 font-light">“Hours counted in silent worlds.”</p>
+            </div>
+
+            <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-xs text-center relative overflow-hidden space-y-6">
               <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#1a1a1a]/60 block font-inter">THE CELESTIAL CLOCK</span>
               
-              <div className="relative w-44 h-44 rounded-full border border-[rgba(26,26,26,0.1)] mx-auto flex items-center justify-center bg-[#F8F4E9] shadow-inner">
+              <div className="relative w-44 h-44 rounded-full border border-[#1a1a1a]/10 mx-auto flex items-center justify-center bg-[#F8F4E9] shadow-inner">
                 {/* Clock hands animations mock */}
                 <div className="absolute inset-2.5 rounded-full border border-dashed border-[#1a1a1a]/10" />
                 <div className="absolute w-0.5 h-14 bg-[#1a1a1a] origin-bottom -mt-14 animate-spin [animation-duration:120s]" />
@@ -1037,7 +1219,7 @@ function ProfilePageContent() {
               </div>
 
               {/* Synthesized stats */}
-              <div className="grid grid-cols-3 gap-4 border-t border-[rgba(26,26,26,0.1)] pt-6 text-center font-inter text-xs">
+              <div className="grid grid-cols-3 gap-4 border-t border-[#1a1a1a]/10 pt-6 text-center font-inter text-xs">
                 <div>
                   <span className="text-[#1a1a1a] font-bold block">{wishlistItems.length}</span>
                   <span className="text-[9px] text-[#1a1a1a]/40 font-bold block uppercase tracking-wider mt-0.5">Books Cataloged</span>
@@ -1062,10 +1244,17 @@ function ProfilePageContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="max-w-3xl mx-auto"
+            className="max-w-3xl mx-auto space-y-6"
           >
+            <div className="pb-2 border-b border-[#1a1a1a]/10 mb-6">
+              <h3 className="font-playfair text-2xl font-bold text-[#1a1a1a]">
+                📅 Timeline
+              </h3>
+              <p className="font-playfair italic text-xs text-[#1a1a1a]/60 mt-1 font-light">“A memory of reading and reflection.”</p>
+            </div>
+
             {anthologyItems.length === 0 ? (
-              <div className="bg-white border border-[rgba(26,26,26,0.1)] rounded-xl p-12 text-center max-w-lg mx-auto">
+              <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-xl p-12 text-center max-w-lg mx-auto">
                 <span className="text-3xl block mb-2">⏳</span>
                 <p className="font-playfair text-lg text-[#1a1a1a]/70 italic">Your timeline awaits its first verse.</p>
                 <div className="mt-6">
@@ -1100,7 +1289,7 @@ function ProfilePageContent() {
 
                   return Object.entries(groups).map(([dateStr, items]) => (
                     <div key={dateStr} className="space-y-6">
-                      {/* Date Header */}
+                       {/* Date Header */}
                       <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#1a1a1a]/60 font-inter mb-4">
                         {dateStr}
                       </div>
@@ -1132,11 +1321,11 @@ function ProfilePageContent() {
                                 initial={{ opacity: 0, x: 30 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: currentIdx * 0.1, duration: 0.4 }}
-                                className="bg-white border border-[rgba(26,26,26,0.1)] hover:border-[rgba(26,26,26,0.2)] rounded-2xl p-6 shadow-sm relative flex flex-col justify-between group"
+                                className="bg-[#FAF7F0] border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/20 rounded-2xl p-6 shadow-xs relative flex flex-col justify-between group transition-all"
                               >
                                 <div>
                                   {/* Card Header */}
-                                  <div className="flex justify-between items-center mb-3 pb-2 border-b border-[rgba(26,26,26,0.06)]">
+                                  <div className="flex justify-between items-center mb-3 pb-2 border-b border-[#1a1a1a]/5">
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#1a1a1a] bg-[#1a1a1a]/5 px-2 py-0.5 rounded-full">
                                       {item.mode}
                                     </span>
@@ -1154,7 +1343,7 @@ function ProfilePageContent() {
                                   </div>
 
                                   {/* Response Content Preview / Expanded */}
-                                  <div className="p-4 bg-[#F8F4E9]/50 border border-[rgba(26,26,26,0.06)] rounded-xl shadow-inner mt-2">
+                                  <div className="p-4 bg-[#F8F4E9]/50 border border-[#1a1a1a]/5 rounded-xl shadow-inner mt-2">
                                     <p className="font-playfair italic text-[13px] leading-relaxed text-[#1a1a1a] font-light">
                                       “ {isExpanded ? item.response : previewText}{!isExpanded && isLong && '...'} ”
                                     </p>
@@ -1170,7 +1359,7 @@ function ProfilePageContent() {
                                 </div>
 
                                 {/* Footer actions */}
-                                <div className="mt-6 pt-3 border-t border-[rgba(26,26,26,0.06)] flex justify-between items-center">
+                                <div className="mt-6 pt-3 border-t border-[#1a1a1a]/5 flex justify-between items-center">
                                   <button
                                     onClick={() => handleAnthologyShareCard(item.response)}
                                     className="text-[10px] uppercase font-bold tracking-wider font-inter text-[#1a1a1a]/60 hover:text-[#1a1a1a] transition-colors flex items-center gap-1"
@@ -1321,6 +1510,7 @@ function ProfilePageContent() {
         )}
       </AnimatePresence>
     </div>
+    </>
   );
 }
 
