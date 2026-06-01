@@ -716,35 +716,95 @@ function LibraryPageContent() {
   };
 
   return (
-    <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Dashboard Back Link */}
-      <div className="mb-4">
-        <Link
-          href="/dashboard"
-          className="text-xs text-gold hover:text-gold-light transition-colors flex items-center gap-1 font-inter font-medium"
+    <>
+      {/* Cream background base */}
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#F8F4E9',
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Reading Sanctuary Background Ambience */}
+      <motion.div
+        initial={{ opacity: 0.8 }}
+        animate={{ opacity: [0.8, 1, 0.8] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden"
+      >
+        <svg
+          className="w-full h-full text-[#1a1a1a]"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1200 800"
+          preserveAspectRatio="xMidYMid slice"
         >
-          ← Dashboard
-        </Link>
-      </div>
-      {/* Search Header */}
-      <div className="mb-10 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6">
-        <div>
-          <h1 className="font-playfair text-4xl font-bold text-cream">The Grand Library</h1>
-          <p className="font-inter text-xs text-cream/40 mt-1 uppercase tracking-wider font-semibold">
-            Search our curated digital stacks powered by Google Books
-          </p>
+          <line x1="80" y1="200" x2="200" y2="150" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+          <line x1="80" y1="200" x2="140" y2="300" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+          <line x1="140" y1="300" x2="60" y2="480" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+          <line x1="1080" y1="180" x2="980" y2="280" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+          <line x1="980" y1="280" x2="1120" y2="350" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+          <line x1="1120" y1="350" x2="1000" y2="520" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+
+          <text x="80" y="200" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">story</text>
+          <text x="200" y="150" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">memory</text>
+          <text x="140" y="300" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">silence</text>
+          <text x="60" y="480" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">poetry</text>
+          <text x="120" y="700" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">dream</text>
+
+          <text x="1080" y="180" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">solitude</text>
+          <text x="980" y="280" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">wonder</text>
+          <text x="1120" y="350" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">myth</text>
+          <text x="1000" y="520" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">λόγος</text>
+        </svg>
+      </motion.div>
+
+      <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Dashboard Back Link */}
+        <div className="mb-6 max-w-6xl mx-auto text-left">
+          <Link
+            href="/dashboard"
+            className="text-xs text-[#1a1a1a]/70 hover:text-[#1a1a1a] transition-all inline-flex items-center gap-1 font-inter font-semibold"
+          >
+            ← Dashboard
+          </Link>
         </div>
 
-        {/* Global Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="w-full max-w-md relative">
-          <input
-            type="text"
-            placeholder="Search volumes, authors, or literary movements..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
+        {/* Search Header */}
+        <div className="mb-10 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6 pb-6 border-b border-[#1a1a1a]/10">
+          <div>
+            <h1 className="font-playfair text-4xl font-bold text-[#1a1a1a]">The Library</h1>
+            <p className="font-inter text-[9px] text-[#6b6b6b]/60 uppercase tracking-widest font-semibold mt-1">
+              Curated digital stacks • Powered by Google Books & Gutenberg
+            </p>
+          </div>
+
+          {/* Global Search Bar */}
+          <form onSubmit={handleSearchSubmit} className="w-full max-w-md relative">
+            <input
+              type="text"
+              placeholder="Search stories, authors, movements, forgotten worlds..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (searchQuery.trim()) {
+                    setActiveGenre('');
+                    fetchBooks('', searchQuery.trim());
+                    const params = new URLSearchParams();
+                    params.set('q', searchQuery.trim());
+                    router.push(`/library?${params.toString()}`);
+                  }
+                }
+              }}
+              className="w-full px-4 py-3 pl-11 rounded-xl outline-none bg-white/70 border border-[#1a1a1a]/15 text-sm text-[#1a1a1a] placeholder-[#1a1a1a]/30 shadow-sm focus:border-[#1a1a1a] transition-all"
+            />
+            <button
+              type="submit"
+              onClick={() => {
                 if (searchQuery.trim()) {
                   setActiveGenre('');
                   fetchBooks('', searchQuery.trim());
@@ -752,483 +812,520 @@ function LibraryPageContent() {
                   params.set('q', searchQuery.trim());
                   router.push(`/library?${params.toString()}`);
                 }
-              }
-            }}
-            className="w-full px-4 py-3 pl-11 rounded-xl outline-none glass-input text-sm !text-black shadow-inner"
-            style={{ color: 'black' }}
-          />
-          <button
-            type="submit"
-            onClick={() => {
-              if (searchQuery.trim()) {
-                setActiveGenre('');
-                fetchBooks('', searchQuery.trim());
-                const params = new URLSearchParams();
-                params.set('q', searchQuery.trim());
-                router.push(`/library?${params.toString()}`);
-              }
-            }}
-            className="absolute left-3.5 top-3.5 text-cream/40 hover:text-gold transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
-        </form>
-      </div>
+              }}
+              className="absolute left-3.5 top-3.5 text-[#1a1a1a]/40 hover:text-[#1a1a1a] transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+          </form>
+        </div>
 
-      {/* Main Layout Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Left Sidebar Category Filters */}
-        <div className="lg:col-span-1 space-y-4">
-          <div className="glass-card border-white/5 rounded-xl p-5 shadow">
-            <h3 className="font-playfair text-lg font-bold text-gold mb-4 border-b border-white/5 pb-2">Browse Genres</h3>
-            <div className="flex flex-wrap lg:flex-col gap-2">
-              {genres.map((g) => (
-                <button
-                  key={g.id}
-                  onClick={() => handleGenreClick(g.id)}
-                  className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider font-inter border transition-all w-full lg:text-left ${
-                    activeGenre === g.id
-                      ? 'bg-gold border-transparent text-navy shadow shadow-gold/15'
-                      : 'bg-white/5 border-white/5 text-cream/70 hover:text-gold hover:border-gold/30'
-                  }`}
-                >
-                  <span className="text-sm">{g.icon}</span>
-                  {g.name}
-                </button>
-              ))}
+        {/* Main Layout Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Left Sidebar Category Filters */}
+          <div className="lg:col-span-1 space-y-4">
+            <div className="border border-[#1a1a1a]/10 rounded-xl p-5 shadow-sm bg-white/40 backdrop-blur-md">
+              <h3 className="font-playfair text-lg font-bold text-[#1a1a1a] mb-4 border-b border-[#1a1a1a]/10 pb-2">Literary Shelves</h3>
+              <div className="flex flex-wrap lg:flex-col gap-2">
+                {genres.map((g) => (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => handleGenreClick(g.id)}
+                    className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest font-inter transition-all w-full lg:text-left ${
+                      activeGenre === g.id
+                        ? 'bg-white border border-[#1a1a1a] border-l-[6px] border-l-[#1a1a1a] text-[#1a1a1a] shadow-sm'
+                        : 'bg-transparent border border-transparent text-[#1a1a1a]/70 hover:bg-[#1a1a1a]/5 hover:text-[#1a1a1a]'
+                    }`}
+                  >
+                    <span className="text-sm select-none">{g.icon}</span>
+                    {g.name}
+                  </button>
+                ))}
+              </div>
             </div>
+          </div>
+
+          {/* Right Books Grid Area */}
+          <div className="lg:col-span-3">
+            {/* Contextual Shelf Heading */}
+            <div className="mb-6">
+              <h2 className="font-playfair text-xl font-bold text-[#1a1a1a] tracking-wide">
+                {searchQuery.trim() 
+                  ? `Results for "${searchQuery}"` 
+                  : `${genres.find(g => g.id === activeGenre)?.name || 'Library'} Shelf`
+                }
+              </h2>
+              <div className="h-[1px] w-full bg-[#1a1a1a]/10 mt-2" />
+            </div>
+
+            <AnimatePresence mode="wait">
+              {loadingBooks ? (
+                /* Loading State */
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col items-center justify-center py-32 space-y-6"
+                >
+                  <div className="relative w-16 h-16 flex items-center justify-center">
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.35, 0.15] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute inset-0 rounded-full border border-[#1a1a1a]"
+                    />
+                    <span className="text-xs text-[#1a1a1a]/60 select-none font-serif">✦</span>
+                  </div>
+                  <div className="space-y-1 text-center">
+                    <h3 className="font-playfair text-base italic text-[#1a1a1a] animate-pulse">
+                      Opening archive vaults…
+                    </h3>
+                    <p className="text-[9px] text-[#6b6b6b]/80 font-inter tracking-wider uppercase">
+                      Retrieving volume records
+                    </p>
+                  </div>
+                </motion.div>
+              ) : books.length === 0 ? (
+                /* Empty State */
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="border border-[#1a1a1a]/10 rounded-xl p-12 text-center bg-white/40 backdrop-blur-md"
+                >
+                  <span className="text-2xl block mb-3 opacity-60">🕯️</span>
+                  <p className="font-playfair text-lg text-[#1a1a1a] italic">No stories found in this corridor.</p>
+                  <p className="text-xs text-[#1a1a1a]/60 mt-1 font-inter">Try another shelf or search a different name.</p>
+                </motion.div>
+              ) : (
+                /* Books Grid */
+                <motion.div
+                  key="grid"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="grid grid-cols-2 md:grid-cols-3 gap-6"
+                >
+                  {books.map((book) => {
+                    const info = book.volumeInfo || {};
+                    const title = info.title || 'Untitled Work';
+                    const authors = info.authors || ['Unknown Author'];
+                    
+                    // Log every book object rendered in the library grid as required by the user
+                    console.log('Book in grid:', {
+                      title: title,
+                      source: book.source,
+                      gutenbergId: book.gutenbergId,
+                      isFree: !!book.gutenbergId,
+                      authors: authors
+                    });
+
+                    const thumbnail = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80';
+                    const inWishlist = isBookInWishlist(book.id);
+
+                    return (
+                      <motion.div
+                        key={book.id}
+                        onClick={() => setSelectedBook(book)}
+                        className="bg-white/70 backdrop-blur-sm border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/25 rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col group cursor-pointer"
+                      >
+                        {/* Cover Thumbnail wrapper */}
+                        <div className="relative aspect-[3/4] bg-[#F8F4E9]/50 overflow-hidden flex items-center justify-center border-b border-[#1a1a1a]/5">
+                          <img
+                            src={thumbnail}
+                            alt={title}
+                            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-all duration-300" />
+
+                          {/* Wishlist Toggle Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => toggleWishlist(e, book)}
+                            className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md border transition-all duration-300 ${
+                              inWishlist
+                                ? 'bg-[#1a1a1a] border-[#1a1a1a] text-[#F8F4E9] shadow-sm'
+                                : 'bg-white/80 border-[#1a1a1a]/10 text-[#1a1a1a]/60 hover:text-[#1a1a1a] hover:border-[#1a1a1a]/40 shadow-sm'
+                            }`}
+                            title={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                          >
+                            <svg
+                              className="w-4 h-4 fill-none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>
+                          </button>
+
+                          {/* Save to List Bookmark Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleDropdownToggle(e, book.id)}
+                            className={`absolute top-3 right-12 p-2 rounded-full backdrop-blur-md border transition-all duration-300 z-10 ${
+                              activeListDropdown === book.id
+                                ? 'bg-[#1a1a1a] border-[#1a1a1a] text-[#F8F4E9] shadow-sm'
+                                : 'bg-white/80 border-[#1a1a1a]/10 text-[#1a1a1a]/60 hover:text-[#1a1a1a] hover:border-[#1a1a1a]/40 shadow-sm'
+                            }`}
+                            title="Save to List"
+                          >
+                            <svg
+                              className="w-4 h-4 fill-none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                              />
+                            </svg>
+                          </button>
+
+                          {/* Dropdown menu */}
+                          {activeListDropdown === book.id && (
+                            <div 
+                              onClick={(e) => e.stopPropagation()}
+                              className="absolute right-3 top-12 z-20 w-48 bg-white border border-[#1a1a1a]/15 rounded-xl py-2 shadow-xl text-left"
+                            >
+                              <div className="px-3 py-1 border-b border-[#1a1a1a]/10 mb-1 text-[9px] uppercase tracking-widest text-[#1a1a1a]/50 font-bold font-inter">
+                                Save to List
+                              </div>
+                              {readingLists.length === 0 ? (
+                                <div className="px-3 py-2 text-[10px] text-[#1a1a1a]/50 italic flex flex-col gap-1">
+                                  <span>Create a list first</span>
+                                  <span 
+                                    onClick={() => router.push('/reading-lists')}
+                                    className="text-[#1a1a1a] hover:underline font-semibold font-inter cursor-pointer"
+                                  >
+                                    Create List →
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="max-h-36 overflow-y-auto">
+                                  {readingLists.map((list) => (
+                                    <button
+                                      key={list.id}
+                                      type="button"
+                                      onClick={(e) => handleSaveToReadingList(e, list.id, book)}
+                                      className="w-full text-left px-3 py-1.5 hover:bg-[#1a1a1a]/5 text-xs text-[#1a1a1a]/80 hover:text-[#1a1a1a] transition-colors font-inter truncate"
+                                    >
+                                      📁 {list.name}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Saved overlay alert */}
+                          {savedStatus[book.id] && (
+                            <div className="absolute inset-0 bg-white/95 z-15 flex items-center justify-center">
+                              <span className="font-playfair text-[#1a1a1a] italic text-sm font-semibold animate-pulse">
+                                ✨ {savedStatus[book.id]}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Details Box */}
+                        <div className="p-4 flex-grow flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-start gap-2 flex-wrap mb-1 justify-between">
+                              <h4 className="font-playfair font-bold text-[#1a1a1a] text-sm leading-snug line-clamp-2 inline">
+                                {title}
+                              </h4>
+                              {book.gutenbergId && (
+                                <span className="bg-[#F8F4E9]/90 border border-[#1a1a1a]/15 text-[#1a1a1a] rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest font-inter inline-block select-none shrink-0 shadow-sm">
+                                  Read Free
+                                </span>
+                              )}
+                            </div>
+                            <p className="font-inter text-[11px] text-[#1a1a1a]/60 mt-1 line-clamp-1">
+                              by{' '}
+                              {authors.map((authorName, index) => (
+                                <React.Fragment key={authorName}>
+                                  {index > 0 && ', '}
+                                  <span
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      router.push(`/authors?name=${encodeURIComponent(authorName)}`);
+                                    }}
+                                    className="cursor-pointer hover:text-[#1a1a1a] transition-colors duration-200 underline underline-offset-2 font-medium"
+                                  >
+                                    {authorName}
+                                  </span>
+                                </React.Fragment>
+                              ))}
+                            </p>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="mt-4 space-y-2">
+                            {book.gutenbergId && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push(`/read/${book.gutenbergId}`);
+                                }}
+                                className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-xs font-semibold font-inter transition-all duration-200 w-full active:scale-[0.98]"
+                              >
+                                📖 Read Now
+                              </button>
+                            )}
+                            <a
+                              href={`https://play.google.com/store/search?q=${encodeURIComponent(book.volumeInfo.title + ' ' + (book.volumeInfo.authors?.[0] || ''))}&c=books`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/60 hover:bg-white/90 border border-[#1a1a1a]/15 text-[#1a1a1a]/80 text-xs font-semibold font-inter transition-all duration-200 w-full text-center"
+                            >
+                              Buy Ebook
+                            </a>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push(`/chat/simple?book=${encodeURIComponent(book.volumeInfo.title)}&author=${encodeURIComponent(book.volumeInfo.authors?.[0] || 'Unknown')}`);
+                              }}
+                              className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/60 hover:bg-white/90 border border-[#1a1a1a]/15 text-[#1a1a1a]/85 text-xs font-semibold font-inter transition-all duration-200 w-full active:scale-[0.98]"
+                            >
+                              💬 Discuss with Companion
+                            </button>
+                          </div>
+
+                          {/* Categories footer */}
+                          <div className="mt-3 pt-2 border-t border-[#1a1a1a]/10 flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-[#1a1a1a]/60">
+                            <span>{info.categories?.[0] || 'Literature'}</span>
+                            <span className="text-[10px] opacity-40">→</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              )}
+              
+              {/* Pagination Controls */}
+              {(hasMore || currentPage > 1) && (
+                <div className="flex justify-center items-center gap-4 mt-12 pt-6 border-t border-[#1a1a1a]/10 w-full">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={async () => {
+                      const newPage = currentPage - 1;
+                      setCurrentPage(newPage);
+                      await fetchBooks(activeGenre, searchQuery, newPage);
+                    }}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider font-inter transition-all duration-200 border border-[#1a1a1a]/15 ${
+                      currentPage === 1
+                        ? 'text-[#1a1a1a]/25 border-[#1a1a1a]/5 cursor-not-allowed'
+                        : 'text-[#1a1a1a]/85 bg-white/60 hover:bg-[#1a1a1a]/5'
+                    }`}
+                  >
+                    ← Previous Page
+                  </button>
+                  <span className="text-xs font-bold font-inter text-[#1a1a1a]/60">
+                    Page <span className="text-[#1a1a1a]">{currentPage}</span>
+                  </span>
+                  <button
+                    type="button"
+                    disabled={!hasMore}
+                    onClick={async () => {
+                      const newPage = currentPage + 1;
+                      setCurrentPage(newPage);
+                      await fetchBooks(activeGenre, searchQuery, newPage);
+                    }}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider font-inter transition-all duration-200 border border-[#1a1a1a]/15 ${
+                      !hasMore
+                        ? 'text-[#1a1a1a]/25 border-[#1a1a1a]/5 cursor-not-allowed'
+                        : 'text-[#1a1a1a]/85 bg-white/60 hover:bg-[#1a1a1a]/5'
+                    }`}
+                  >
+                    Next Page →
+                  </button>
+                </div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
-        {/* Right Books Grid Area */}
-        <div className="lg:col-span-3">
-          <AnimatePresence mode="wait">
-            {loadingBooks ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-32 gap-3"
-              >
-                <div className="w-10 h-10 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
-                <span className="font-playfair text-[#1a1a1a] italic text-sm">Opening archive vaults...</span>
-              </motion.div>
-            ) : books.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="glass-card border-white/5 rounded-xl p-12 text-center"
-              >
-                <span className="text-3xl block mb-3">🕯️</span>
-                <p className="font-playfair text-lg text-cream italic">No volumes found in this wing of the stacks.</p>
-                <p className="text-xs text-cream/40 mt-1 font-inter">Try broadening your search keywords or choosing another genre.</p>
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="grid grid-cols-2 md:grid-cols-3 gap-6"
-              >
-                {books.map((book) => {
-                  const info = book.volumeInfo || {};
-                  const title = info.title || 'Untitled Work';
-                  const authors = info.authors || ['Unknown Author'];
-                  
-                  // Log every book object rendered in the library grid as required by the user
-                  console.log('Book in grid:', {
-                    title: title,
-                    source: book.source,
-                    gutenbergId: book.gutenbergId,
-                    isFree: !!book.gutenbergId,
-                    authors: authors
-                  });
-
-                  const thumbnail = info.imageLinks?.thumbnail || info.imageLinks?.smallThumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80';
-                  const inWishlist = isBookInWishlist(book.id);
-
-                  return (
-                    <motion.div
-                      key={book.id}
-                      onClick={() => setSelectedBook(book)}
-                      className="glass-card border-white/5 hover:border-gold/30 rounded-xl overflow-hidden shadow hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col group cursor-pointer"
-                    >
-                      {/* Cover Thumbnail wrapper */}
-                      <div className="relative aspect-[3/4] bg-black/40 overflow-hidden flex items-center justify-center">
-                        <img
-                          src={thumbnail}
-                          alt={title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        {/* Gradient shade */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
-
-                        {/* Visible WIshlist Toggle (Glowing Heart) */}
-                        <button
-                          onClick={(e) => toggleWishlist(e, book)}
-                          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md border transition-all duration-300 ${
-                            inWishlist
-                              ? 'bg-red-500/20 border-red-500 text-red-400 shadow shadow-red-500/20'
-                              : 'bg-black/60 border-white/10 text-cream/60 hover:text-gold hover:border-gold/50'
-                          }`}
-                          title={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                        >
-                          <svg
-                            className="w-4 h-4 fill-none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                          </svg>
-                        </button>
-
-                        {/* Save to List Bookmark Button */}
-                        <button
-                          onClick={(e) => handleDropdownToggle(e, book.id)}
-                          className={`absolute top-3 right-12 p-2 rounded-full backdrop-blur-md border transition-all duration-300 z-10 ${
-                            activeListDropdown === book.id
-                              ? 'bg-gold/20 border-gold text-gold shadow shadow-gold/25'
-                              : 'bg-black/60 border-white/10 text-cream/60 hover:text-gold hover:border-gold/50'
-                          }`}
-                          title="Save to List"
-                        >
-                          <svg
-                            className="w-4 h-4 fill-none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                            />
-                          </svg>
-                        </button>
-
-                        {/* Dropdown menu */}
-                        {activeListDropdown === book.id && (
-                          <div 
-                            onClick={(e) => e.stopPropagation()}
-                            className="absolute right-3 top-12 z-20 w-48 glass-card border border-white/10 rounded-xl py-2 shadow-2xl text-left"
-                          >
-                            <div className="px-3 py-1 border-b border-white/5 mb-1 text-[9px] uppercase tracking-wider text-gold font-bold">
-                              Save to List
-                            </div>
-                            {readingLists.length === 0 ? (
-                              <div className="px-3 py-2 text-[10px] text-cream/50 italic flex flex-col gap-1">
-                                <span>Create a list first</span>
-                                <span 
-                                  onClick={() => router.push('/reading-lists')}
-                                  className="text-gold hover:underline font-semibold font-inter cursor-pointer"
-                                >
-                                  Create List →
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="max-h-36 overflow-y-auto">
-                                {readingLists.map((list) => (
-                                  <button
-                                    key={list.id}
-                                    onClick={(e) => handleSaveToReadingList(e, list.id, book)}
-                                    className="w-full text-left px-3 py-1.5 hover:bg-white/5 text-xs text-cream/80 hover:text-gold transition-colors font-inter truncate"
-                                  >
-                                    📁 {list.name}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Saved overlay alert */}
-                        {savedStatus[book.id] && (
-                          <div className="absolute inset-0 bg-navy/95 z-15 flex items-center justify-center">
-                            <span className="font-playfair text-gold italic text-sm font-semibold animate-pulse">
-                              ✨ {savedStatus[book.id]}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Details Box */}
-                      <div className="p-4 flex-grow flex flex-col justify-between">
-                        <div>
-                          <div className="flex items-start gap-2 flex-wrap mb-1">
-                            <h4 className="font-playfair font-bold text-cream text-sm leading-snug group-hover:text-gold transition-colors line-clamp-2 inline">
-                              {title}
-                            </h4>
-                            {book.gutenbergId && (
-                              <span className="bg-emerald-500/20 border border-emerald-500 text-emerald-400 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider font-inter inline-block select-none shrink-0">
-                                Read Free
-                              </span>
-                            )}
-                          </div>
-                          <p className="font-inter text-[11px] text-cream/50 mt-1 line-clamp-1">
-                            by{' '}
-                            {authors.map((authorName, index) => (
-                              <React.Fragment key={authorName}>
-                                {index > 0 && ', '}
-                                <span
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    router.push(`/authors?name=${encodeURIComponent(authorName)}`);
-                                  }}
-                                  className="cursor-pointer hover:text-[#c9a84c] transition-colors duration-200 underline underline-offset-2"
-                                >
-                                  {authorName}
-                                </span>
-                              </React.Fragment>
-                            ))}
-                          </p>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="mt-3 space-y-2">
-                          {book.gutenbergId && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                router.push(`/read/${book.gutenbergId}`);
-                              }}
-                              className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white text-xs font-semibold font-inter transition-all duration-200 w-full"
-                            >
-                              📖 Read Now
-                            </button>
-                          )}
-                          <a
-                            href={`https://play.google.com/store/search?q=${encodeURIComponent(book.volumeInfo.title + ' ' + (book.volumeInfo.authors?.[0] || ''))}&c=books`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white border border-black text-black text-xs font-semibold font-inter hover:bg-gray-100 transition-all duration-200 w-full text-center"
-                          >
-                            Buy Ebook
-                          </a>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/chat/simple?book=${encodeURIComponent(book.volumeInfo.title)}&author=${encodeURIComponent(book.volumeInfo.authors?.[0] || 'Unknown')}`);
-                            }}
-                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-[#c9a84c]/40 text-[#c9a84c] text-xs font-inter hover:bg-[#c9a84c]/10 transition-all duration-200 w-full"
-                          >
-                            💬 Discuss with Companion
-                          </button>
-                        </div>
-
-                        {/* Categories footer */}
-                        <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[9px] font-bold uppercase tracking-wider text-gold">
-                          <span>{info.categories?.[0] || 'Literature'}</span>
-                          <span className="text-[10px] opacity-40">→</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            )}
-            
-            {/* Pagination Controls */}
-            {(hasMore || currentPage > 1) && (
-              <div className="flex justify-center items-center gap-4 mt-12 pt-6 border-t border-white/5 w-full">
-                <button
-                  disabled={currentPage === 1}
-                  onClick={async () => {
-                    const newPage = currentPage - 1;
-                    setCurrentPage(newPage);
-                    await fetchBooks(activeGenre, searchQuery, newPage);
-                  }}
-                  className={`px-4 py-2 rounded-lg text-xs font-semibold font-inter transition-all duration-200 border border-white/10 ${
-                    currentPage === 1
-                      ? 'text-cream/20 cursor-not-allowed'
-                      : 'text-cream hover:bg-white/5 hover:text-gold hover:border-gold/30'
-                  }`}
-                >
-                  ← Previous Page
-                </button>
-                <span className="text-xs font-semibold font-inter text-cream/60">
-                  Page <span className="text-gold">{currentPage}</span>
-                </span>
-                <button
-                  disabled={!hasMore}
-                  onClick={async () => {
-                    const newPage = currentPage + 1;
-                    setCurrentPage(newPage);
-                    await fetchBooks(activeGenre, searchQuery, newPage);
-                  }}
-                  className={`px-4 py-2 rounded-lg text-xs font-semibold font-inter transition-all duration-200 border border-white/10 ${
-                    !hasMore
-                      ? 'text-cream/20 cursor-not-allowed'
-                      : 'text-cream hover:bg-white/5 hover:text-gold hover:border-gold/30'
-                  }`}
-                >
-                  Next Page →
-                </button>
-              </div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Book Detail Modal Overlay */}
-      <AnimatePresence>
-        {selectedBook && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedBook(null)}
-            className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4"
-          >
+        {/* Book Detail Modal Overlay */}
+        <AnimatePresence>
+          {selectedBook && (
             <motion.div
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              transition={{ duration: 0.3 }}
-              onClick={(e) => e.stopPropagation()}
-              className="glass-card max-w-2xl w-full p-6 sm:p-8 rounded-2xl border border-white/10 shadow-2xl relative overflow-y-auto max-h-[85vh]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedBook(null)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             >
-              {/* Close Button */}
-              <button
-                onClick={() => setSelectedBook(null)}
-                className="absolute top-4 right-4 text-white hover:text-white/80 transition-colors text-lg"
+              <motion.div
+                initial={{ scale: 0.95, y: 15 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 15 }}
+                transition={{ duration: 0.3 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-[#F8F4E9] max-w-2xl w-full p-6 sm:p-8 rounded-2xl border border-[#1a1a1a]/15 shadow-2xl relative overflow-y-auto max-h-[85vh] text-[#1a1a1a]"
               >
-                ✕
-              </button>
+                {/* Close Button */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedBook(null)}
+                  className="absolute top-4 right-4 text-[#1a1a1a] hover:opacity-75 transition-colors text-lg font-bold"
+                >
+                  ✕
+                </button>
 
-              {/* Flex container */}
-              <div className="flex flex-col md:flex-row gap-6 mt-2">
-                {/* Book cover left */}
-                <div className="w-full md:w-1/3 aspect-[3/4] bg-black/40 rounded-xl overflow-hidden shadow-lg flex-shrink-0">
-                  <img
-                    src={selectedBook.volumeInfo.imageLinks?.thumbnail || selectedBook.volumeInfo.imageLinks?.smallThumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80'}
-                    alt={selectedBook.volumeInfo.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                {/* Flex container */}
+                <div className="flex flex-col md:flex-row gap-6 mt-2">
+                  {/* Book cover left */}
+                  <div className="w-full md:w-1/3 aspect-[3/4] bg-white border border-[#1a1a1a]/15 rounded-xl overflow-hidden shadow-md flex-shrink-0">
+                    <img
+                      src={selectedBook.volumeInfo.imageLinks?.thumbnail || selectedBook.volumeInfo.imageLinks?.smallThumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80'}
+                      alt={selectedBook.volumeInfo.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-                {/* Content right */}
-                <div className="flex-grow flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-2.5 flex-wrap mb-1">
-                      <span className="text-[9px] uppercase tracking-widest text-gold font-bold font-inter block">
-                        {selectedBook.volumeInfo.categories?.[0] || 'Curated Volume'}
-                      </span>
-                      {selectedBook.gutenbergId && (
-                        <span className="bg-emerald-500/20 border border-emerald-500 text-emerald-400 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider font-inter">
-                          Read Free
+                  {/* Content right */}
+                  <div className="flex-grow flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-2.5 flex-wrap mb-1">
+                        <span className="text-[9px] uppercase tracking-widest text-[#1a1a1a]/60 font-bold font-inter block">
+                          {selectedBook.volumeInfo.categories?.[0] || 'Curated Volume'}
                         </span>
-                      )}
-                    </div>
-                    <h2 className="font-playfair text-2xl font-bold text-cream leading-tight">
-                      {selectedBook.volumeInfo.title}
-                    </h2>
-                    <p className="font-inter text-xs font-semibold text-cream/60 mt-1">
-                      by{' '}
-                      {(selectedBook.volumeInfo.authors || ['Unknown Author']).map((authorName, index) => (
-                        <React.Fragment key={authorName}>
-                          {index > 0 && ', '}
-                          <span
-                            onClick={() => router.push(`/authors?name=${encodeURIComponent(authorName)}`)}
-                            className="cursor-pointer hover:text-[#c9a84c] transition-colors duration-200 underline underline-offset-2"
-                          >
-                            {authorName}
+                        {selectedBook.gutenbergId && (
+                          <span className="bg-white/80 border border-[#1a1a1a]/15 text-[#1a1a1a] rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest font-inter shadow-sm">
+                            Read Free
                           </span>
-                        </React.Fragment>
-                      ))}
-                    </p>
-
-                    <div className="flex gap-2.5 mt-3 flex-wrap">
-                      <span className="bg-white/5 border border-white/5 rounded px-2.5 py-0.5 text-[10px] font-bold text-gold uppercase tracking-wider font-inter">
-                        {synthesizeEra(selectedBook.volumeInfo.publishedDate)}
-                      </span>
-                      <span className="bg-white/5 border border-white/5 rounded px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider font-inter">
-                        {selectedBook.volumeInfo.categories?.[0] || 'Literature'}
-                      </span>
-                      {selectedBook.volumeInfo.publishedDate && (
-                        <span className="bg-white/5 border border-white/5 rounded px-2.5 py-0.5 text-[10px] font-bold text-cream/50 font-inter">
-                          {selectedBook.volumeInfo.publishedDate.split('-')[0]}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Book description scrolling */}
-                    <div className="mt-4 border-t border-white/5 pt-3 max-h-[160px] overflow-y-auto pr-2">
-                      <p className="font-inter text-xs text-white leading-relaxed font-light whitespace-pre-line">
-                        {selectedBook.volumeInfo.description || 'No description available for this volume in the central archives.'}
+                        )}
+                      </div>
+                      <h2 className="font-playfair text-2xl font-bold text-[#1a1a1a] leading-tight">
+                        {selectedBook.volumeInfo.title}
+                      </h2>
+                      <p className="font-inter text-xs font-semibold text-[#1a1a1a]/60 mt-1">
+                        by{' '}
+                        {(selectedBook.volumeInfo.authors || ['Unknown Author']).map((authorName, index) => (
+                          <React.Fragment key={authorName}>
+                            {index > 0 && ', '}
+                            <span
+                              onClick={() => {
+                                setSelectedBook(null);
+                                router.push(`/authors?name=${encodeURIComponent(authorName)}`);
+                              }}
+                              className="cursor-pointer hover:text-[#1a1a1a] transition-colors duration-200 underline underline-offset-2"
+                            >
+                              {authorName}
+                            </span>
+                          </React.Fragment>
+                        ))}
                       </p>
+
+                      <div className="flex gap-2.5 mt-3 flex-wrap">
+                        <span className="bg-white/85 border border-[#1a1a1a]/10 rounded px-2.5 py-0.5 text-[9px] font-bold text-[#1a1a1a] uppercase tracking-widest font-inter shadow-sm">
+                          {synthesizeEra(selectedBook.volumeInfo.publishedDate)}
+                        </span>
+                        <span className="bg-white/85 border border-[#1a1a1a]/10 rounded px-2.5 py-0.5 text-[9px] font-bold text-[#1a1a1a] uppercase tracking-widest font-inter shadow-sm">
+                          {selectedBook.volumeInfo.categories?.[0] || 'Literature'}
+                        </span>
+                        {selectedBook.volumeInfo.publishedDate && (
+                          <span className="bg-white/85 border border-[#1a1a1a]/10 rounded px-2.5 py-0.5 text-[9px] font-bold text-[#1a1a1a]/60 font-inter shadow-sm">
+                            {selectedBook.volumeInfo.publishedDate.split('-')[0]}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Book description scrolling */}
+                      <div className="mt-4 border-t border-[#1a1a1a]/10 pt-3 max-h-[160px] overflow-y-auto pr-2">
+                        <p className="font-inter text-xs text-[#555555] leading-relaxed whitespace-pre-line">
+                          {selectedBook.volumeInfo.description || 'No description available for this volume in the central archives.'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Actions buttons footer */}
-                  <div className="mt-6 pt-4 border-t border-white/5 flex flex-col sm:flex-row gap-3">
-                    {/* Discuss button */}
-                    <button
-                      onClick={() => router.push(`/chat/simple?book=${encodeURIComponent(selectedBook.volumeInfo.title)}&author=${encodeURIComponent(selectedBook.volumeInfo.authors?.[0] || 'Unknown')}`)}
-                      className="flex-1 py-3 rounded-xl border border-[#c9a84c]/40 text-[#c9a84c] text-xs font-bold uppercase tracking-wider font-inter hover:bg-[#c9a84c]/10 transition-all duration-200 flex items-center justify-center gap-1.5"
-                    >
-                      💬 Discuss with Companion
-                    </button>
-
-                    {/* Read Now button (if gutenbergId exists) */}
-                    {selectedBook.gutenbergId && (
+                    {/* Actions buttons footer */}
+                    <div className="mt-6 pt-4 border-t border-[#1a1a1a]/10 flex flex-wrap gap-2.5 justify-end">
+                      {/* Discuss button */}
                       <button
-                        onClick={() => router.push(`/read/${selectedBook.gutenbergId}`)}
-                        className="flex-1 py-3 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white rounded-xl text-center text-xs font-bold uppercase tracking-wider font-inter transition-all flex items-center justify-center gap-1.5"
+                        type="button"
+                        onClick={() => {
+                          setSelectedBook(null);
+                          router.push(`/chat/simple?book=${encodeURIComponent(selectedBook.volumeInfo.title)}&author=${encodeURIComponent(selectedBook.volumeInfo.authors?.[0] || 'Unknown')}`);
+                        }}
+                        className="flex-1 py-3 rounded-xl border border-[#1a1a1a]/15 bg-white/60 hover:bg-[#1a1a1a]/5 text-[#1a1a1a] text-xs font-bold uppercase tracking-widest font-inter transition-all duration-200 flex items-center justify-center gap-1.5"
                       >
-                        📖 Read Now
+                        💬 Discuss with Companion
                       </button>
-                    )}
 
-                    {/* Buy Link Button */}
-                    <a
-                      href={selectedBook.volumeInfo.infoLink || `https://books.google.com/books?id=${selectedBook.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 py-3 bg-gold hover:bg-gold-light rounded-xl text-center text-xs font-bold uppercase tracking-wider font-inter text-navy transition-all shadow-md shadow-gold/15 flex items-center justify-center gap-1.5"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                      Acquire Volume
-                    </a>
+                      {/* Read Now button (if gutenbergId exists) */}
+                      {selectedBook.gutenbergId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedBook(null);
+                            router.push(`/read/${selectedBook.gutenbergId}`);
+                          }}
+                          className="flex-1 py-3 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] rounded-xl text-center text-xs font-bold uppercase tracking-widest font-inter transition-all flex items-center justify-center gap-1.5"
+                        >
+                          📖 Read Now
+                        </button>
+                      )}
 
-                    {/* Buy Ebook Button */}
-                    <a
-                      href={`https://play.google.com/store/search?q=${encodeURIComponent(selectedBook.volumeInfo.title + ' ' + (selectedBook.volumeInfo.authors?.[0] || ''))}&c=books`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 py-3 bg-white border border-black text-black hover:bg-gray-100 rounded-xl text-center text-xs font-bold uppercase tracking-wider font-inter transition-all flex items-center justify-center gap-1.5"
-                    >
-                      Buy Ebook
-                    </a>
+                      {/* Buy Link Button */}
+                      <a
+                        href={selectedBook.volumeInfo.infoLink || `https://books.google.com/books?id=${selectedBook.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-3 bg-white/60 hover:bg-white/90 border border-[#1a1a1a]/15 rounded-xl text-center text-xs font-bold uppercase tracking-widest font-inter text-[#1a1a1a]/85 transition-all shadow-sm flex items-center justify-center gap-1.5"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        Acquire Volume
+                      </a>
 
-                    {/* Wishlist Toggle Button */}
-                    <button
-                      onClick={(e) => toggleWishlist(e, selectedBook)}
-                      className={`flex-1 py-3 rounded-xl border text-xs font-bold uppercase tracking-wider font-inter transition-all flex items-center justify-center gap-1.5 ${
-                        isBookInWishlist(selectedBook.id)
-                          ? 'bg-red-500/20 border-red-500 text-red-400'
-                          : 'bg-white/5 border-white/10 text-cream hover:bg-white/10 hover:border-gold/50 hover:text-gold'
-                      }`}
-                    >
-                      <svg className="w-3.5 h-3.5 fill-none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                      </svg>
-                      {isBookInWishlist(selectedBook.id) ? 'Saved' : 'Add to Wishlist'}
-                    </button>
+                      {/* Buy Ebook Button */}
+                      <a
+                        href={`https://play.google.com/store/search?q=${encodeURIComponent(selectedBook.volumeInfo.title + ' ' + (selectedBook.volumeInfo.authors?.[0] || ''))}&c=books`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-3 bg-white/60 hover:bg-white/90 border border-[#1a1a1a]/15 text-[#1a1a1a]/85 rounded-xl text-center text-xs font-bold uppercase tracking-widest font-inter transition-all flex items-center justify-center gap-1.5"
+                      >
+                        Buy Ebook
+                      </a>
+
+                      {/* Wishlist Toggle Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => toggleWishlist(e, selectedBook)}
+                        className={`flex-1 py-3 rounded-xl border text-xs font-bold uppercase tracking-widest font-inter transition-all flex items-center justify-center gap-1.5 ${
+                          isBookInWishlist(selectedBook.id)
+                            ? 'bg-[#1a1a1a] border-[#1a1a1a] text-[#F8F4E9]'
+                            : 'bg-white/60 border-[#1a1a1a]/15 text-[#1a1a1a] hover:bg-[#1a1a1a]/5 hover:text-[#1a1a1a]'
+                        }`}
+                      >
+                        <svg className="w-3.5 h-3.5 fill-none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                        </svg>
+                        {isBookInWishlist(selectedBook.id) ? 'Saved' : 'Add to Wishlist'}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
   );
 }
 
@@ -1237,8 +1334,11 @@ export default function LibraryPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-[#F8F4E9] flex items-center justify-center relative z-10">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Opening archive vaults...</span>
+          <div className="relative w-12 h-12 flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full border border-[#1a1a1a] opacity-25" />
+            <div className="w-8 h-8 rounded-full border-t-2 border-[#1a1a1a] animate-spin" />
+          </div>
+          <span className="font-playfair text-base text-[#1a1a1a] font-medium italic">Opening archive vaults…</span>
         </div>
       </div>
     }>
