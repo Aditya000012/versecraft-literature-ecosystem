@@ -21,19 +21,104 @@ interface AuthorData {
 }
 
 const curatedAuthors = [
-  { name: 'Fyodor Dostoevsky', movement: 'Existentialism & Russian Realism' },
-  { name: 'Leo Tolstoy', movement: 'Realism & Moral Philosophy' },
-  { name: 'Virginia Woolf', movement: 'Modernism & Stream of Consciousness' },
-  { name: 'Franz Kafka', movement: 'Modernism & Surrealist Existentialism' },
-  { name: 'Gabriel García Márquez', movement: 'Magical Realism' },
-  { name: 'Oscar Wilde', movement: 'Aestheticism & Decadence' },
-  { name: 'Emily Brontë', movement: 'Victorian Gothic Romanticism' },
-  { name: 'Edgar Allan Poe', movement: 'Dark Romanticism & Gothic Fiction' },
-  { name: 'Rumi', movement: 'Sufi Mysticism & Lyrical Poetry' },
-  { name: 'Rabindranath Tagore', movement: 'Bengali Renaissance & Modernism' },
-  { name: 'James Joyce', movement: 'Modernism & Stream of Consciousness' },
-  { name: 'Sylvia Plath', movement: 'Confessional Poetry & Modernism' },
+  { 
+    name: 'Fyodor Dostoevsky', 
+    movement: 'Existentialism & Russian Realism',
+    descriptor: 'Explorer of guilt, suffering, morality, and redemption.',
+    movements: ['Existentialism', 'Russian Realism']
+  },
+  { 
+    name: 'Leo Tolstoy', 
+    movement: 'Realism & Moral Philosophy',
+    descriptor: 'Searcher of truth, moral struggle, history, and the human soul.',
+    movements: ['Realism', 'Moral Philosophy']
+  },
+  { 
+    name: 'Virginia Woolf', 
+    movement: 'Modernism & Stream of Consciousness',
+    descriptor: 'Chronicler of memory, silence, and inner consciousness.',
+    movements: ['Modernism', 'Stream of Consciousness']
+  },
+  { 
+    name: 'Franz Kafka', 
+    movement: 'Modernism & Surrealist Existentialism',
+    descriptor: 'Architect of absurdity, anxiety, bureaucracy, and alienation.',
+    movements: ['Modernism', 'Surrealist Existentialism']
+  },
+  { 
+    name: 'Gabriel García Márquez', 
+    movement: 'Magical Realism',
+    descriptor: 'Weaver of myth, longing, memory, and magical realism.',
+    movements: ['Magical Realism']
+  },
+  { 
+    name: 'Oscar Wilde', 
+    movement: 'Aestheticism & Decadence',
+    descriptor: 'Master of wit, beauty, decadence, and irony.',
+    movements: ['Aestheticism', 'Decadence']
+  },
+  { 
+    name: 'Emily Brontë', 
+    movement: 'Victorian Gothic Romanticism',
+    descriptor: 'Voice of longing, wilderness, passion, and melancholy.',
+    movements: ['Victorian Gothic', 'Romanticism']
+  },
+  { 
+    name: 'Edgar Allan Poe', 
+    movement: 'Dark Romanticism & Gothic Fiction',
+    descriptor: 'Poet of dread, obsession, darkness, and melancholy.',
+    movements: ['Dark Romanticism', 'Gothic Fiction']
+  },
+  { 
+    name: 'Rumi', 
+    movement: 'Sufi Mysticism & Lyrical Poetry',
+    descriptor: 'Mystic of love, longing, devotion, and transcendence.',
+    movements: ['Sufi Mysticism', 'Lyrical Poetry']
+  },
+  { 
+    name: 'Rabindranath Tagore', 
+    movement: 'Bengali Renaissance & Modernism',
+    descriptor: 'Poet of humanity, spirit, beauty, and freedom.',
+    movements: ['Bengali Renaissance', 'Modernism']
+  },
+  { 
+    name: 'James Joyce', 
+    movement: 'Modernism & Stream of Consciousness',
+    descriptor: 'Explorer of language, consciousness, memory, and identity.',
+    movements: ['Modernism', 'Stream of Consciousness']
+  },
+  { 
+    name: 'Sylvia Plath', 
+    movement: 'Confessional Poetry & Modernism',
+    descriptor: 'Voice of vulnerability, grief, intensity, and interior struggle.',
+    movements: ['Confessional Poetry', 'Modernism']
+  },
 ];
+
+const detailIdentitySentences: Record<string, string> = {
+  'Fyodor Dostoevsky': 'Chronicler of guilt, morality, suffering, redemption, and the fractured human soul.',
+  'Leo Tolstoy': 'Chronicler of truth, history, moral struggle, and the human soul.',
+  'Virginia Woolf': 'Explorer of memory, silence, interiority, and emotional consciousness.',
+  'Franz Kafka': 'Cartographer of anxiety, absurdity, bureaucracy, and alienation.',
+  'Gabriel García Márquez': 'Weaver of memory, longing, myth, and magical realism.',
+  'Oscar Wilde': 'Master of wit, decadence, beauty, irony, and performance.',
+  'Emily Brontë': 'Voice of longing, wilderness, emotional intensity, and melancholy.',
+  'Edgar Allan Poe': 'Architect of dread, obsession, darkness, and poetic sorrow.',
+  'Rumi': 'Mystic of devotion, transcendence, longing, and divine love.',
+  'Rabindranath Tagore': 'Poet of beauty, humanity, spirit, and quiet revolution.',
+  'James Joyce': 'Explorer of language, consciousness, memory, and identity.',
+  'Sylvia Plath': 'Voice of grief, vulnerability, intensity, and emotional truth.'
+};
+
+const getDetailIdentity = (name: string, movement: string) => {
+  const match = Object.keys(detailIdentitySentences).find(
+    k => k.toLowerCase() === name.toLowerCase() || name.toLowerCase().includes(k.toLowerCase())
+  );
+  if (match) {
+    return detailIdentitySentences[match];
+  }
+  return `A prominent voice of ${movement}, exploring the enduring questions of humanity and the creative spirit.`;
+};
 
 const FONT_LINK = 'https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap';
 
@@ -206,7 +291,7 @@ function AuthorsPageContent() {
             variants={containerVariants}
             initial="hidden"
             animate="show"
-            className="space-y-10"
+            className="space-y-12"
           >
             {/* Top Section */}
             <motion.div variants={itemVariants} className="space-y-4">
@@ -226,41 +311,54 @@ function AuthorsPageContent() {
                 </Link>
               </div>
               
-              <div className="flex flex-col sm:flex-row sm:items-baseline gap-3 pt-2">
-                <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#1a1a1a]">
+              <div className="space-y-4 pt-2">
+                <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#1a1a1a] leading-tight">
                   {author.name}
                 </h1>
-                <span className="inline-block border border-[#1a1a1a]/20 text-[#1a1a1a]/70 px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold font-inter w-max">
-                  {author.movement}
-                </span>
-              </div>
 
-              <div className="text-xs text-[#1a1a1a]/50 font-inter font-medium uppercase tracking-widest flex flex-wrap gap-x-4 gap-y-1">
-                <span>Born: {author.born}</span>
-                <span className="hidden sm:inline text-[#1a1a1a]/15">|</span>
-                <span>Died: {author.died}</span>
-                <span className="hidden sm:inline text-[#1a1a1a]/15">|</span>
-                <span>Nationality: {author.nationality}</span>
+                {/* Literary Identity Sentence */}
+                <p className="font-playfair text-lg sm:text-xl italic text-[#1a1a1a]/85 leading-relaxed font-medium max-w-2xl">
+                  {getDetailIdentity(author.name, author.movement)}
+                </p>
+
+                {/* Refined Metadata Hierarchy */}
+                <div className="font-inter text-xs text-[#1a1a1a]/55 space-y-1 pt-3 border-t border-[#1a1a1a]/10 max-w-xs">
+                  <div className="font-semibold text-[#1a1a1a] text-sm flex items-center gap-1.5">
+                    <span>{author.born.match(/\b\d{4}\b/)?.[0] || 'Born'}</span>
+                    <span>&mdash;</span>
+                    <span>{author.died.match(/\b\d{4}\b/)?.[0] || author.died}</span>
+                  </div>
+                  <div>
+                    {author.born.replace(/\b\d{4}\b/, '').replace(/^\s*,\s*|,\s*$/, '').trim().replace(/^,\s*/, '') || author.nationality}
+                  </div>
+                  <div className="italic text-[#1a1a1a]/70 font-medium">
+                    {author.movement}
+                  </div>
+                </div>
               </div>
             </motion.div>
 
             {/* Biography */}
-            <motion.div variants={itemVariants} className="bg-[#FAF7F0] border border-[#1a1a1a]/10 p-6 sm:p-8 rounded-2xl space-y-4 shadow-sm">
-              <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] border-b border-[#1a1a1a]/10 pb-2">
+            <motion.div variants={itemVariants} className="space-y-4">
+              <h3 className="font-playfair text-lg font-bold text-[#1a1a1a] border-b border-[#1a1a1a]/10 pb-2 uppercase tracking-wider">
                 Biography
               </h3>
-              <p className="font-inter text-sm text-[#1a1a1a]/85 leading-relaxed font-light whitespace-pre-line">
-                {author.biography}
-              </p>
+              <div className="space-y-4 select-text pt-2">
+                {author.biography.split('\n\n').map((paragraph, idx) => (
+                  <p key={idx} className="font-inter text-[14px] sm:text-[15px] text-[#1a1a1a]/85 leading-relaxed font-light tracking-wide">
+                    {paragraph.trim()}
+                  </p>
+                ))}
+              </div>
             </motion.div>
 
             {/* Famous Quote */}
             {author.famousQuote && (
-              <motion.div variants={itemVariants} className="border-l-4 border-[#1a1a1a]/40 pl-6 py-2 my-8 italic">
-                <blockquote className="font-playfair text-lg text-[#1a1a1a]/90 leading-relaxed">
-                  “ {author.famousQuote} ”
+              <motion.div variants={itemVariants} className="border-l-2 border-[#1a1a1a]/30 pl-6 py-2 my-8 italic">
+                <blockquote className="font-playfair text-lg sm:text-xl text-[#1a1a1a]/90 leading-relaxed tracking-wide">
+                  “{author.famousQuote}”
                 </blockquote>
-                <span className="block text-[#1a1a1a]/70 text-xs font-inter font-bold mt-2 uppercase tracking-widest">
+                <span className="block text-[10px] text-[#1a1a1a]/50 tracking-widest uppercase font-inter font-bold mt-3">
                   — {author.quoteSource}
                 </span>
               </motion.div>
@@ -268,15 +366,15 @@ function AuthorsPageContent() {
 
             {/* Major Works */}
             <motion.div variants={itemVariants} className="space-y-4">
-              <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] border-b border-[#1a1a1a]/10 pb-2">
+              <h3 className="font-playfair text-lg font-bold text-[#1a1a1a] border-b border-[#1a1a1a]/10 pb-2 uppercase tracking-wider">
                 Major Works
               </h3>
-              <div className="flex flex-wrap gap-2 pt-1">
+              <div className="flex flex-wrap gap-2.5 pt-2 select-none">
                 {author.majorWorks.map((work) => (
                   <button
                     key={work}
                     onClick={() => router.push(`/library?q=${encodeURIComponent(work)}`)}
-                    className="px-3.5 py-2 bg-[#FAF7F0] hover:bg-[#1a1a1a] hover:text-[#FAF7F0] border border-[#1a1a1a]/15 hover:border-[#1a1a1a] rounded-xl text-xs font-semibold text-[#1a1a1a] font-inter transition-all flex items-center gap-1.5 shadow-xs active:scale-95"
+                    className="px-4 py-2 bg-[#FAF7F0] hover:bg-[#FAF7F0] border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/25 hover:-translate-y-0.5 rounded-lg text-xs font-medium text-[#1a1a1a] font-inter transition-all flex items-center gap-1.5 shadow-xs hover:shadow-sm active:scale-98"
                   >
                     📖 {work}
                   </button>
@@ -285,18 +383,18 @@ function AuthorsPageContent() {
             </motion.div>
 
             {/* Influences & Influenced side-by-side columns */}
-            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
               {/* Influences By */}
-              <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 p-6 rounded-xl shadow-xs">
-                <h4 className="font-playfair text-base font-bold text-[#1a1a1a] mb-3 uppercase tracking-wider">
+              <div className="space-y-4">
+                <h4 className="font-playfair text-base font-bold text-[#1a1a1a] uppercase tracking-wider border-b border-[#1a1a1a]/10 pb-2">
                   Influenced By
                 </h4>
-                <ul className="space-y-2">
+                <ul className="space-y-3 pt-1">
                   {author.influences.map((inf) => (
                     <li key={inf}>
                       <Link
                         href={`/authors?name=${encodeURIComponent(inf)}`}
-                        className="text-xs text-[#1a1a1a]/80 hover:text-[#1a1a1a] transition-colors font-inter underline underline-offset-4 decoration-[#1a1a1a]/20"
+                        className="text-[13px] text-[#1a1a1a]/70 hover:text-[#1a1a1a] hover:underline transition-colors font-inter flex items-center gap-2"
                       >
                         ✦ {inf}
                       </Link>
@@ -306,16 +404,16 @@ function AuthorsPageContent() {
               </div>
 
               {/* Influenced */}
-              <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 p-6 rounded-xl shadow-xs">
-                <h4 className="font-playfair text-base font-bold text-[#1a1a1a] mb-3 uppercase tracking-wider">
+              <div className="space-y-4">
+                <h4 className="font-playfair text-base font-bold text-[#1a1a1a] uppercase tracking-wider border-b border-[#1a1a1a]/10 pb-2">
                   Influenced
                 </h4>
-                <ul className="space-y-2">
+                <ul className="space-y-3 pt-1">
                   {author.influenced.map((infd) => (
                     <li key={infd}>
                       <Link
                         href={`/authors?name=${encodeURIComponent(infd)}`}
-                        className="text-xs text-[#1a1a1a]/80 hover:text-[#1a1a1a] transition-colors font-inter underline underline-offset-4 decoration-[#1a1a1a]/20"
+                        className="text-[13px] text-[#1a1a1a]/70 hover:text-[#1a1a1a] hover:underline transition-colors font-inter flex items-center gap-2"
                       >
                         ✦ {infd}
                       </Link>
@@ -326,11 +424,11 @@ function AuthorsPageContent() {
             </motion.div>
 
             {/* Legacy */}
-            <motion.div variants={itemVariants} className="bg-[#FAF7F0] border border-[#1a1a1a]/10 p-6 sm:p-8 rounded-2xl space-y-4 shadow-sm">
-              <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] border-b border-[#1a1a1a]/10 pb-2">
+            <motion.div variants={itemVariants} className="space-y-4">
+              <h3 className="font-playfair text-lg font-bold text-[#1a1a1a] border-b border-[#1a1a1a]/10 pb-2 uppercase tracking-wider">
                 Legacy
               </h3>
-              <p className="font-inter text-sm text-[#1a1a1a]/85 leading-relaxed font-light">
+              <p className="font-inter text-[14px] sm:text-[15px] text-[#1a1a1a]/80 leading-relaxed font-light select-text pt-2">
                 {author.legacy}
               </p>
             </motion.div>
@@ -339,15 +437,15 @@ function AuthorsPageContent() {
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-[#1a1a1a]/10">
               <button
                 onClick={() => router.push(`/chat/simple?book=${encodeURIComponent(author.name)}&author=${encodeURIComponent(author.name)}`)}
-                className="flex-1 py-3.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] rounded-xl text-center text-xs font-bold uppercase tracking-wider font-inter text-white transition-all shadow-sm active:scale-95"
+                className="flex-grow py-3.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] rounded-xl text-center text-xs font-bold uppercase tracking-widest font-inter text-white transition-all shadow-sm active:scale-95"
               >
-                💬 Discuss this Author
+                Discuss Their Ideas &rarr;
               </button>
               <button
                 onClick={() => router.push(`/library?q=${encodeURIComponent(author.name)}`)}
-                className="flex-1 py-3.5 bg-transparent hover:bg-[#1a1a1a]/5 border border-[#1a1a1a] rounded-xl text-center text-xs font-bold uppercase tracking-wider font-inter text-[#1a1a1a] transition-all active:scale-95"
+                className="flex-grow py-3.5 bg-transparent hover:bg-[#1a1a1a]/5 border border-[#1a1a1a] rounded-xl text-center text-xs font-bold uppercase tracking-widest font-inter text-[#1a1a1a] transition-all active:scale-95"
               >
-                📚 Find their Books
+                Find Their Books &rarr;
               </button>
             </motion.div>
           </motion.div>
@@ -376,7 +474,7 @@ function AuthorsPageContent() {
             The Author&apos;s Hall
           </h1>
           <p className="font-inter text-xs text-[#1a1a1a]/50 uppercase tracking-widest font-semibold">
-            Explore the minds that shaped literature
+            Explore the voices, ideas, and minds that shaped literature.
           </p>
           <div className="h-[1px] w-24 bg-[#1a1a1a]/15 mx-auto mt-4" />
         </div>
@@ -385,7 +483,7 @@ function AuthorsPageContent() {
         <form onSubmit={handleSearchSubmit} className="w-full max-w-lg mx-auto relative mb-16 shadow-xs rounded-xl">
           <input
             type="text"
-            placeholder="Search an author..."
+            placeholder="Search literary minds, voices, and movements..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className="w-full px-5 py-3.5 pl-12 rounded-xl outline-none bg-white/60 border border-[#1a1a1a]/15 focus:bg-white focus:border-[#1a1a1a]/30 focus:ring-1 focus:ring-[#1a1a1a]/10 text-sm text-[#1a1a1a] placeholder-[#1a1a1a]/40 shadow-xs font-inter transition-all"
@@ -411,20 +509,31 @@ function AuthorsPageContent() {
             <motion.div
               key={item.name}
               variants={itemVariants}
-              whileHover={{ scale: 1.03, translateY: -2 }}
+              whileHover={{ y: -3 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => router.push(`/authors?name=${encodeURIComponent(item.name)}`)}
-              className="bg-[#FAF7F0] border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/30 p-6 rounded-2xl shadow-sm flex flex-col justify-between cursor-pointer min-h-[140px] group transition-all duration-300"
+              className="bg-[#FAF7F0] border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/25 p-6 rounded-2xl shadow-sm hover:shadow-md flex flex-col justify-between cursor-pointer min-h-[175px] group transition-all duration-300"
             >
-              <div>
-                <h3 className="font-playfair text-lg font-bold text-[#1a1a1a] group-hover:text-[#1a1a1a]/70 transition-colors leading-tight mb-2">
+              <div className="space-y-2">
+                <h3 className="font-playfair text-lg sm:text-xl font-bold text-[#1a1a1a] group-hover:underline decoration-[#1a1a1a]/30 transition-all leading-tight">
                   {item.name}
                 </h3>
+                {/* One-line literary identity sentence */}
+                <p className="font-inter text-xs text-[#1a1a1a]/60 leading-relaxed font-light italic">
+                  {item.descriptor}
+                </p>
               </div>
-              <div className="border-t border-[#1a1a1a]/10 pt-3 mt-4">
-                <span className="text-[10px] text-[#1a1a1a]/60 font-bold uppercase tracking-wider font-inter">
-                  {item.movement}
-                </span>
+              
+              {/* Movements Chips */}
+              <div className="flex flex-wrap gap-1.5 mt-4 pt-3 border-t border-[#1a1a1a]/5">
+                {item.movements.map((mov) => (
+                  <span 
+                    key={mov} 
+                    className="text-[9px] font-bold uppercase tracking-wider text-[#1a1a1a]/60 border border-[#1a1a1a]/10 bg-[#FAF7F0] px-2 py-0.5 rounded font-inter"
+                  >
+                    {mov}
+                  </span>
+                ))}
               </div>
             </motion.div>
           ))}
