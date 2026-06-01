@@ -336,7 +336,7 @@ export default function RecommendationsPage() {
       <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden font-playfair italic text-[#1a1a1a]">
         {/* Top-Left */}
         <span 
-          className="absolute text-xs tracking-wider opacity-[0.04] select-none"
+          className="absolute text-xs tracking-wider opacity-[0.14] select-none"
           style={{ top: '12%', left: '4%' }}
         >
           silence
@@ -344,7 +344,7 @@ export default function RecommendationsPage() {
 
         {/* Left margin (Desktop only) */}
         <span 
-          className="absolute text-[13px] tracking-widest opacity-[0.045] select-none hidden lg:block"
+          className="absolute text-[13px] tracking-widest opacity-[0.14] select-none hidden lg:block"
           style={{ top: '42%', left: '3%' }}
         >
           solitude
@@ -352,7 +352,7 @@ export default function RecommendationsPage() {
 
         {/* Lower-Left */}
         <span 
-          className="absolute text-xs tracking-wider opacity-[0.035] select-none"
+          className="absolute text-xs tracking-wider opacity-[0.14] select-none"
           style={{ bottom: '15%', left: '5%' }}
         >
           memory
@@ -360,7 +360,7 @@ export default function RecommendationsPage() {
 
         {/* Top-Right */}
         <span 
-          className="absolute text-[13px] tracking-widest opacity-[0.04] select-none"
+          className="absolute text-[13px] tracking-widest opacity-[0.14] select-none"
           style={{ top: '15%', right: '4%' }}
         >
           wonder
@@ -368,7 +368,7 @@ export default function RecommendationsPage() {
 
         {/* Right margin (Desktop only) */}
         <span 
-          className="absolute text-xs tracking-wider opacity-[0.045] select-none hidden lg:block"
+          className="absolute text-xs tracking-wider opacity-[0.14] select-none hidden lg:block"
           style={{ top: '48%', right: '3%' }}
         >
           longing
@@ -376,7 +376,7 @@ export default function RecommendationsPage() {
 
         {/* Bottom-Right */}
         <span 
-          className="absolute text-xs tracking-widest opacity-[0.035] select-none"
+          className="absolute text-xs tracking-widest opacity-[0.14] select-none"
           style={{ bottom: '12%', right: '5%' }}
         >
           shadow
