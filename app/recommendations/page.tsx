@@ -17,6 +17,10 @@ interface Recommendation {
   description: string;
   infoLink: string;
   poeticReason: string;
+  genre?: string;
+  era?: string;
+  tone?: string;
+  category?: string;
 }
 
 interface WishlistItem {
@@ -407,13 +411,18 @@ export default function RecommendationsPage() {
           <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-[#1a1a1a] block font-inter">THE ORACLE&apos;S CHOICE</span>
           <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#1a1a1a] tracking-wide">The Curated Alcove</h1>
           <p className="font-playfair text-sm italic text-[#1a1a1a] mt-3 max-w-xl mx-auto leading-relaxed">
-            AI curates the books. Gemini writes the poetic reason. All book details come direct from the library catalogs.
+            Whisper your tastes to the oracle and receive volumes chosen for your temperament, mood, and literary longing.
           </p>
           <div className="h-[1px] w-24 bg-[#1a1a1a]/20 mx-auto mt-4" />
         </div>
 
         {/* Filter panel Form */}
         <form onSubmit={handleCuration} className="bg-[#FAF7F0] border border-[#1a1a1a]/15 rounded-xl p-6 sm:p-8 shadow-xs mb-12 max-w-4xl mx-auto select-none">
+          <div className="text-center mb-6">
+            <p className="font-playfair italic text-xs text-[#1a1a1a]/75 tracking-wide">
+              Shape the mood of your next encounter.
+            </p>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {/* Genre selection */}
             <div>
@@ -537,18 +546,42 @@ export default function RecommendationsPage() {
                 return (
                   <div
                     key={rec.id}
-                    className="bg-[#FAF7F0] border border-[#1a1a1a]/15 hover:border-[#1a1a1a]/30 rounded-xl p-6 transition-all duration-300 flex flex-col md:flex-row gap-6 relative overflow-hidden group hover:-translate-y-1"
+                    className="bg-[#FAF7F0] border border-[#1a1a1a]/15 hover:border-[#1a1a1a]/30 hover:shadow-md hover:-translate-y-[3px] rounded-xl p-6 transition-all duration-300 flex flex-col md:flex-row gap-6 relative overflow-hidden group"
                   >
                     {/* Book cover left */}
-                    <div className="w-full md:w-1/3 aspect-[3/4] bg-[#EAE4D6] rounded-lg overflow-hidden border border-[#1a1a1a]/10 shadow flex-shrink-0 relative select-none">
-                      <img
-                        src={rec.thumbnail}
-                        alt={rec.title}
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="w-full md:w-1/3 aspect-[3/4] bg-[#FAF7F0] rounded-lg overflow-hidden border border-[#1a1a1a]/20 shadow flex-shrink-0 relative select-none flex flex-col justify-between">
+                      {(!rec.thumbnail || rec.thumbnail === '' || rec.thumbnail.includes('placeholder') || rec.thumbnail.includes('no-image')) ? (
+                        <div className="w-full h-full bg-[#F8F4E9] p-4 flex flex-col justify-between border-4 border-[#FAF7F0] rounded-lg select-none relative">
+                          {/* Inner elegant border */}
+                          <div className="absolute inset-1.5 border border-[#1a1a1a]/15 pointer-events-none rounded-sm flex flex-col justify-between p-2">
+                            <div className="text-[7px] uppercase tracking-widest text-[#1a1a1a]/50 font-bold font-inter text-center">
+                              Versecraft Volume
+                            </div>
+                            <div className="my-auto text-center px-1">
+                              <h4 className="font-playfair text-xs sm:text-[13px] font-bold text-[#1a1a1a] line-clamp-3 leading-relaxed">
+                                {rec.title}
+                              </h4>
+                              <div className="h-[1px] w-8 bg-[#1a1a1a]/20 mx-auto mt-2 mb-1" />
+                              <p className="font-inter text-[9px] italic text-[#1a1a1a]/60 line-clamp-1">
+                                {rec.author || (rec.authors && rec.authors[0]) || 'Unknown Author'}
+                              </p>
+                            </div>
+                            <div className="text-[7px] tracking-wider text-[#1a1a1a]/40 font-inter text-center uppercase font-medium">
+                              Volume Selection
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <img
+                          src={rec.thumbnail}
+                          alt={rec.title}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                      
                       {/* Saved overlay alert */}
                       {savedStatus[rec.id] && (
-                        <div className="absolute inset-0 bg-[#FAF7F0]/95 z-15 flex items-center justify-center rounded-lg border border-[#1a1a1a]/10 shadow-inner">
+                        <div className="absolute inset-0 bg-[#FAF7F0]/95 z-20 flex items-center justify-center rounded-lg border border-[#1a1a1a]/10 shadow-inner">
                           <span className="font-playfair text-[#1a1a1a] italic text-sm font-bold animate-pulse">
                             ✨ {savedStatus[rec.id]}
                           </span>
@@ -646,7 +679,7 @@ export default function RecommendationsPage() {
                         <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] group-hover:underline transition-colors line-clamp-2 select-text">
                           {rec.title}
                         </h3>
-                        <p className="font-inter text-xs text-[#1a1a1a] mt-0.5 mb-4 font-semibold select-text">
+                        <p className="font-inter text-xs text-[#1a1a1a] mt-1 mb-3 font-semibold select-text">
                           by{' '}
                           {rec.author ? (
                             <span
@@ -672,19 +705,46 @@ export default function RecommendationsPage() {
                           )}
                         </p>
 
-                        {/* POETIC MATCH CARD BLOCK */}
+                        {/* Optional metadata chips if they exist */}
+                        {(rec.genre || rec.era || rec.tone || rec.category) && (
+                          <div className="flex flex-wrap gap-1.5 mb-3.5 select-none">
+                            {rec.genre && (
+                              <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider bg-[#FAF7F0] border border-[#1a1a1a]/15 text-[#1a1a1a] rounded font-inter font-medium">
+                                {rec.genre}
+                              </span>
+                            )}
+                            {rec.era && (
+                              <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider bg-[#FAF7F0] border border-[#1a1a1a]/15 text-[#1a1a1a] rounded font-inter font-medium">
+                                {rec.era}
+                              </span>
+                            )}
+                            {rec.tone && (
+                              <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider bg-[#FAF7F0] border border-[#1a1a1a]/15 text-[#1a1a1a] rounded font-inter font-medium">
+                                {rec.tone}
+                              </span>
+                            )}
+                            {rec.category && (
+                              <span className="px-2 py-0.5 text-[9px] uppercase tracking-wider bg-[#FAF7F0] border border-[#1a1a1a]/15 text-[#1a1a1a] rounded font-inter font-medium">
+                                {rec.category}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Book Description block */}
+                        <p className="font-inter text-[11.5px] text-[#1a1a1a] leading-relaxed font-medium mb-4 line-clamp-2 select-text">
+                          {rec.description}
+                        </p>
+
+                        {/* POETIC MATCH CARD BLOCK (Curator's Note) */}
                         <div className="p-4 bg-[#EAE4D6]/30 border-l-2 border-[#1a1a1a]/30 rounded-r-lg mb-4 select-text shadow-xs">
                           <span className="text-[10px] uppercase tracking-wider text-[#1a1a1a] font-bold font-inter block mb-1">
-                            Why this fits your vibe:
+                            A Curator’s Note
                           </span>
                           <p className="font-playfair italic text-xs text-[#1a1a1a] leading-relaxed font-semibold">
                             “{rec.poeticReason}”
                           </p>
                         </div>
-
-                        <p className="font-inter text-[11.5px] text-[#1a1a1a] leading-relaxed font-medium line-clamp-2 select-text">
-                          {rec.description}
-                        </p>
                       </div>
 
                       {/* Acquisition links block */}
