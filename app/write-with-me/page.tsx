@@ -1418,21 +1418,60 @@ export default function WriteWithMePage() {
         `}} />
       )}
 
-      {/* Background Pattern - Do not touch, leave as it is */}
+      {/* Background Pattern - Aligned left and right (except Sufi which is full screen) */}
       {getGenrePattern(genre) && (
-        <div 
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 1,
-            pointerEvents: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden'
-          }}
-          dangerouslySetInnerHTML={{ __html: getGenrePattern(genre) || '' }}
-        />
+        genre.toLowerCase().includes('sufi') ? (
+          <div 
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 1,
+              pointerEvents: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden'
+            }}
+            dangerouslySetInnerHTML={{ __html: getGenrePattern(genre) || '' }}
+          />
+        ) : (
+          <>
+            {/* Left Side Figure */}
+            <div 
+              style={{
+                position: 'fixed',
+                left: '2%',
+                top: 0,
+                bottom: 0,
+                width: '32%',
+                zIndex: 1,
+                pointerEvents: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden'
+              }}
+              dangerouslySetInnerHTML={{ __html: getGenrePattern(genre) || '' }}
+            />
+            {/* Right Side Figure */}
+            <div 
+              style={{
+                position: 'fixed',
+                right: '2%',
+                top: 0,
+                bottom: 0,
+                width: '32%',
+                zIndex: 1,
+                pointerEvents: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden'
+              }}
+              dangerouslySetInnerHTML={{ __html: getGenrePattern(genre) || '' }}
+            />
+          </>
+        )
       )}
       <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Dashboard Back Link or Setup Back Link */}
