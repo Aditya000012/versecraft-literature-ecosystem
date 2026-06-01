@@ -55,6 +55,8 @@ const languages = [
   { id: 'spanish', name: 'Spanish' },
 ];
 
+const FONT_LINK = 'https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap';
+
 export default function RecommendationsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -284,326 +286,402 @@ export default function RecommendationsPage() {
     }
   };
 
+  // Sanctuary Background elements helper
+  const renderSanctuaryBackground = () => (
+    <>
+      <link href={FONT_LINK} rel="stylesheet" />
+      {/* Cream background base */}
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#F8F4E9',
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Reading Sanctuary Background Ambience */}
+      <motion.div
+        initial={{ opacity: 0.8 }}
+        animate={{ opacity: [0.8, 1, 0.8] }}
+        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+        className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden"
+      >
+        <svg
+          className="w-full h-full text-[#1a1a1a]"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1200 800"
+          preserveAspectRatio="xMidYMid slice"
+        >
+          <line x1="80" y1="200" x2="200" y2="150" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+          <line x1="80" y1="200" x2="140" y2="300" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+          <line x1="140" y1="300" x2="60" y2="480" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+          <line x1="1080" y1="180" x2="980" y2="280" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+          <line x1="980" y1="280" x2="1120" y2="350" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+          <line x1="1120" y1="350" x2="1000" y2="520" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+
+          <text x="80" y="200" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">story</text>
+          <text x="200" y="150" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">memory</text>
+          <text x="140" y="300" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">silence</text>
+          <text x="60" y="480" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">poetry</text>
+          <text x="120" y="700" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">dream</text>
+
+          <text x="1080" y="180" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">solitude</text>
+          <text x="980" y="280" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">wonder</text>
+          <text x="1120" y="350" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">myth</text>
+          <text x="1000" y="520" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">λόγος</text>
+        </svg>
+      </motion.div>
+    </>
+  );
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8F4E9] flex items-center justify-center relative z-10">
-        <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
-          <span className="font-playfair text-lg text-[#1a1a1a] font-medium italic">Attuning recommended coordinates...</span>
+      <div className="min-h-screen bg-[#F8F4E9] flex flex-col items-center justify-center relative z-50 pt-20">
+        <link href={FONT_LINK} rel="stylesheet" />
+        <div className="text-center space-y-6">
+          <div className="relative w-16 h-16 flex items-center justify-center mx-auto">
+            <motion.div
+              animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.35, 0.15] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute inset-0 rounded-full border border-[#1a1a1a]"
+            />
+            <span className="text-xs text-[#1a1a1a] select-none font-serif">✦</span>
+          </div>
+          <div className="space-y-1 text-center animate-pulse">
+            <h3 className="font-playfair text-base italic text-[#1a1a1a] font-medium">
+              Attuning recommended coordinates...
+            </h3>
+            <p className="text-[10px] text-[#1a1a1a] font-inter tracking-wider uppercase font-semibold">
+              Searching history shelves
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Dashboard Back Link */}
-      <div className="mb-4 text-left">
-        <Link
-          href="/dashboard"
-          className="text-xs text-gold hover:text-gold-light transition-colors inline-flex items-center gap-1 font-inter font-medium"
-        >
-          ← Dashboard
-        </Link>
-      </div>
-      {/* Title */}
-      <div className="text-center mb-10">
-        <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-gold/80 block mb-2 font-inter">THE ORACLE&apos;S CHOICE</span>
-        <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-cream">The Curated Alcove</h1>
-        <p className="font-inter text-xs text-cream/40 mt-3 max-w-xl mx-auto font-light leading-relaxed uppercase tracking-wider">
-          AI curates the books. Gemini writes the poetic reason. All book details come direct from the library catalogs.
-        </p>
-      </div>
-
-      {/* Filter panel Form */}
-      <form onSubmit={handleCuration} className="glass-card border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl mb-12 max-w-4xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Genre selection */}
-          <div>
-            <label className="block text-[10px] uppercase tracking-wider text-gold font-bold mb-2 font-inter">Genre</label>
-            <select
-              value={selectedGenre}
-              onChange={(e) => setSelectedGenre(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl outline-none glass-input text-xs font-semibold text-cream cursor-pointer"
-            >
-              {genres.map((g) => (
-                <option key={g.id} value={g.id} className="bg-navy text-cream">
-                  {g.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Era selection */}
-          <div>
-            <label className="block text-[10px] uppercase tracking-wider text-gold font-bold mb-2 font-inter">Era</label>
-            <select
-              value={selectedEra}
-              onChange={(e) => setSelectedEra(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl outline-none glass-input text-xs font-semibold text-cream cursor-pointer"
-            >
-              {eras.map((era) => (
-                <option key={era.id} value={era.id} className="bg-navy text-cream">
-                  {era.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Author Vibe */}
-          <div>
-            <label className="block text-[10px] uppercase tracking-wider text-gold font-bold mb-2 font-inter">Author Vibe</label>
-            <input
-              type="text"
-              placeholder="e.g. Orwell, Keats..."
-              value={authorVibe}
-              onChange={(e) => setAuthorVibe(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl outline-none glass-input text-xs text-cream placeholder-cream/25"
-            />
-          </div>
-
-          {/* Language choice */}
-          <div>
-            <label className="block text-[10px] uppercase tracking-wider text-gold font-bold mb-2 font-inter">Language</label>
-            <select
-              value={selectedLanguage}
-              onChange={(e) => setSelectedLanguage(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl outline-none glass-input text-xs font-semibold text-cream cursor-pointer"
-            >
-              {languages.map((l) => (
-                <option key={l.id} value={l.id} className="bg-navy text-cream">
-                  {l.name}
-                </option>
-              ))}
-            </select>
-          </div>
+    <>
+      {renderSanctuaryBackground()}
+      <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 selection:bg-[#1a1a1a] selection:text-[#F8F4E9]">
+        {/* Dashboard Back Link */}
+        <div className="mb-4 text-left select-none">
+          <Link
+            href="/dashboard"
+            className="text-xs text-[#1a1a1a] hover:underline transition-all inline-flex items-center gap-1 font-inter font-semibold"
+          >
+            ← Dashboard
+          </Link>
+        </div>
+        {/* Title */}
+        <div className="text-center mb-10 select-none space-y-4 max-w-2xl mx-auto">
+          <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-[#1a1a1a] block font-inter">THE ORACLE&apos;S CHOICE</span>
+          <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#1a1a1a] tracking-wide">The Curated Alcove</h1>
+          <p className="font-playfair text-sm italic text-[#1a1a1a] mt-3 max-w-xl mx-auto leading-relaxed">
+            AI curates the books. Gemini writes the poetic reason. All book details come direct from the library catalogs.
+          </p>
+          <div className="h-[1px] w-24 bg-[#1a1a1a]/20 mx-auto mt-4" />
         </div>
 
-        {/* Submit */}
-        <div className="mt-6 border-t border-white/5 pt-5 text-center">
-          <button
-            type="submit"
-            disabled={curating}
-            className="px-8 py-3 bg-gold hover:bg-gold-light disabled:bg-gray-800 disabled:text-cream/30 text-navy font-bold uppercase tracking-wider rounded-xl text-xs font-inter transition-all shadow-md shadow-gold/15"
-          >
-            Invoke the Curator
-          </button>
-        </div>
-      </form>
-
-      {/* Recommendations grid stream */}
-      <AnimatePresence mode="wait">
-        {curating ? (
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center py-28 gap-4"
-          >
-            <div className="w-12 h-12 rounded-full border-t-2 border-[#1a1a1a] border-r-2 animate-spin" />
-            <div className="text-center">
-              <span className="font-playfair text-[#1a1a1a] italic text-base block animate-pulse">Scribing poetic alignments...</span>
-              <span className="text-[10px] text-[#1a1a1a]/60 font-inter uppercase tracking-widest mt-1 block">Consulting central literary indexes</span>
+        {/* Filter panel Form */}
+        <form onSubmit={handleCuration} className="bg-[#FAF7F0] border border-[#1a1a1a]/15 rounded-xl p-6 sm:p-8 shadow-xs mb-12 max-w-4xl mx-auto select-none">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {/* Genre selection */}
+            <div>
+              <label className="block text-[11px] uppercase tracking-wider text-[#1a1a1a] font-bold mb-2 font-inter">Genre</label>
+              <select
+                value={selectedGenre}
+                onChange={(e) => setSelectedGenre(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg outline-none bg-white border border-[#1a1a1a]/20 focus:border-[#1a1a1a] text-xs font-semibold text-[#1a1a1a] cursor-pointer shadow-xs focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all"
+              >
+                {genres.map((g) => (
+                  <option key={g.id} value={g.id} className="bg-[#FAF7F0] text-[#1a1a1a] font-semibold">
+                    {g.name}
+                  </option>
+                ))}
+              </select>
             </div>
-          </motion.div>
-        ) : recommendations.length === 0 ? (
-          <motion.div
-            key="empty"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="glass-card border-white/5 rounded-xl p-12 text-center max-w-lg mx-auto"
-          >
-            <span className="text-3xl block mb-3">🕯️</span>
-            <p className="font-playfair text-lg text-cream italic">The Oracle is silent.</p>
-            <p className="text-xs text-cream/40 mt-1 font-inter">Modify your parameters and request a new alignment.</p>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="results"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.5 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8"
-          >
-            {recommendations.map((rec) => {
-              const inWishlist = isBookInWishlist(rec.id);
-              return (
-                <div
-                  key={rec.id}
-                  className="glass-card border-white/5 hover:border-gold/25 rounded-2xl p-6 shadow-2xl transition-all duration-300 flex flex-col md:flex-row gap-6 relative overflow-hidden group"
-                >
-                  {/* Book cover left */}
-                  <div className="w-full md:w-1/3 aspect-[3/4] bg-black/40 rounded-xl overflow-hidden shadow flex-shrink-0 relative">
-                    <img
-                      src={rec.thumbnail}
-                      alt={rec.title}
-                      className="w-full h-full object-cover"
-                    />
-                    {/* Saved overlay alert */}
-                    {savedStatus[rec.id] && (
-                      <div className="absolute inset-0 bg-navy/95 z-15 flex items-center justify-center rounded-xl">
-                        <span className="font-playfair text-gold italic text-sm font-semibold animate-pulse">
-                          ✨ {savedStatus[rec.id]}
-                        </span>
-                      </div>
-                    )}
-                  </div>
 
-                  {/* Details and Poetic Reason right */}
-                  <div className="flex-grow flex flex-col justify-between">
-                    <div>
-                      {/* Meta header */}
-                      <div className="flex justify-between items-start gap-2 mb-2">
-                        <span className="text-[9px] uppercase tracking-widest text-gold font-bold font-inter">
-                          Oracle Selection
-                        </span>
-                        
-                        <div className="flex items-center gap-2 relative">
-                          {/* Save to List Bookmark Button */}
-                          <button
-                            onClick={(e) => handleDropdownToggle(e, rec.id)}
-                            className={`p-1.5 rounded-full border transition-all duration-300 ${
-                              activeListDropdown === rec.id
-                                ? 'bg-gold/20 border-gold text-gold shadow shadow-gold/25'
-                                : 'bg-white/5 border-white/10 text-cream/40 hover:text-gold hover:border-gold'
-                            }`}
-                            title="Save to List"
-                          >
-                            <svg
-                              className="w-3.5 h-3.5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                              />
-                            </svg>
-                          </button>
+            {/* Era selection */}
+            <div>
+              <label className="block text-[11px] uppercase tracking-wider text-[#1a1a1a] font-bold mb-2 font-inter">Era</label>
+              <select
+                value={selectedEra}
+                onChange={(e) => setSelectedEra(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg outline-none bg-white border border-[#1a1a1a]/20 focus:border-[#1a1a1a] text-xs font-semibold text-[#1a1a1a] cursor-pointer shadow-xs focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all"
+              >
+                {eras.map((era) => (
+                  <option key={era.id} value={era.id} className="bg-[#FAF7F0] text-[#1a1a1a] font-semibold">
+                    {era.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                          {/* Wishlist button */}
-                          <button
-                            onClick={() => toggleWishlist(rec)}
-                            className={`p-1.5 rounded-full border transition-colors ${
-                              inWishlist
-                                ? 'bg-red-500/20 border-red-500 text-red-400'
-                                : 'bg-white/5 border-white/10 text-cream/40 hover:text-gold hover:border-gold'
-                            }`}
-                            title={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                          >
-                            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                            </svg>
-                          </button>
+            {/* Author Vibe */}
+            <div>
+              <label className="block text-[11px] uppercase tracking-wider text-[#1a1a1a] font-bold mb-2 font-inter">Author Vibe</label>
+              <input
+                type="text"
+                placeholder="e.g. Orwell, Keats..."
+                value={authorVibe}
+                onChange={(e) => setAuthorVibe(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg outline-none bg-white border border-[#1a1a1a]/20 focus:border-[#1a1a1a] text-xs text-[#1a1a1a] placeholder-[#1a1a1a]/50 shadow-xs focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all font-medium"
+              />
+            </div>
 
-                          {/* Dropdown menu */}
-                          {activeListDropdown === rec.id && (
-                            <div 
-                              onClick={(e) => e.stopPropagation()}
-                              className="absolute right-0 top-8 z-20 w-48 glass-card border border-white/10 rounded-xl py-2 shadow-2xl text-left"
-                            >
-                              <div className="px-3 py-1 border-b border-white/5 mb-1 text-[9px] uppercase tracking-wider text-gold font-bold">
-                                Save to List
-                              </div>
-                              {readingLists.length === 0 ? (
-                                <div className="px-3 py-2 text-[10px] text-cream/50 italic flex flex-col gap-1">
-                                  <span>Create a list first</span>
-                                  <span 
-                                    onClick={() => router.push('/reading-lists')}
-                                    className="text-gold hover:underline font-semibold font-inter cursor-pointer"
-                                  >
-                                    Create List →
-                                  </span>
-                                </div>
-                              ) : (
-                                <div className="max-h-36 overflow-y-auto">
-                                  {readingLists.map((list) => (
-                                    <button
-                                      key={list.id}
-                                      onClick={(e) => handleSaveToReadingList(e, list.id, rec)}
-                                      className="w-full text-left px-3 py-1.5 hover:bg-white/5 text-xs text-cream/80 hover:text-gold transition-colors font-inter truncate"
-                                    >
-                                      📁 {list.name}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+            {/* Language choice */}
+            <div>
+              <label className="block text-[11px] uppercase tracking-wider text-[#1a1a1a] font-bold mb-2 font-inter">Language</label>
+              <select
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg outline-none bg-white border border-[#1a1a1a]/20 focus:border-[#1a1a1a] text-xs font-semibold text-[#1a1a1a] cursor-pointer shadow-xs focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all"
+              >
+                {languages.map((l) => (
+                  <option key={l.id} value={l.id} className="bg-[#FAF7F0] text-[#1a1a1a] font-semibold">
+                    {l.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-                      <h3 className="font-playfair text-xl font-bold text-cream group-hover:text-gold transition-colors line-clamp-2">
-                        {rec.title}
-                      </h3>
-                      <p className="font-inter text-xs text-cream/50 mt-0.5 mb-4">
-                        by{' '}
-                        {rec.author ? (
-                          <span
-                            onClick={() => router.push(`/authors?name=${encodeURIComponent(rec.author!)}`)}
-                            className="cursor-pointer hover:text-[#c9a84c] transition-colors duration-200 underline underline-offset-2"
-                          >
-                            {rec.author}
+          {/* Submit */}
+          <div className="mt-6 border-t border-[#1a1a1a]/10 pt-5 text-center">
+            <button
+              type="submit"
+              disabled={curating}
+              className="px-8 py-3 bg-[#1a1a1a] hover:bg-[#2b2b2b] text-white font-semibold uppercase tracking-widest rounded-lg text-xs font-inter transition-all shadow-xs active:scale-98 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              Invoke the Curator
+            </button>
+          </div>
+        </form>
+
+        {/* Recommendations grid stream */}
+        <AnimatePresence mode="wait">
+          {curating ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center py-28 gap-4"
+            >
+              <div className="relative w-16 h-16 flex items-center justify-center mx-auto">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.35, 0.15] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute inset-0 rounded-full border border-[#1a1a1a]"
+                />
+                <span className="text-xs text-[#1a1a1a] select-none font-serif">✦</span>
+              </div>
+              <div className="text-center animate-pulse">
+                <span className="font-playfair text-[#1a1a1a] italic text-base block">Scribing poetic alignments...</span>
+                <span className="text-[10px] text-[#1a1a1a] font-inter uppercase tracking-widest mt-2 block font-semibold">Consulting central literary indexes</span>
+              </div>
+            </motion.div>
+          ) : recommendations.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="bg-[#FAF7F0] border border-[#1a1a1a]/15 rounded-xl p-12 text-center max-w-lg mx-auto shadow-sm select-none"
+            >
+              <span className="text-3xl block mb-3">🕯️</span>
+              <p className="font-playfair text-lg text-[#1a1a1a] italic font-semibold">The Oracle is silent.</p>
+              <p className="text-xs text-[#1a1a1a] mt-2.5 font-inter font-semibold">Modify your parameters and request a new alignment.</p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="results"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.5 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-8"
+            >
+              {recommendations.map((rec) => {
+                const inWishlist = isBookInWishlist(rec.id);
+                return (
+                  <div
+                    key={rec.id}
+                    className="bg-[#FAF7F0] border border-[#1a1a1a]/15 hover:border-[#1a1a1a]/30 rounded-xl p-6 transition-all duration-300 flex flex-col md:flex-row gap-6 relative overflow-hidden group hover:-translate-y-1"
+                  >
+                    {/* Book cover left */}
+                    <div className="w-full md:w-1/3 aspect-[3/4] bg-[#EAE4D6] rounded-lg overflow-hidden border border-[#1a1a1a]/10 shadow flex-shrink-0 relative select-none">
+                      <img
+                        src={rec.thumbnail}
+                        alt={rec.title}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Saved overlay alert */}
+                      {savedStatus[rec.id] && (
+                        <div className="absolute inset-0 bg-[#FAF7F0]/95 z-15 flex items-center justify-center rounded-lg border border-[#1a1a1a]/10 shadow-inner">
+                          <span className="font-playfair text-[#1a1a1a] italic text-sm font-bold animate-pulse">
+                            ✨ {savedStatus[rec.id]}
                           </span>
-                        ) : rec.authors && rec.authors.length > 0 ? (
-                          rec.authors.map((authorName, index) => (
-                            <React.Fragment key={authorName}>
-                              {index > 0 && ', '}
-                              <span
-                                onClick={() => router.push(`/authors?name=${encodeURIComponent(authorName)}`)}
-                                className="cursor-pointer hover:text-[#c9a84c] transition-colors duration-200 underline underline-offset-2"
-                              >
-                                {authorName}
-                              </span>
-                            </React.Fragment>
-                          ))
-                        ) : (
-                          'Unknown Author'
-                        )}
-                      </p>
+                        </div>
+                      )}
+                    </div>
 
-                      {/* POETIC MATCH CARD BLOCK */}
-                      <div className="p-4 bg-purple-dark/20 border border-gold/15 rounded-xl mb-4 shadow-[0_0_12px_rgba(201,168,76,0.03)]">
-                        <span className="text-[9px] uppercase tracking-wider text-gold font-bold font-inter block mb-1">
-                          Why this fits your vibe:
-                        </span>
-                        <p className="font-playfair italic text-xs text-gold leading-relaxed font-light">
-                          “ {rec.poeticReason} ”
+                    {/* Details and Poetic Reason right */}
+                    <div className="flex-grow flex flex-col justify-between">
+                      <div>
+                        {/* Meta header */}
+                        <div className="flex justify-between items-start gap-2 mb-2 select-none">
+                          <span className="text-[10px] uppercase tracking-widest text-[#1a1a1a] font-bold font-inter">
+                            Oracle Selection
+                          </span>
+                          
+                          <div className="flex items-center gap-2 relative">
+                            {/* Save to List Bookmark Button */}
+                            <button
+                              onClick={(e) => handleDropdownToggle(e, rec.id)}
+                              className={`p-1.5 rounded-full border transition-all duration-300 ${
+                                activeListDropdown === rec.id
+                                  ? 'bg-[#1a1a1a]/10 border-[#1a1a1a] text-[#1a1a1a] shadow shadow-[#1a1a1a]/10'
+                                  : 'bg-white/40 border-[#1a1a1a]/15 text-[#1a1a1a]/40 hover:text-[#1a1a1a] hover:border-[#1a1a1a]'
+                              }`}
+                              title="Save to List"
+                            >
+                              <svg
+                                className="w-3.5 h-3.5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                                />
+                              </svg>
+                            </button>
+
+                            {/* Wishlist button */}
+                            <button
+                              onClick={() => toggleWishlist(rec)}
+                              className={`p-1.5 rounded-full border transition-colors ${
+                                inWishlist
+                                  ? 'bg-red-500/20 border-red-500 text-red-500'
+                                  : 'bg-white/40 border-[#1a1a1a]/15 text-[#1a1a1a]/40 hover:text-[#1a1a1a] hover:border-[#1a1a1a]'
+                              }`}
+                              title={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                            >
+                              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                              </svg>
+                            </button>
+
+                            {/* Dropdown menu */}
+                            {activeListDropdown === rec.id && (
+                              <div 
+                                onClick={(e) => e.stopPropagation()}
+                                className="absolute right-0 top-8 z-20 w-48 bg-[#FAF7F0] border border-[#1a1a1a]/15 rounded-xl py-2 shadow-lg text-left"
+                              >
+                                <div className="px-3 py-1 border-b border-[#1a1a1a]/10 mb-1 text-[10px] uppercase tracking-wider text-[#1a1a1a] font-bold">
+                                  Save to List
+                                </div>
+                                {readingLists.length === 0 ? (
+                                  <div className="px-3 py-2 text-[11px] text-[#1a1a1a] italic flex flex-col gap-1 font-semibold">
+                                    <span>Create a list first</span>
+                                    <span 
+                                      onClick={() => router.push('/reading-lists')}
+                                      className="text-[#1a1a1a] hover:underline font-semibold font-inter cursor-pointer"
+                                    >
+                                      Create List →
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div className="max-h-36 overflow-y-auto">
+                                    {readingLists.map((list) => (
+                                      <button
+                                        key={list.id}
+                                        onClick={(e) => handleSaveToReadingList(e, list.id, rec)}
+                                        className="w-full text-left px-3 py-1.5 hover:bg-[#1a1a1a]/5 text-xs text-[#1a1a1a] font-semibold transition-colors font-inter truncate"
+                                      >
+                                        📁 {list.name}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] group-hover:underline transition-colors line-clamp-2 select-text">
+                          {rec.title}
+                        </h3>
+                        <p className="font-inter text-xs text-[#1a1a1a] mt-0.5 mb-4 font-semibold select-text">
+                          by{' '}
+                          {rec.author ? (
+                            <span
+                              onClick={() => router.push(`/authors?name=${encodeURIComponent(rec.author!)}`)}
+                              className="cursor-pointer hover:underline transition-colors duration-200"
+                            >
+                              {rec.author}
+                            </span>
+                          ) : rec.authors && rec.authors.length > 0 ? (
+                            rec.authors.map((authorName, index) => (
+                              <React.Fragment key={authorName}>
+                                {index > 0 && ', '}
+                                <span
+                                  onClick={() => router.push(`/authors?name=${encodeURIComponent(authorName)}`)}
+                                  className="cursor-pointer hover:underline transition-colors duration-200"
+                                >
+                                  {authorName}
+                                </span>
+                              </React.Fragment>
+                            ))
+                          ) : (
+                            'Unknown Author'
+                          )}
+                        </p>
+
+                        {/* POETIC MATCH CARD BLOCK */}
+                        <div className="p-4 bg-[#EAE4D6]/30 border-l-2 border-[#1a1a1a]/30 rounded-r-lg mb-4 select-text shadow-xs">
+                          <span className="text-[10px] uppercase tracking-wider text-[#1a1a1a] font-bold font-inter block mb-1">
+                            Why this fits your vibe:
+                          </span>
+                          <p className="font-playfair italic text-xs text-[#1a1a1a] leading-relaxed font-semibold">
+                            “{rec.poeticReason}”
+                          </p>
+                        </div>
+
+                        <p className="font-inter text-[11.5px] text-[#1a1a1a] leading-relaxed font-medium line-clamp-2 select-text">
+                          {rec.description}
                         </p>
                       </div>
 
-                      <p className="font-inter text-[11px] text-cream/60 leading-relaxed font-light line-clamp-2">
-                        {rec.description}
-                      </p>
-                    </div>
-
-                    {/* Acquisition links block */}
-                    <div className="mt-6 pt-3 border-t border-white/5">
-                      <a
-                        href={rec.infoLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="py-2.5 bg-white/5 border border-white/10 hover:border-gold/50 hover:bg-gold/10 rounded-xl text-center text-xs font-bold uppercase tracking-wider font-inter text-cream hover:text-gold transition-all flex items-center justify-center gap-1.5 w-full"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                        </svg>
-                        Acquire Volume
-                      </a>
+                      {/* Acquisition links block */}
+                      <div className="mt-6 pt-3 border-t border-[#1a1a1a]/10 select-none">
+                        <a
+                          href={rec.infoLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="py-2.5 bg-white border border-[#1a1a1a]/30 hover:bg-[#1a1a1a] hover:text-[#FAF7F0] rounded-lg text-center text-xs font-bold uppercase tracking-widest font-inter text-[#1a1a1a] transition-all duration-300 flex items-center justify-center gap-1.5 w-full active:scale-98 shadow-xs"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                          </svg>
+                          Acquire Volume
+                        </a>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
   );
 }
