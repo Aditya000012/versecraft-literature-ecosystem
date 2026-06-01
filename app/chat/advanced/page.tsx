@@ -829,6 +829,7 @@ const getGenrePatternRaw = (genre: string): string | null => {
   else if (g.includes('romance')) matchedGenre = 'romance';
   else if (g.includes('mystery')) matchedGenre = 'mystery';
   else if (g.includes('fantasy')) matchedGenre = 'fantasy';
+  else if (g.includes('realism')) matchedGenre = 'realism';
   else if (g.includes('sufi')) matchedGenre = 'sufi';
   else if (g.includes('science') || g.includes('sci-fi')) matchedGenre = 'science-fiction';
   else if (g.includes('dystopian')) matchedGenre = 'dystopian';
@@ -850,11 +851,8 @@ const getGenrePatternRaw = (genre: string): string | null => {
 
   if (!matchedGenre) return null;
 
-  // Opacity rule
-  let opacity = 0.12;
-  if (matchedGenre === 'gothic') {
-    opacity = 0.15; // Gothic hardcoded to 0.15 temporarily for visibility testing
-  }
+  // Opacity rule - Change 4: 0.14 uniformly across all genres
+  const opacity = 0.14;
 
   switch (matchedGenre) {
     case 'gothic': {
@@ -938,6 +936,16 @@ const getGenrePatternRaw = (genre: string): string | null => {
     <path d="M 682,935 L 670,938 L 680,942 Z" fill="#1a1a1a"/>
   </g>
 </svg>`;
+    }
+    case 'realism': {
+      let linesHtml = '';
+      for (let i = 0; i < 20; i++) {
+        const y = 50 + i * 48;
+        linesHtml += `<line x1="0" y1="${y}" x2="1000" y2="${y}" stroke="#1a1a1a" stroke-width="0.8" />`;
+      }
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+        ${linesHtml}
+      </svg>`;
     }
     case 'mystery': {
       const template = `<g stroke="#1a1a1a" fill="none" stroke-width="1.5"><circle cx="0" cy="0" r="15" /><circle cx="0" cy="0" r="6" /><line x1="0" y1="15" x2="0" y2="70" stroke-width="2" /><line x1="-6" y1="25" x2="6" y2="25" /><line x1="-4" y1="30" x2="4" y2="30" /><path d="M 0,55 L 12,55 L 12,62 L 0,62 L 0,66 L 15,66 L 15,73 L 0,73" stroke-width="1.5" /></g>`;
@@ -1346,10 +1354,10 @@ const getGenrePatternRaw = (genre: string): string | null => {
       for (let i = 0; i < 72; i++) {
         const rad = (i * 5 * Math.PI) / 180;
         const length = i % 2 === 0 ? 15 : 8;
-        const x1 = 500 + (365 - length) * Math.cos(rad);
-        const y1 = 500 + (365 - length) * Math.sin(rad);
-        const x2 = 500 + 365 * Math.cos(rad);
-        const y2 = 500 + 365 * Math.sin(rad);
+        const x1 = 680 + (365 - length) * Math.cos(rad);
+        const y1 = 600 + (365 - length) * Math.sin(rad);
+        const x2 = 680 + 365 * Math.cos(rad);
+        const y2 = 600 + 365 * Math.sin(rad);
         degreeTicks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1a1a1a" stroke-width="0.8"/>`;
       }
 
@@ -1377,20 +1385,20 @@ const getGenrePatternRaw = (genre: string): string | null => {
       }
 
       return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
-  <circle cx="500" cy="500" r="380" stroke="#1a1a1a" stroke-width="2.5" fill="none"/>
-  <circle cx="500" cy="500" r="365" stroke="#1a1a1a" stroke-width="1" fill="none"/>
-  <circle cx="500" cy="500" r="350" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="2,3" fill="none"/>
+  <circle cx="680" cy="600" r="380" stroke="#1a1a1a" stroke-width="2.5" fill="none"/>
+  <circle cx="680" cy="600" r="365" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+  <circle cx="680" cy="600" r="350" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="2,3" fill="none"/>
   ${degreeTicks}
-  <g transform="translate(500, 500)">
+  <g transform="translate(680, 600)">
     ${compassPoints}
     <circle cx="0" cy="0" r="15" fill="#1a1a1a"/>
     <circle cx="0" cy="0" r="6" fill="#fff" stroke="#1a1a1a" stroke-width="1.5"/>
   </g>
   <g fill="#1a1a1a" font-family="Georgia, serif" font-size="28" font-weight="bold" text-anchor="middle">
-    <text x="500" y="115">N</text>
-    <text x="500" y="915">S</text>
-    <text x="895" y="510">E</text>
-    <text x="105" y="510">W</text>
+    <text x="680" y="215">N</text>
+    <text x="680" y="985">S</text>
+    <text x="1065" y="610">E</text>
+    <text x="285" y="610">W</text>
   </g>
 </svg>`;
     }
@@ -1600,41 +1608,37 @@ const getGenrePatternRaw = (genre: string): string | null => {
   return null;
 };
 
-const getGenrePattern = (genre: string, era: string): string | null => {
-  if (era === 'dummy_unused_linter') return null;
+const getThemeTint = (genre: string): string => {
+  const g = genre.toLowerCase();
+  if (g.includes('gothic')) return 'rgba(80, 10, 10, 0.04)';
+  if (g.includes('horror')) return 'rgba(40, 0, 0, 0.04)';
+  if (g.includes('noir')) return 'rgba(20, 20, 20, 0.05)';
+  if (g.includes('sufi')) return 'rgba(80, 40, 10, 0.04)';
+  if (g.includes('romance')) return 'rgba(120, 20, 40, 0.03)';
+  if (g.includes('fantasy')) return 'rgba(20, 40, 80, 0.03)';
+  if (g.includes('mystery')) return 'rgba(20, 20, 60, 0.04)';
+  if (g.includes('science fiction') || g.includes('dystopian')) return 'rgba(0, 40, 60, 0.04)';
+  if (g.includes('magical realism')) return 'rgba(40, 60, 20, 0.03)';
+  if (g.includes('historical')) return 'rgba(80, 60, 20, 0.03)';
+  if (g.includes('war')) return 'rgba(40, 30, 10, 0.04)';
+  if (g.includes('existential') || g.includes('philosophical')) return 'rgba(20, 20, 40, 0.03)';
+  if (g.includes('adventure')) return 'rgba(20, 60, 40, 0.03)';
+  if (g.includes('satire') || g.includes('comedy')) return 'rgba(80, 60, 0, 0.03)';
+  if (g.includes('tragedy')) return 'rgba(40, 10, 10, 0.03)';
+  if (g.includes('epic')) return 'rgba(60, 40, 0, 0.03)';
+  if (g.includes('supernatural')) return 'rgba(40, 0, 60, 0.03)';
+  if (g.includes('political')) return 'rgba(20, 30, 60, 0.03)';
+  if (g.includes('psychological')) return 'rgba(30, 10, 40, 0.04)';
+  if (g.includes('classical') || g.includes('realism') || g.includes('literary')) return 'rgba(60, 50, 20, 0.03)';
+  return 'transparent';
+};
+
+const getGenrePattern = (genre: string): string | null => {
   const raw = getGenrePatternRaw(genre);
   if (!raw) return null;
 
-  const g = (genre || '').toLowerCase().trim();
-  let matchedGenre = '';
-  if (g.includes('gothic')) matchedGenre = 'gothic';
-  else if (g.includes('horror')) matchedGenre = 'horror';
-  else if (g.includes('romance')) matchedGenre = 'romance';
-  else if (g.includes('mystery')) matchedGenre = 'mystery';
-  else if (g.includes('fantasy')) matchedGenre = 'fantasy';
-  else if (g.includes('sufi')) matchedGenre = 'sufi';
-  else if (g.includes('science') || g.includes('sci-fi')) matchedGenre = 'science-fiction';
-  else if (g.includes('dystopian')) matchedGenre = 'dystopian';
-  else if (g.includes('magical') || g.includes('magic')) matchedGenre = 'magical-realism';
-  else if (g.includes('historical')) matchedGenre = 'historical-fiction';
-  else if (g.includes('noir')) matchedGenre = 'noir';
-  else if (g.includes('existential') || g.includes('philosophical')) matchedGenre = 'existential-philosophical';
-  else if (g.includes('war')) matchedGenre = 'war-literature';
-  else if (g.includes('classical') || g.includes('ancient')) matchedGenre = 'classical-ancient';
-  else if (g.includes('modernist') || g.includes('modernism')) matchedGenre = 'modernist';
-  else if (g.includes('adventure')) matchedGenre = 'adventure';
-  else if (g.includes('satire') || g.includes('comedy')) matchedGenre = 'satire-comedy';
-  else if (g.includes('tragedy')) matchedGenre = 'tragedy';
-  else if (g.includes('epic')) matchedGenre = 'epic';
-  else if (g.includes('supernatural')) matchedGenre = 'supernatural';
-  else if (g.includes('political')) matchedGenre = 'political-fiction';
-  else if (g.includes('psychological') || g.includes('thriller')) matchedGenre = 'psychological-thriller';
-  else if (g.includes('literary')) matchedGenre = 'literary-fiction';
-
-  let opacity = 0.12;
-  if (matchedGenre === 'gothic') {
-    opacity = 0.15;
-  }
+  // Opacity rule - Change 4: 0.14 uniformly across all genres
+  const opacity = 0.14;
 
   const openTagEndIndex = raw.indexOf('>');
   if (openTagEndIndex === -1) return raw;
@@ -2054,7 +2058,7 @@ function AdvancedChatPageContent() {
   const atmConfig = getAtmosphereConfig(selectedGenre, selectedEra);
 
   const filters = { genre: selectedGenre, era: selectedEra };
-  console.log('Current genre pattern:', filters?.genre, getGenrePattern(filters?.genre, filters?.era) ? 'HAS PATTERN' : 'NO PATTERN');
+  console.log('Current genre pattern:', filters?.genre, getGenrePattern(filters?.genre) ? 'HAS PATTERN' : 'NO PATTERN');
 
   // Protected route check
   useEffect(() => {
@@ -2427,13 +2431,21 @@ function AdvancedChatPageContent() {
             style={{
               position: 'fixed',
               inset: 0,
-              ...atmConfig.bgStyle,
+              background: '#F8F4E9',
               zIndex: 0,
-              transition: 'background 1.5s ease, color 1.5s ease',
+            }}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: getThemeTint(selectedGenre),
+              zIndex: 0,
+              transition: 'background 1.5s ease',
             }}
           />
           {atmConfig.bgDecorations}
-          {!wizardActive && getGenrePattern(selectedGenre, selectedEra) && (
+          {!wizardActive && getGenrePattern(selectedGenre) && (
             <div 
               style={{
                 position: 'fixed',
@@ -2445,7 +2457,7 @@ function AdvancedChatPageContent() {
                 justifyContent: 'center',
                 overflow: 'hidden'
               }}
-              dangerouslySetInnerHTML={{ __html: getGenrePattern(selectedGenre, selectedEra) || '' }}
+              dangerouslySetInnerHTML={{ __html: getGenrePattern(selectedGenre) || '' }}
             />
           )}
         </>
