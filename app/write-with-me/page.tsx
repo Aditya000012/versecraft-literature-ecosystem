@@ -849,6 +849,31 @@ const getGenrePatternRaw = (genre: string): string | null => {
   return null;
 };
 
+const getThemeTint = (genre: string): string => {
+  const g = genre.toLowerCase();
+  if (g.includes('gothic')) return 'rgba(80, 10, 10, 0.04)';
+  if (g.includes('horror')) return 'rgba(40, 0, 0, 0.04)';
+  if (g.includes('noir')) return 'rgba(20, 20, 20, 0.05)';
+  if (g.includes('sufi')) return 'rgba(80, 40, 10, 0.04)';
+  if (g.includes('romance')) return 'rgba(120, 20, 40, 0.03)';
+  if (g.includes('fantasy')) return 'rgba(20, 40, 80, 0.03)';
+  if (g.includes('mystery')) return 'rgba(20, 20, 60, 0.04)';
+  if (g.includes('science fiction') || g.includes('dystopian')) return 'rgba(0, 40, 60, 0.04)';
+  if (g.includes('magical realism')) return 'rgba(40, 60, 20, 0.03)';
+  if (g.includes('historical')) return 'rgba(80, 60, 20, 0.03)';
+  if (g.includes('war')) return 'rgba(40, 30, 10, 0.04)';
+  if (g.includes('existential') || g.includes('philosophical')) return 'rgba(20, 20, 40, 0.03)';
+  if (g.includes('adventure')) return 'rgba(20, 60, 40, 0.03)';
+  if (g.includes('satire') || g.includes('comedy')) return 'rgba(80, 60, 0, 0.03)';
+  if (g.includes('tragedy')) return 'rgba(40, 10, 10, 0.03)';
+  if (g.includes('epic')) return 'rgba(60, 40, 0, 0.03)';
+  if (g.includes('supernatural')) return 'rgba(40, 0, 60, 0.03)';
+  if (g.includes('political')) return 'rgba(20, 30, 60, 0.03)';
+  if (g.includes('psychological')) return 'rgba(30, 10, 40, 0.04)';
+  if (g.includes('classical') || g.includes('realism') || g.includes('literary')) return 'rgba(60, 50, 20, 0.03)';
+  return 'transparent';
+};
+
 const hashString = (str: string): number => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -1342,7 +1367,7 @@ export default function WriteWithMePage() {
 
   return (
     <>
-      {/* Cream background for setup screen, or transparent for active writing screen to let the dynamic theme show through */}
+      {/* Cream background base */}
       <div
         style={{
           position: 'fixed',
@@ -1352,13 +1377,13 @@ export default function WriteWithMePage() {
           pointerEvents: 'none',
         }}
       />
-      {/* Dynamic atmospheric background gradient for writing/ended screens */}
+      {/* Dynamic atmospheric background overlay tint (Active for writing/ended screens, using exact getThemeTint) */}
       {screen !== 'setup' && (
         <div
           style={{
             position: 'fixed',
             inset: 0,
-            background: atmConfig.bgStyle.background,
+            backgroundColor: getThemeTint(genre),
             zIndex: 0,
             transition: 'background 1.5s ease',
             pointerEvents: 'none',
@@ -1410,15 +1435,24 @@ export default function WriteWithMePage() {
         />
       )}
       <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Dashboard Back Link */}
+      {/* Dashboard Back Link or Setup Back Link */}
       <div className="mb-4 text-left">
-        <Link
-          href="/dashboard"
-          style={{ color: screen !== 'setup' ? atmConfig.panelText : '#1a1a1a' }}
-          className="text-xs hover:opacity-75 transition-all inline-flex items-center gap-1 font-inter font-semibold transition-colors duration-1000"
-        >
-          ← Dashboard
-        </Link>
+        {screen === 'setup' ? (
+          <Link
+            href="/dashboard"
+            className="text-xs text-[#1a1a1a] hover:opacity-75 transition-all inline-flex items-center gap-1 font-inter font-semibold"
+          >
+            ← Dashboard
+          </Link>
+        ) : (
+          <button
+            onClick={() => setScreen('setup')}
+            style={{ color: atmConfig.panelText }}
+            className="text-xs hover:opacity-75 transition-all inline-flex items-center gap-1 font-inter font-semibold transition-colors duration-1000"
+          >
+            ← Back to Setup
+          </button>
+        )}
       </div>
 
       {/* Heading block */}
