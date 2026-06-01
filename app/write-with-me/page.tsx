@@ -849,31 +849,6 @@ const getGenrePatternRaw = (genre: string): string | null => {
   return null;
 };
 
-const getThemeTint = (genre: string): string => {
-  const g = genre.toLowerCase();
-  if (g.includes('gothic')) return 'rgba(80, 10, 10, 0.04)';
-  if (g.includes('horror')) return 'rgba(40, 0, 0, 0.04)';
-  if (g.includes('noir')) return 'rgba(20, 20, 20, 0.05)';
-  if (g.includes('sufi')) return 'rgba(80, 40, 10, 0.04)';
-  if (g.includes('romance')) return 'rgba(120, 20, 40, 0.03)';
-  if (g.includes('fantasy')) return 'rgba(20, 40, 80, 0.03)';
-  if (g.includes('mystery')) return 'rgba(20, 20, 60, 0.04)';
-  if (g.includes('science fiction') || g.includes('dystopian')) return 'rgba(0, 40, 60, 0.04)';
-  if (g.includes('magical realism')) return 'rgba(40, 60, 20, 0.03)';
-  if (g.includes('historical')) return 'rgba(80, 60, 20, 0.03)';
-  if (g.includes('war')) return 'rgba(40, 30, 10, 0.04)';
-  if (g.includes('existential') || g.includes('philosophical')) return 'rgba(20, 20, 40, 0.03)';
-  if (g.includes('adventure')) return 'rgba(20, 60, 40, 0.03)';
-  if (g.includes('satire') || g.includes('comedy')) return 'rgba(80, 60, 0, 0.03)';
-  if (g.includes('tragedy')) return 'rgba(40, 10, 10, 0.03)';
-  if (g.includes('epic')) return 'rgba(60, 40, 0, 0.03)';
-  if (g.includes('supernatural')) return 'rgba(40, 0, 60, 0.03)';
-  if (g.includes('political')) return 'rgba(20, 30, 60, 0.03)';
-  if (g.includes('psychological')) return 'rgba(30, 10, 40, 0.04)';
-  if (g.includes('classical') || g.includes('realism') || g.includes('literary')) return 'rgba(60, 50, 20, 0.03)';
-  return 'transparent';
-};
-
 const getPanelTint = (genre: string): string => {
   const g = genre.toLowerCase();
   if (g.includes('gothic')) return 'rgba(250, 230, 230, 0.85)';
@@ -1203,7 +1178,7 @@ export default function WriteWithMePage() {
         style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: getThemeTint(genre),
+          backgroundColor: getPanelTint(genre),
           zIndex: 0,
           transition: 'background 1.5s ease',
           pointerEvents: 'none',
@@ -1393,8 +1368,7 @@ export default function WriteWithMePage() {
           >
             {/* Story Flow view */}
             <div 
-              style={{ backgroundColor: getPanelTint(genre), backdropFilter: 'blur(12px)' }}
-              className="border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-xl min-h-[300px] flex flex-col justify-between text-[#1a1a1a] transition-all duration-500"
+              className="bg-white/60 backdrop-blur-md border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-xl min-h-[300px] flex flex-col justify-between text-[#1a1a1a] transition-all duration-500"
             >
               <div>
                 <div className="flex justify-between items-center mb-6 pb-2 border-b border-[#1a1a1a]/10 text-[9px] font-bold uppercase tracking-wider text-[#1a1a1a]/60">
@@ -1447,8 +1421,7 @@ export default function WriteWithMePage() {
 
             {/* Input Form area */}
             <div 
-              style={{ backgroundColor: getPanelTint(genre), backdropFilter: 'blur(12px)' }}
-              className="border border-[#1a1a1a]/10 rounded-2xl p-6 shadow-xl text-[#1a1a1a] transition-all duration-500"
+              className="bg-white/60 backdrop-blur-md border border-[#1a1a1a]/10 rounded-2xl p-6 shadow-xl text-[#1a1a1a] transition-all duration-500"
             >
               <form onSubmit={handleAddPart} className="space-y-4">
                 <div>
@@ -1499,8 +1472,7 @@ export default function WriteWithMePage() {
           >
             {/* Story Prose container */}
             <div 
-              style={{ backgroundColor: getPanelTint(genre), backdropFilter: 'blur(12px)' }}
-              className="border border-[#1a1a1a]/10 rounded-2xl p-8 sm:p-10 shadow-xl space-y-6 text-[#1a1a1a] transition-all duration-500"
+              className="bg-white/60 backdrop-blur-md border border-[#1a1a1a]/10 rounded-2xl p-8 sm:p-10 shadow-xl space-y-6 text-[#1a1a1a] transition-all duration-500"
             >
               <h2 className="font-playfair text-2xl font-bold text-[#1a1a1a] text-center border-b border-[#1a1a1a]/10 pb-4">
                 Synthesized Manuscript
@@ -1530,8 +1502,7 @@ export default function WriteWithMePage() {
 
             {/* Ending action controls */}
             <div 
-              style={{ backgroundColor: getPanelTint(genre), backdropFilter: 'blur(12px)' }}
-              className="border border-[#1a1a1a]/10 rounded-2xl p-6 shadow-xl flex flex-wrap gap-4 items-center justify-between text-[#1a1a1a] transition-all duration-500"
+              className="bg-white/60 backdrop-blur-md border border-[#1a1a1a]/10 rounded-2xl p-6 shadow-xl flex flex-wrap gap-4 items-center justify-between text-[#1a1a1a] transition-all duration-500"
             >
               <div className="flex gap-3">
                 <button
