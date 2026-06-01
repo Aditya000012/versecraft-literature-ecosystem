@@ -754,7 +754,7 @@ function AdvancedChatPageContent() {
             transition={{ duration: 0.6 }}
             className="flex-grow max-w-5xl w-full mx-auto px-4 py-8 flex flex-col justify-center bg-[#F8F4E9] text-[#1a1a1a] relative z-10"
           >
-            <div className="text-center mb-12 select-none">
+            <div className="text-center mb-16 select-none">
               <span className="text-[10px] tracking-[0.25em] uppercase font-bold text-[#1a1a1a]/80 block mb-2 font-inter">THE SECRET ARCHIVES</span>
               <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#1a1a1a]">Advanced Chambers</h1>
               <p className="font-inter text-sm text-[#6b6b6b] mt-3 max-w-xl mx-auto font-light leading-relaxed italic">
@@ -762,11 +762,11 @@ function AdvancedChatPageContent() {
               </p>
             </div>
 
-            <div className="space-y-12 py-4 flex-grow">
+            <div className="space-y-16 py-6 flex-grow">
               {/* Genre Selector */}
               <div>
-                <label className="block text-xs uppercase tracking-[3px] text-[#1a1a1a] font-semibold mb-4 font-inter">✦ Literary Genre</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-64 overflow-y-auto pr-1 no-scrollbar">
+                <label className="block text-xl font-bold text-[#1a1a1a] mb-6 font-playfair tracking-wide">✦ Literary Genre</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {genres.map((g) => (
                     <button
                       key={g.id}
@@ -785,8 +785,8 @@ function AdvancedChatPageContent() {
 
               {/* Era Selector */}
               <div>
-                <label className="block text-xs uppercase tracking-[3px] text-[#1a1a1a] font-semibold mb-4 font-inter">✦ Historical Era</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto pr-1 no-scrollbar">
+                <label className="block text-xl font-bold text-[#1a1a1a] mb-6 font-playfair tracking-wide">✦ Historical Era</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   {eras.map((e) => (
                     <button
                       key={e.id}
@@ -807,7 +807,7 @@ function AdvancedChatPageContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-[#1a1a1a]/10">
                 {/* Author Persona Mimicry */}
                 <div>
-                  <label className="block text-xs uppercase tracking-[3px] text-[#1a1a1a] font-semibold mb-2 font-inter">✦ Author Style Mimicry (Optional)</label>
+                  <label className="block text-lg font-bold text-[#1a1a1a] mb-2 font-playfair tracking-wide">✦ Author Style Mimicry (Optional)</label>
                   <p className="text-[10px] text-[#6b6b6b] mb-3 font-light">Input a writer&apos;s name to enforce their syntax and vocabulary structure.</p>
                   <input
                     type="text"
@@ -820,7 +820,7 @@ function AdvancedChatPageContent() {
 
                 {/* Output Language */}
                 <div>
-                  <label className="block text-xs uppercase tracking-[3px] text-[#1a1a1a] font-semibold mb-2 font-inter">✦ Output Language</label>
+                  <label className="block text-lg font-bold text-[#1a1a1a] mb-2 font-playfair tracking-wide">✦ Output Language</label>
                   <p className="text-[10px] text-[#6b6b6b] mb-3 font-light">Force the literary model to think and respond inside a specific dialect or language framework.</p>
                   <select
                     value={selectedLanguage}
