@@ -321,49 +321,67 @@ export default function RecommendationsPage() {
   const renderSanctuaryBackground = () => (
     <>
       <link href={FONT_LINK} rel="stylesheet" />
-      {/* Cream background base */}
+      {/* Cream background base with paper radial vignette */}
       <div
         style={{
           position: 'fixed',
           inset: 0,
-          background: '#F8F4E9',
+          background: 'radial-gradient(circle at center, #FBFBF6 0%, #FAF8F0 60%, #F5EFE0 100%)',
           zIndex: 0,
           pointerEvents: 'none',
         }}
       />
 
-      {/* Reading Sanctuary Background Ambience */}
-      <motion.div
-        initial={{ opacity: 0.8 }}
-        animate={{ opacity: [0.8, 1, 0.8] }}
-        transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-        className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden"
-      >
-        <svg
-          className="w-full h-full text-[#1a1a1a]"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 1200 800"
-          preserveAspectRatio="xMidYMid slice"
+      {/* Literary Whisper Words near page margins */}
+      <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden font-playfair italic text-[#1a1a1a]">
+        {/* Top-Left */}
+        <span 
+          className="absolute text-xs tracking-wider opacity-[0.04] select-none"
+          style={{ top: '12%', left: '4%' }}
         >
-          <line x1="80" y1="200" x2="200" y2="150" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
-          <line x1="80" y1="200" x2="140" y2="300" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
-          <line x1="140" y1="300" x2="60" y2="480" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
-          <line x1="1080" y1="180" x2="980" y2="280" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
-          <line x1="980" y1="280" x2="1120" y2="350" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
-          <line x1="1120" y1="350" x2="1000" y2="520" stroke="currentColor" strokeWidth="0.8" opacity="0.03" />
+          silence
+        </span>
 
-          <text x="80" y="200" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">story</text>
-          <text x="200" y="150" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">memory</text>
-          <text x="140" y="300" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">silence</text>
-          <text x="60" y="480" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">poetry</text>
-          <text x="120" y="700" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">dream</text>
+        {/* Left margin (Desktop only) */}
+        <span 
+          className="absolute text-[13px] tracking-widest opacity-[0.045] select-none hidden lg:block"
+          style={{ top: '42%', left: '3%' }}
+        >
+          solitude
+        </span>
 
-          <text x="1080" y="180" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">solitude</text>
-          <text x="980" y="280" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">wonder</text>
-          <text x="1120" y="350" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">myth</text>
-          <text x="1000" y="520" fontFamily="Georgia, serif" fontSize="13" fontStyle="italic" fill="currentColor" opacity="0.05" textAnchor="middle">λόγος</text>
-        </svg>
-      </motion.div>
+        {/* Lower-Left */}
+        <span 
+          className="absolute text-xs tracking-wider opacity-[0.035] select-none"
+          style={{ bottom: '15%', left: '5%' }}
+        >
+          memory
+        </span>
+
+        {/* Top-Right */}
+        <span 
+          className="absolute text-[13px] tracking-widest opacity-[0.04] select-none"
+          style={{ top: '15%', right: '4%' }}
+        >
+          wonder
+        </span>
+
+        {/* Right margin (Desktop only) */}
+        <span 
+          className="absolute text-xs tracking-wider opacity-[0.045] select-none hidden lg:block"
+          style={{ top: '48%', right: '3%' }}
+        >
+          longing
+        </span>
+
+        {/* Bottom-Right */}
+        <span 
+          className="absolute text-xs tracking-widest opacity-[0.035] select-none"
+          style={{ bottom: '12%', right: '5%' }}
+        >
+          shadow
+        </span>
+      </div>
     </>
   );
 
