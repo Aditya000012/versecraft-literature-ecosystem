@@ -874,6 +874,32 @@ const getThemeTint = (genre: string): string => {
   return 'transparent';
 };
 
+const getPanelTint = (genre: string): string => {
+  const g = genre.toLowerCase();
+  if (g.includes('gothic')) return 'rgba(250, 230, 230, 0.85)';
+  if (g.includes('horror')) return 'rgba(240, 230, 230, 0.85)';
+  if (g.includes('noir')) return 'rgba(235, 235, 235, 0.85)';
+  if (g.includes('sufi')) return 'rgba(250, 240, 230, 0.85)';
+  if (g.includes('romance')) return 'rgba(252, 235, 240, 0.85)';
+  if (g.includes('fantasy')) return 'rgba(235, 240, 252, 0.85)';
+  if (g.includes('mystery')) return 'rgba(235, 235, 245, 0.85)';
+  if (g.includes('science fiction') || g.includes('dystopian')) return 'rgba(230, 245, 250, 0.85)';
+  if (g.includes('magical realism')) return 'rgba(240, 250, 235, 0.85)';
+  if (g.includes('historical')) return 'rgba(250, 242, 230, 0.85)';
+  if (g.includes('war')) return 'rgba(242, 238, 230, 0.85)';
+  if (g.includes('existential') || g.includes('philosophical')) return 'rgba(235, 235, 245, 0.85)';
+  if (g.includes('adventure')) return 'rgba(230, 248, 240, 0.85)';
+  if (g.includes('satire') || g.includes('comedy')) return 'rgba(252, 250, 230, 0.85)';
+  if (g.includes('tragedy')) return 'rgba(245, 235, 235, 0.85)';
+  if (g.includes('epic')) return 'rgba(248, 242, 230, 0.85)';
+  if (g.includes('supernatural')) return 'rgba(245, 230, 250, 0.85)';
+  if (g.includes('political')) return 'rgba(230, 238, 250, 0.85)';
+  if (g.includes('psychological')) return 'rgba(242, 232, 248, 0.85)';
+  if (g.includes('classical') || g.includes('realism') || g.includes('literary')) return 'rgba(248, 245, 235, 0.85)';
+  return 'rgba(255, 255, 255, 0.8)';
+};
+
+
 const getGenrePattern = (genre: string): string | null => {
   const raw = getGenrePatternRaw(genre);
   if (!raw) return null;
@@ -1230,7 +1256,7 @@ export default function WriteWithMePage() {
             exit={{ opacity: 0, y: -15 }}
             className="max-w-2xl mx-auto space-y-8"
           >
-            <div className="bg-white border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6 text-[#1a1a1a]">
+            <div className="bg-white/40 backdrop-blur-md border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6 text-[#1a1a1a]">
               <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] border-b border-[#1a1a1a]/10 pb-2">
                 Conceive the Foundation
               </h3>
@@ -1308,7 +1334,7 @@ export default function WriteWithMePage() {
 
             {/* Stories local history collapsible section */}
             {history.length > 0 && (
-              <div className="bg-white border border-[#1a1a1a]/10 rounded-xl overflow-hidden shadow">
+              <div className="bg-white/40 backdrop-blur-md border border-[#1a1a1a]/10 rounded-xl overflow-hidden shadow-sm">
                 <button
                   onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
                   className="w-full px-6 py-4 bg-[#1a1a1a]/5 hover:bg-[#1a1a1a]/10 transition-colors flex items-center justify-between text-left"
@@ -1326,7 +1352,7 @@ export default function WriteWithMePage() {
                     {history.map((item) => (
                       <div
                         key={item.id}
-                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white border border-[#1a1a1a]/10 rounded-xl hover:border-[#1a1a1a]/30 transition-all gap-4"
+                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white/50 border border-[#1a1a1a]/10 rounded-xl hover:border-[#1a1a1a]/30 transition-all gap-4"
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
@@ -1366,7 +1392,10 @@ export default function WriteWithMePage() {
             className="max-w-3xl mx-auto space-y-8"
           >
             {/* Story Flow view */}
-            <div className="bg-white border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-xl min-h-[300px] flex flex-col justify-between text-[#1a1a1a]">
+            <div 
+              style={{ backgroundColor: getPanelTint(genre), backdropFilter: 'blur(12px)' }}
+              className="border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-xl min-h-[300px] flex flex-col justify-between text-[#1a1a1a] transition-all duration-500"
+            >
               <div>
                 <div className="flex justify-between items-center mb-6 pb-2 border-b border-[#1a1a1a]/10 text-[9px] font-bold uppercase tracking-wider text-[#1a1a1a]/60">
                   <span>Genre: {genre} • Tone: {tone}</span>
@@ -1417,7 +1446,10 @@ export default function WriteWithMePage() {
             </div>
 
             {/* Input Form area */}
-            <div className="bg-white border border-[#1a1a1a]/10 rounded-2xl p-6 shadow-xl text-[#1a1a1a]">
+            <div 
+              style={{ backgroundColor: getPanelTint(genre), backdropFilter: 'blur(12px)' }}
+              className="border border-[#1a1a1a]/10 rounded-2xl p-6 shadow-xl text-[#1a1a1a] transition-all duration-500"
+            >
               <form onSubmit={handleAddPart} className="space-y-4">
                 <div>
                   <label className="block text-[10px] uppercase font-bold tracking-widest text-[#1a1a1a]/85 mb-2 font-inter">
@@ -1466,7 +1498,10 @@ export default function WriteWithMePage() {
             className="max-w-3xl mx-auto space-y-8"
           >
             {/* Story Prose container */}
-            <div className="bg-white border border-[#1a1a1a]/10 rounded-2xl p-8 sm:p-10 shadow-xl space-y-6 text-[#1a1a1a]">
+            <div 
+              style={{ backgroundColor: getPanelTint(genre), backdropFilter: 'blur(12px)' }}
+              className="border border-[#1a1a1a]/10 rounded-2xl p-8 sm:p-10 shadow-xl space-y-6 text-[#1a1a1a] transition-all duration-500"
+            >
               <h2 className="font-playfair text-2xl font-bold text-[#1a1a1a] text-center border-b border-[#1a1a1a]/10 pb-4">
                 Synthesized Manuscript
               </h2>
@@ -1494,7 +1529,10 @@ export default function WriteWithMePage() {
             </div>
 
             {/* Ending action controls */}
-            <div className="bg-white border border-[#1a1a1a]/10 rounded-2xl p-6 shadow-xl flex flex-wrap gap-4 items-center justify-between text-[#1a1a1a]">
+            <div 
+              style={{ backgroundColor: getPanelTint(genre), backdropFilter: 'blur(12px)' }}
+              className="border border-[#1a1a1a]/10 rounded-2xl p-6 shadow-xl flex flex-wrap gap-4 items-center justify-between text-[#1a1a1a] transition-all duration-500"
+            >
               <div className="flex gap-3">
                 <button
                   onClick={handleSaveToAnthology}
