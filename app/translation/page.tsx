@@ -8,6 +8,7 @@ import html2canvas from 'html2canvas';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { getSourceLanguages, getTargetLanguages, getLanguageByCodeOrName } from '@/lib/languages';
 
 interface RecentTranslation {
   sourceLanguage: string;
@@ -18,44 +19,13 @@ interface RecentTranslation {
   preserveStyle: boolean;
 }
 
-const sourceLanguages = [
-  'Auto Detect',
-  'English',
-  'French',
-  'Spanish',
-  'German',
-  'Italian',
-  'Russian',
-  'Arabic',
-  'Urdu',
-  'Hindi',
-  'Japanese',
-  'Chinese',
-  'Portuguese',
-];
-
-const targetLanguages = [
-  'English',
-  'French',
-  'Spanish',
-  'German',
-  'Italian',
-  'Russian',
-  'Arabic',
-  'Urdu',
-  'Hindi',
-  'Japanese',
-  'Chinese',
-  'Portuguese',
-];
-
 export default function TranslationChamberPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   const [sourceText, setSourceText] = useState('');
-  const [sourceLanguage, setSourceLanguage] = useState('Auto Detect');
-  const [targetLanguage, setTargetLanguage] = useState('English');
+  const [sourceLanguage, setSourceLanguage] = useState('auto');
+  const [targetLanguage, setTargetLanguage] = useState('en');
   const [preserveStyle, setPreserveStyle] = useState(true);
   const [translating, setTranslating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -101,8 +71,8 @@ export default function TranslationChamberPage() {
         },
         body: JSON.stringify({
           text: sourceText,
-          sourceLanguage,
-          targetLanguage,
+          sourceLanguage: getLanguageByCodeOrName(sourceLanguage)?.name || 'Auto Detect',
+          targetLanguage: getLanguageByCodeOrName(targetLanguage)?.name || 'English',
           preserveStyle,
         }),
       });
@@ -118,13 +88,11 @@ export default function TranslationChamberPage() {
       });
 
       // Update source language dropdown to detected language if Auto Detect is active and matches options exactly
-      if (data.detectedLanguage && sourceLanguage === 'Auto Detect') {
+      if (data.detectedLanguage && sourceLanguage === 'auto') {
         const cleanedDetected = data.detectedLanguage.trim();
-        const exactMatch = sourceLanguages.find(
-          (lang) => lang === cleanedDetected
-        );
-        if (exactMatch && exactMatch !== 'Auto Detect') {
-          setSourceLanguage(exactMatch);
+        const exactMatch = getLanguageByCodeOrName(cleanedDetected);
+        if (exactMatch && exactMatch.code !== 'auto') {
+          setSourceLanguage(exactMatch.code);
         }
       }
 
@@ -229,8 +197,13 @@ export default function TranslationChamberPage() {
 
   const handleLoadHistory = (item: RecentTranslation) => {
     setSourceText(item.sourceText);
-    setSourceLanguage(item.sourceLanguage);
-    setTargetLanguage(item.targetLanguage);
+    
+    const resolvedSource = getLanguageByCodeOrName(item.sourceLanguage);
+    const resolvedTarget = getLanguageByCodeOrName(item.targetLanguage);
+    
+    setSourceLanguage(resolvedSource?.code || 'auto');
+    setTargetLanguage(resolvedTarget?.code || 'en');
+    
     setPreserveStyle(item.preserveStyle);
     setTranslationResult({
       translation: item.translation,
@@ -363,6 +336,7 @@ export default function TranslationChamberPage() {
                     onChange={handleSourceTextInput}
                     placeholder="Bring a poem, a letter, a memory, a fragment of language…"
                     style={{ minHeight: '200px' }}
+                    dir={sourceLanguage === 'auto' ? 'auto' : (getLanguageByCodeOrName(sourceLanguage)?.direction || 'ltr')}
                     className="w-full px-4 py-3 rounded-xl outline-none bg-white/80 border border-[#1a1a1a]/15 text-sm text-[#1a1a1a] placeholder-[#1a1a1a]/30 resize-none leading-relaxed transition-all focus:border-[#1a1a1a] font-serif"
                   />
                 </div>
@@ -378,9 +352,9 @@ export default function TranslationChamberPage() {
                       onChange={(e) => setSourceLanguage(e.target.value)}
                       className="flex-1 min-w-0 px-3 py-2.5 rounded-lg outline-none bg-[#F8F4E9]/50 border border-[#1a1a1a]/15 text-[#1a1a1a] text-xs font-serif focus:border-[#1a1a1a] transition-all cursor-pointer"
                     >
-                      {sourceLanguages.map((lang) => (
-                        <option key={lang} value={lang} className="text-[#1a1a1a] bg-[#F8F4E9]">
-                          {lang}
+                      {getSourceLanguages().map((lang) => (
+                        <option key={lang.code} value={lang.code} className="text-[#1a1a1a] bg-[#F8F4E9]">
+                          {lang.name} {lang.nativeName && lang.nativeName !== lang.name ? `(${lang.nativeName})` : ''}
                         </option>
                       ))}
                     </select>
@@ -392,9 +366,9 @@ export default function TranslationChamberPage() {
                       onChange={(e) => setTargetLanguage(e.target.value)}
                       className="flex-1 min-w-0 px-3 py-2.5 rounded-lg outline-none bg-[#F8F4E9]/50 border border-[#1a1a1a]/15 text-[#1a1a1a] text-xs font-serif focus:border-[#1a1a1a] transition-all cursor-pointer"
                     >
-                      {targetLanguages.map((lang) => (
-                        <option key={lang} value={lang} className="text-[#1a1a1a] bg-[#F8F4E9]">
-                          {lang}
+                      {getTargetLanguages().map((lang) => (
+                        <option key={lang.code} value={lang.code} className="text-[#1a1a1a] bg-[#F8F4E9]">
+                          {lang.name} {lang.nativeName && lang.nativeName !== lang.name ? `(${lang.nativeName})` : ''}
                         </option>
                       ))}
                     </select>
@@ -551,7 +525,10 @@ export default function TranslationChamberPage() {
                         Translated Passage
                       </label>
                       <div className="max-w-prose mx-auto text-center px-4">
-                        <p className="font-playfair italic text-lg sm:text-xl md:text-2xl leading-loose text-[#1a1a1a] whitespace-pre-wrap">
+                        <p
+                          dir={getLanguageByCodeOrName(targetLanguage)?.direction || 'ltr'}
+                          className="font-playfair italic text-lg sm:text-xl md:text-2xl leading-loose text-[#1a1a1a] whitespace-pre-wrap"
+                        >
                           {translationResult.translation}
                         </p>
                       </div>
@@ -559,7 +536,7 @@ export default function TranslationChamberPage() {
                       {/* Subtle Metadata Sub-bar */}
                       <div className="mt-8 text-center space-y-1">
                         <div className="text-[10px] uppercase font-bold tracking-wider text-[#1a1a1a]/40 font-inter">
-                          {sourceLanguage} ✦ {targetLanguage}
+                          {getLanguageByCodeOrName(sourceLanguage)?.name || sourceLanguage} ✦ {getLanguageByCodeOrName(targetLanguage)?.name || targetLanguage}
                         </div>
                         <div className="text-[9px] text-[#6b6b6b] font-inter italic">
                           Interpreted with {preserveStyle ? "Literary Preservation" : "Literal Clarity"}

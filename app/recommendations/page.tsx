@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { getFilterLanguages, getLanguageByCodeOrName } from '@/lib/languages';
 
 interface Recommendation {
   id: string;
@@ -78,14 +79,6 @@ const eras = [
   { id: 'present-day', name: 'Present Day (2010 onwards)' },
 ];
 
-const languages = [
-  { id: 'english', name: 'English' },
-  { id: 'urdu', name: 'Urdu (اردو)' },
-  { id: 'hindi', name: 'Hindi (हिन्दी)' },
-  { id: 'french', name: 'French (Français)' },
-  { id: 'spanish', name: 'Spanish (Español)' },
-];
-
 const FONT_LINK = 'https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap';
 
 export default function RecommendationsPage() {
@@ -96,7 +89,7 @@ export default function RecommendationsPage() {
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedEra, setSelectedEra] = useState('');
   const [authorVibe, setAuthorVibe] = useState('');
-  const [selectedLanguage, setSelectedLanguage] = useState('english');
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
 
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
@@ -260,7 +253,7 @@ export default function RecommendationsPage() {
           genre: selectedGenre,
           era: selectedEra,
           author: authorVibe.trim(),
-          language: selectedLanguage,
+          language: getLanguageByCodeOrName(selectedLanguage)?.name || 'English',
         }),
       });
 
@@ -443,9 +436,9 @@ export default function RecommendationsPage() {
                 onChange={(e) => setSelectedLanguage(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg outline-none bg-white border border-[#1a1a1a]/20 focus:border-[#1a1a1a] text-xs font-semibold text-[#1a1a1a] cursor-pointer shadow-xs focus:ring-1 focus:ring-[#1a1a1a]/10 transition-all"
               >
-                {languages.map((l) => (
-                  <option key={l.id} value={l.id} className="bg-[#FAF7F0] text-[#1a1a1a] font-semibold">
-                    {l.name}
+                {getFilterLanguages().map((l) => (
+                  <option key={l.code} value={l.code} className="bg-[#FAF7F0] text-[#1a1a1a] font-semibold">
+                    {l.name} {l.nativeName && l.nativeName !== l.name ? `(${l.nativeName})` : ''}
                   </option>
                 ))}
               </select>

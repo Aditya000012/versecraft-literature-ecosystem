@@ -19,6 +19,7 @@ import {
   orderBy,
   query
 } from 'firebase/firestore';
+import { getTargetLanguages, getLanguageByCodeOrName } from '@/lib/languages';
 import html2canvas from 'html2canvas';
 
 interface Message {
@@ -69,14 +70,6 @@ const eras = [
   { id: 'postmodern', name: 'Postmodern (1970-1990)' },
   { id: 'contemporary', name: 'Contemporary (1990-2010)' },
   { id: 'present-day', name: 'Present Day (2010 onwards)' },
-];
-
-const languages = [
-  { id: 'english', name: 'English' },
-  { id: 'urdu', name: 'Urdu (اردو)' },
-  { id: 'hindi', name: 'Hindi (हिन्दी)' },
-  { id: 'french', name: 'French (Français)' },
-  { id: 'spanish', name: 'Spanish (Español)' },
 ];
 
 const companionModes = [
@@ -2048,7 +2041,7 @@ function AdvancedChatPageContent() {
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedEra, setSelectedEra] = useState('');
   const [authorStyle, setAuthorStyle] = useState('');
-  const [selectedLanguage, setSelectedLanguage] = useState('english');
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
 
   const [saveSuccessId, setSaveSuccessId] = useState<string | null>(null);
 
@@ -2087,7 +2080,8 @@ function AdvancedChatPageContent() {
               setSelectedGenre(data.filters.genre || '');
               setSelectedEra(data.filters.era || '');
               setAuthorStyle(data.filters.authorStyle || '');
-              setSelectedLanguage(data.filters.language || 'english');
+              const resolved = getLanguageByCodeOrName(data.filters.language);
+              setSelectedLanguage(resolved?.code || 'en');
             }
             setWizardActive(false);
             return;
@@ -2178,7 +2172,7 @@ function AdvancedChatPageContent() {
 
     const genreObj = genres.find(g => g.id === selectedGenre) || { name: selectedGenre };
     const eraObj = eras.find(e => e.id === selectedEra) || { name: selectedEra };
-    const langObj = languages.find(l => l.id === selectedLanguage) || { name: selectedLanguage };
+    const langObj = getLanguageByCodeOrName(selectedLanguage) || { name: 'English' };
 
     const greetingText = `Welcome. I'm glad you've found your way here. I have prepared our workspace for our journey into ${genreObj.name} literature from the ${eraObj.name} era${authorStyle ? `, inspired by the distinct voice of ${authorStyle}` : ''}. We will converse in ${langObj.name}. What are you reading, writing, or thinking about today?`;
 
@@ -2203,7 +2197,7 @@ function AdvancedChatPageContent() {
           genre: selectedGenre,
           era: selectedEra,
           authorStyle,
-          language: selectedLanguage,
+          language: langObj.name,
         },
         createdAt: serverTimestamp(),
         messages: initialMessages.map((msg) => ({
@@ -2260,7 +2254,7 @@ function AdvancedChatPageContent() {
             genre: selectedGenre,
             era: selectedEra,
             authorStyle,
-            language: selectedLanguage,
+            language: getLanguageByCodeOrName(selectedLanguage)?.name || 'English',
           },
         }),
       });
@@ -2585,9 +2579,9 @@ function AdvancedChatPageContent() {
                     onChange={(e) => setSelectedLanguage(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-[#1a1a1a]/30 bg-transparent text-[#1a1a1a] outline-none text-sm cursor-pointer focus:border-[#1a1a1a] transition-all"
                   >
-                    {languages.map((l) => (
-                      <option key={l.id} value={l.id} className="text-[#1a1a1a]">
-                        {l.name}
+                    {getTargetLanguages().map((l) => (
+                      <option key={l.code} value={l.code} className="text-[#1a1a1a]">
+                        {l.name} {l.nativeName && l.nativeName !== l.name ? `(${l.nativeName})` : ''}
                       </option>
                     ))}
                   </select>
