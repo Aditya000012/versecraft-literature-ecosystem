@@ -820,6 +820,797 @@ const eraProfiles: Record<string, {
   }
 };
 
+const getGenrePattern = (genre: string, era: string): string | null => {
+  const g = (genre || '').toLowerCase().trim();
+  const e = (era || '').toLowerCase().trim();
+
+  let matchedGenre = '';
+  if (g.includes('gothic')) matchedGenre = 'gothic';
+  else if (g.includes('horror')) matchedGenre = 'horror';
+  else if (g.includes('romance')) matchedGenre = 'romance';
+  else if (g.includes('mystery')) matchedGenre = 'mystery';
+  else if (g.includes('fantasy')) matchedGenre = 'fantasy';
+  else if (g.includes('sufi')) matchedGenre = 'sufi';
+  else if (g.includes('science') || g.includes('sci-fi')) matchedGenre = 'science-fiction';
+  else if (g.includes('dystopian')) matchedGenre = 'dystopian';
+  else if (g.includes('magical') || g.includes('magic')) matchedGenre = 'magical-realism';
+  else if (g.includes('historical')) matchedGenre = 'historical-fiction';
+  else if (g.includes('noir')) matchedGenre = 'noir';
+  else if (g.includes('existential') || g.includes('philosophical')) matchedGenre = 'existential-philosophical';
+  else if (g.includes('war')) matchedGenre = 'war-literature';
+  else if (g.includes('classical') || g.includes('ancient')) matchedGenre = 'classical-ancient';
+  else if (g.includes('modernist') || g.includes('modernism')) matchedGenre = 'modernist';
+  else if (g.includes('adventure')) matchedGenre = 'adventure';
+  else if (g.includes('satire') || g.includes('comedy')) matchedGenre = 'satire-comedy';
+  else if (g.includes('tragedy')) matchedGenre = 'tragedy';
+  else if (g.includes('epic')) matchedGenre = 'epic';
+  else if (g.includes('supernatural')) matchedGenre = 'supernatural';
+  else if (g.includes('political')) matchedGenre = 'political-fiction';
+  else if (g.includes('psychological') || g.includes('thriller')) matchedGenre = 'psychological-thriller';
+  else if (g.includes('literary')) matchedGenre = 'literary-fiction';
+
+  if (!matchedGenre) return null;
+
+  // Opacity rule
+  let opacity = 0.04;
+  if (matchedGenre === 'noir') {
+    opacity = 0.05;
+  }
+
+  // Strong modifications: Gothic+Victorian, Sufi+Ancient, Fantasy+Renaissance
+  const isGothicVictorian = matchedGenre === 'gothic' && e.includes('victorian');
+  const isSufiAncient = matchedGenre === 'sufi' && e.includes('ancient');
+  const isFantasyRenaissance = matchedGenre === 'fantasy' && e.includes('renaissance');
+
+  if (isGothicVictorian || isSufiAncient || isFantasyRenaissance) {
+    opacity = 0.055;
+  }
+
+  switch (matchedGenre) {
+    case 'gothic': {
+      let gothic = `<svg viewBox="0 0 800 800" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <!-- Outermost ring -->
+  <circle cx="400" cy="400" r="380" stroke="#1a1a1a" stroke-width="3" fill="none"/>
+  <circle cx="400" cy="400" r="365" stroke="#1a1a1a" stroke-dasharray="4,4" fill="none"/>
+  <!-- Inner rings -->
+  <circle cx="400" cy="400" r="280" stroke="#1a1a1a" stroke-width="2" fill="none"/>
+  <circle cx="400" cy="400" r="200" stroke="#1a1a1a" stroke-width="2" fill="none"/>
+  <circle cx="400" cy="400" r="120" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+  <circle cx="400" cy="400" r="50" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>`;
+      
+      for (let i = 0; i < 16; i++) {
+        const angle = (i * 360) / 16;
+        const rad = (angle * Math.PI) / 180;
+        const x2_380 = 400 + 380 * Math.cos(rad);
+        const y2_380 = 400 + 380 * Math.sin(rad);
+        gothic += `<line x1="400" y1="400" x2="${x2_380}" y2="${y2_380}" stroke="#1a1a1a" stroke-width="1"/>`;
+      }
+      
+      for (let i = 0; i < 16; i++) {
+        const angle1 = (i * 360) / 16;
+        const angle2 = ((i + 1) * 360) / 16;
+        const midAngle = (angle1 + angle2) / 2;
+        
+        const a1 = (angle1 * Math.PI) / 180;
+        const a2 = (angle2 * Math.PI) / 180;
+        const am = (midAngle * Math.PI) / 180;
+        
+        const xB1 = 400 + 200 * Math.cos(a1);
+        const yB1 = 400 + 200 * Math.sin(a1);
+        const xB2 = 400 + 200 * Math.cos(a2);
+        const yB2 = 400 + 200 * Math.sin(a2);
+        const xTip = 400 + 280 * Math.cos(am);
+        const yTip = 400 + 280 * Math.sin(am);
+        gothic += `<path d="M ${xB1} ${yB1} A 150 150 0 0 1 ${xTip} ${yTip} A 150 150 0 0 1 ${xB2} ${yB2}" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>`;
+        
+        const xB1_2 = 400 + 280 * Math.cos(a1);
+        const yB1_2 = 400 + 280 * Math.sin(a1);
+        const xB2_2 = 400 + 280 * Math.cos(a2);
+        const yB2_2 = 400 + 280 * Math.sin(a2);
+        const xTip2 = 400 + 380 * Math.cos(am);
+        const yTip2 = 400 + 380 * Math.sin(am);
+        gothic += `<path d="M ${xB1_2} ${yB1_2} A 200 200 0 0 1 ${xTip2} ${yTip2} A 200 200 0 0 1 ${xB2_2} ${yB2_2}" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>`;
+        
+        const xB1_3 = 400 + 120 * Math.cos(a1);
+        const yB1_3 = 400 + 120 * Math.sin(a1);
+        const xB2_3 = 400 + 120 * Math.cos(a2);
+        const yB2_3 = 400 + 120 * Math.sin(a2);
+        const xTip3 = 400 + 200 * Math.cos(am);
+        const yTip3 = 400 + 200 * Math.sin(am);
+        gothic += `<path d="M ${xB1_3} ${yB1_3} A 100 100 0 0 1 ${xTip3} ${yTip3} A 100 100 0 0 1 ${xB2_3} ${yB2_3}" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>`;
+      }
+      gothic += `</svg>`;
+      return gothic;
+    }
+    case 'horror': {
+      const dots = [ [200,300,45],[230,270,10],[180,350,8],[260,330,12],[210,370,5],[150,750,60],[110,690,15],[220,790,20],[80,800,10],[190,710,12],[500,250,8],[550,850,15],[900,600,25],[850,650,7],[930,550,5] ];
+      let dotsHtml = '';
+      for (const d of dots) {
+        dotsHtml += `<circle cx="${d[0]}" cy="${d[1]}" r="${d[2]}" fill="#1a1a1a"/>`;
+      }
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+        ${dotsHtml}
+        <path d="M 800,100 Q 820,95 830,110 T 880,100 Q 850,130 830,135 Q 835,160 845,180 Q 820,160 815,145 T 770,170 Q 775,150 785,135 Q 770,120 750,105 Q 780,110 800,100 Z" fill="#1a1a1a"/>
+      </svg>`;
+    }
+    case 'romance': {
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <g stroke="#1a1a1a" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 750,750 C 745,740 755,735 760,745 C 765,755 750,760 740,750 C 735,740 750,725 765,735 C 775,745 765,770 745,770 C 725,770 720,740 740,720 C 760,700 790,720 785,750 C 780,780 740,795 720,780" />
+    <path d="M 720,780 C 690,760 695,710 730,695 C 765,680 810,700 815,740 C 820,780 775,815 730,815 C 685,815 660,760 680,710 C 700,660 760,650 810,670 C 860,690 865,760 825,810" />
+    <path d="M 825,810 C 840,830 870,820 880,780 C 890,740 860,700 830,685 M 680,710 C 650,700 620,720 630,760 C 640,800 680,830 730,835" />
+    <path d="M 730,835 Q 700,890 680,950 Q 675,960 670,980" stroke-width="2"/>
+    <path d="M 690,880 C 640,870 600,890 570,920 C 610,930 650,915 680,895 Z" />
+    <path d="M 690,880 Q 630,900 570,920 M 640,880 Q 620,895 610,910 M 660,890 Q 640,905 630,915" />
+    <path d="M 685,910 C 730,920 770,910 800,880 C 760,870 720,885 690,925 Z" />
+    <path d="M 685,910 Q 740,895 800,880 M 730,905 Q 750,890 765,885 M 710,915 Q 730,905 745,898" />
+    <path d="M 693,900 L 705,898 L 690,908 Z" fill="#1a1a1a"/>
+    <path d="M 682,935 L 670,938 L 680,942 Z" fill="#1a1a1a"/>
+  </g>
+</svg>`;
+    }
+    case 'mystery': {
+      const template = `<g stroke="#1a1a1a" fill="none" stroke-width="1.5"><circle cx="0" cy="0" r="15" /><circle cx="0" cy="0" r="6" /><line x1="0" y1="15" x2="0" y2="70" stroke-width="2" /><line x1="-6" y1="25" x2="6" y2="25" /><line x1="-4" y1="30" x2="4" y2="30" /><path d="M 0,55 L 12,55 L 12,62 L 0,62 L 0,66 L 15,66 L 15,73 L 0,73" stroke-width="1.5" /></g>`;
+      const list = [ [150, 200, 45, 1.5], [820, 250, -60, 1.2], [250, 750, 125, 1.6], [780, 820, -15, 1.4], [500, 120, 200, 1], [880, 580, 95, 1.3] ];
+      let keysHtml = '';
+      for (const k of list) {
+        keysHtml += `<g transform="translate(${k[0]}, ${k[1]}) rotate(${k[2]}) scale(${k[3]})">${template}</g>`;
+      }
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+        ${keysHtml}
+      </svg>`;
+    }
+    case 'fantasy': {
+      const pts1 = [[150,150,3],[220,120,4],[280,180,3],[200,240,5],[250,50,3],[350,80,4]];
+      let pts1Html = '';
+      for (const p of pts1) pts1Html += `<circle cx="${p[0]}" cy="${p[1]}" r="${p[2]}" fill="#1a1a1a"/>`;
+      
+      const pts2 = [[750,100,3.5],[820,120,3],[880,80,5],[920,150,3],[850,200,4]];
+      let pts2Html = '';
+      for (const p of pts2) pts2Html += `<circle cx="${p[0]}" cy="${p[1]}" r="${p[2]}" fill="#1a1a1a"/>`;
+      
+      const pts3 = [[700,700,4],[780,680,4.5],[850,750,3],[880,850,5],[780,880,3.5],[700,800,4]];
+      let pts3Html = '';
+      for (const p of pts3) pts3Html += `<circle cx="${p[0]}" cy="${p[1]}" r="${p[2]}" fill="#1a1a1a"/>`;
+
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <circle cx="500" cy="500" r="450" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="4,8" fill="none"/>
+  <circle cx="500" cy="500" r="300" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="4,8" fill="none"/>
+  <circle cx="500" cy="500" r="150" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="4,8" fill="none"/>
+  <line x1="500" y1="50" x2="500" y2="950" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="4,8"/>
+  <line x1="50" y1="500" x2="950" y2="500" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="4,8"/>
+  
+  <polyline points="150,150 220,120 280,180 200,240 150,150" stroke="#1a1a1a" stroke-width="1.2" stroke-dasharray="2,2" fill="none"/>
+  <polyline points="220,120 250,50 350,80 280,180" stroke="#1a1a1a" stroke-width="1.2" stroke-dasharray="2,2" fill="none"/>
+  ${pts1Html}
+
+  <polyline points="750,100 820,120 880,80 920,150 850,200 750,100" stroke="#1a1a1a" stroke-width="1.2" stroke-dasharray="2,2" fill="none"/>
+  ${pts2Html}
+
+  <polyline points="700,700 780,680 850,750 880,850 780,880 700,800 700,700" stroke="#1a1a1a" stroke-width="1.2" stroke-dasharray="2,2" fill="none"/>
+  <line x1="780" y1="680" x2="700" y2="800" stroke="#1a1a1a" stroke-width="1.2" stroke-dasharray="2,2"/>
+  ${pts3Html}
+</svg>`;
+    }
+    case 'sufi': {
+      return `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <defs>
+    <pattern id="sufi-tessellation" width="100" height="100" patternUnits="userSpaceOnUse">
+      <g transform="translate(50, 50)">
+        <rect x="-25" y="-25" width="50" height="50" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+        <rect x="-25" y="-25" width="50" height="50" transform="rotate(45)" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+        <circle cx="0" cy="0" r="15" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="2,2"/>
+      </g>
+      <g transform="translate(0, 0)">
+        <rect x="-12.5" y="-12.5" width="25" height="25" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+        <rect x="-12.5" y="-12.5" width="25" height="25" transform="rotate(45)" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+      </g>
+      <g transform="translate(100, 0)">
+        <rect x="-12.5" y="-12.5" width="25" height="25" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+        <rect x="-12.5" y="-12.5" width="25" height="25" transform="rotate(45)" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+      </g>
+      <g transform="translate(0, 100)">
+        <rect x="-12.5" y="-12.5" width="25" height="25" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+        <rect x="-12.5" y="-12.5" width="25" height="25" transform="rotate(45)" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+      </g>
+      <g transform="translate(100, 100)">
+        <rect x="-12.5" y="-12.5" width="25" height="25" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+        <rect x="-12.5" y="-12.5" width="25" height="25" transform="rotate(45)" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+      </g>
+      <line x1="0" y1="50" x2="25" y2="50" stroke="#1a1a1a" stroke-width="0.6"/>
+      <line x1="75" y1="50" x2="100" y2="50" stroke="#1a1a1a" stroke-width="0.6"/>
+      <line x1="50" y1="0" x2="50" y2="25" stroke="#1a1a1a" stroke-width="0.6"/>
+      <line x1="50" y1="75" x2="50" y2="100" stroke="#1a1a1a" stroke-width="0.6"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#sufi-tessellation)"/>
+</svg>`;
+    }
+    case 'science-fiction': {
+      let sfGrid = '';
+      for (const x of [100, 300, 500, 700, 900]) {
+        for (const y of [100, 300, 500, 700, 900]) {
+          sfGrid += `<line x1="${x - 5}" y1="${y}" x2="${x + 5}" y2="${y}" stroke="#1a1a1a" stroke-width="0.8"/>
+                    <line x1="${x}" y1="${y - 5}" x2="${x}" y2="${y + 5}" stroke="#1a1a1a" stroke-width="0.8"/>`;
+        }
+      }
+
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <line x1="100" y1="100" x2="900" y2="100" stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="2,10"/>
+  <line x1="100" y1="300" x2="900" y2="300" stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="2,10"/>
+  <line x1="100" y1="500" x2="900" y2="500" stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="2,10"/>
+  <line x1="100" y1="700" x2="900" y2="700" stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="2,10"/>
+  <line x1="100" y1="900" x2="900" y2="900" stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="2,10"/>
+  
+  <line x1="100" y1="100" x2="100" y2="900" stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="2,10"/>
+  <line x1="300" y1="100" x2="300" y2="900" stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="2,10"/>
+  <line x1="500" y1="100" x2="500" y2="900" stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="2,10"/>
+  <line x1="700" y1="100" x2="700" y2="900" stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="2,10"/>
+  <line x1="900" y1="100" x2="900" y2="900" stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="2,10"/>
+
+  ${sfGrid}
+
+  <g transform="rotate(-12, 550, 480)">
+    <ellipse cx="550" cy="480" rx="180" ry="90" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+    <ellipse cx="550" cy="480" rx="300" ry="150" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+    <ellipse cx="550" cy="480" rx="440" ry="220" stroke="#1a1a1a" stroke-width="0.8" stroke-dasharray="3,3" fill="none"/>
+    <ellipse cx="550" cy="480" rx="580" ry="290" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
+
+    <circle cx="370" cy="480" r="5" fill="#1a1a1a"/>
+    <g transform="translate(712, 374) rotate(20)">
+      <circle cx="0" cy="0" r="8" fill="#1a1a1a"/>
+      <ellipse cx="0" cy="0" rx="14" ry="4" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+    </g>
+    <circle cx="230" cy="340" r="4" fill="#1a1a1a"/>
+    <circle cx="870" cy="620" r="3" fill="#1a1a1a"/>
+    <circle cx="550" cy="190" r="10" fill="#1a1a1a"/>
+  </g>
+  
+  <circle cx="550" cy="480" r="18" fill="none" stroke="#1a1a1a" stroke-width="1.5"/>
+  <circle cx="550" cy="480" r="24" fill="none" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="2,2"/>
+</svg>`;
+    }
+    case 'dystopian': {
+      const drawGear = (cx: number, cy: number, r: number, teethCount: number) => {
+        let gear = `<circle cx="${cx}" cy="${cy}" r="${r - 10}" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>`;
+        gear += `<circle cx="${cx}" cy="${cy}" r="${r - 20}" stroke="#1a1a1a" stroke-dasharray="2,2" fill="none"/>`;
+        for (let i = 0; i < teethCount; i++) {
+          const angle = (i * 360) / teethCount;
+          const rad = (angle * Math.PI) / 180;
+          const x1 = cx + (r - 10) * Math.cos(rad);
+          const y1 = cy + (r - 10) * Math.sin(rad);
+          const x2 = cx + r * Math.cos(rad);
+          const y2 = cy + r * Math.sin(rad);
+          gear += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1a1a1a" stroke-width="3"/>`;
+        }
+        return gear;
+      };
+
+      let dystopian = `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <path d="M 150,500 Q 500,220 850,500 Q 500,780 150,500 Z" stroke="#1a1a1a" stroke-width="2.5" fill="none" />
+  <circle cx="500" cy="500" r="140" stroke="#1a1a1a" stroke-width="2" fill="none"/>
+  <circle cx="500" cy="500" r="100" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+  <circle cx="500" cy="500" r="60" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+  <circle cx="500" cy="500" r="30" fill="#1a1a1a"/>`;
+
+      for (let i = 0; i < 24; i++) {
+        const angle = (i * 360) / 24;
+        const rad = (angle * Math.PI) / 180;
+        const x1 = 500 + 30 * Math.cos(rad);
+        const y1 = 500 + 30 * Math.sin(rad);
+        const x2 = 500 + 420 * Math.cos(rad);
+        const y2 = 500 + 420 * Math.sin(rad);
+        dystopian += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1a1a1a" stroke-dasharray="3,6" stroke-width="0.8"/>`;
+      }
+
+      dystopian += `<g opacity="0.8">`;
+      dystopian += drawGear(50, 50, 80, 12);
+      dystopian += drawGear(950, 50, 70, 10);
+      dystopian += drawGear(50, 950, 90, 14);
+      dystopian += drawGear(950, 950, 85, 12);
+      dystopian += `</g></svg>`;
+      return dystopian;
+    }
+    case 'magical-realism': {
+      let clockTicks = '';
+      for (let i = 0; i < 12; i++) {
+        const rad = (i * 30 * Math.PI) / 180;
+        clockTicks += `<line x1="${75 * Math.cos(rad)}" y1="${75 * Math.sin(rad)}" x2="${85 * Math.cos(rad)}" y2="${85 * Math.sin(rad)}" stroke="#1a1a1a" stroke-width="1"/>`;
+      }
+
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <g transform="translate(500, 500)">
+    <ellipse cx="0" cy="0" rx="8" ry="80" fill="#1a1a1a"/>
+    <circle cx="0" cy="-90" r="10" fill="#1a1a1a"/>
+    <path d="M -4,-95 Q -25,-140 -35,-150 M 4,-95 Q 25,-140 35,-150" stroke="#1a1a1a" stroke-width="2" fill="none"/>
+    <path d="M 0,-40 C -80,-150 -320,-180 -340,-50 C -350,50 -200,100 -50,50 C -120,150 -250,220 -200,280 C -150,340 -50,200 0,60" stroke="#1a1a1a" stroke-width="2" fill="none"/>
+    <path d="M 0,-40 C 80,-150 320,-180 340,-50 C 350,50 200,100 50,50 C 120,150 250,220 200,280 C 150,340 50,200 0,60" stroke="#1a1a1a" stroke-width="2" fill="none"/>
+
+    <g transform="translate(-160, -50)">
+      <circle cx="0" cy="0" r="90" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+      <circle cx="0" cy="0" r="82" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="2,4" fill="none"/>
+      ${clockTicks}
+      <line x1="0" y1="0" x2="-40" y2="-20" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="0" y1="0" x2="10" y2="-55" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="3" fill="#1a1a1a"/>
+    </g>
+
+    <g transform="translate(160, -50)">
+      <circle cx="0" cy="0" r="90" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+      <circle cx="0" cy="0" r="82" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="2,4" fill="none"/>
+      ${clockTicks}
+      <line x1="0" y1="0" x2="40" y2="20" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>
+      <line x1="0" y1="0" x2="-10" y2="-50" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="3" fill="#1a1a1a"/>
+    </g>
+  </g>
+
+  <g transform="translate(200, 200) rotate(15) scale(0.6)">
+    <path d="M -20,-30 L 20,-30 L 2,-2 L 20,26 L -20,26 L -2,2 Z" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+    <line x1="-22" y1="-30" x2="22" y2="-30" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line x1="-22" y1="26" x2="22" y2="26" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M -8,22 Q 0,26 8,22" fill="#1a1a1a"/>
+  </g>
+  <g transform="translate(800, 750) rotate(-25) scale(0.7)">
+    <path d="M -20,-30 L 20,-30 L 2,-2 L 20,26 L -20,26 L -2,2 Z" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+    <line x1="-22" y1="-30" x2="22" y2="-30" stroke="#1a1a1a" stroke-width="2.5"/>
+    <line x1="-22" y1="26" x2="22" y2="26" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M -8,22 Q 0,26 8,22" fill="#1a1a1a"/>
+  </g>
+  
+  <path d="M 350,150 Q 320,180 340,210 Q 370,210 370,170 Z" fill="none" stroke="#1a1a1a" stroke-width="1"/>
+  <path d="M 680,220 Q 710,240 690,270 Q 660,260 670,230 Z" fill="none" stroke="#1a1a1a" stroke-width="1"/>
+</svg>`;
+    }
+    case 'historical-fiction': {
+      let compassPointsHtml = '';
+      for (let i = 0; i < 8; i++) {
+        const angle = i * 45;
+        compassPointsHtml += `
+          <polygon points="0,0 0,-60 8,-20" stroke="#1a1a1a" stroke-width="0.8" fill="#1a1a1a" transform="rotate(${angle})"/>
+          <polygon points="0,0 0,-60 -8,-20" stroke="#1a1a1a" stroke-width="0.8" fill="none" transform="rotate(${angle})"/>
+        `;
+      }
+      for (let i = 0; i < 8; i++) {
+        const angle = i * 45 + 22.5;
+        compassPointsHtml += `
+          <polygon points="0,0 0,-40 5,-15" stroke="#1a1a1a" stroke-width="0.5" fill="#1a1a1a" transform="rotate(${angle})"/>
+          <polygon points="0,0 0,-40 -5,-15" stroke="#1a1a1a" stroke-width="0.5" fill="none" transform="rotate(${angle})"/>
+        `;
+      }
+
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <path d="M 150,0 Q 450,500 150,1000 M 500,0 Q 800,500 500,1000 M 800,0 Q 1100,500 800,1000" stroke="#1a1a1a" stroke-width="0.4" fill="none" />
+  <path d="M 0,250 Q 500,400 1000,250 M 0,600 Q 500,750 1000,600 M 0,850 Q 500,980 1000,850" stroke="#1a1a1a" stroke-width="0.4" fill="none" />
+
+  <rect x="15" y="15" width="970" height="970" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+  <rect x="25" y="25" width="950" height="950" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="2,3" fill="none"/>
+  
+  <path d="M 15,60 C 40,60 60,40 60,15 M 985,60 C 960,60 940,40 940,15 M 15,940 C 40,940 60,960 60,985 M 985,940 C 960,940 940,960 940,985" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+
+  <g stroke="#1a1a1a" stroke-width="0.8" fill="none">
+    <path d="M 450,300 L 480,250 L 510,300 Z M 480,250 L 475,275 M 480,250 L 488,280"/>
+    <path d="M 490,320 L 525,260 L 560,320 Z M 525,260 L 518,290 M 525,260 L 535,295"/>
+    <path d="M 540,290 L 570,240 L 600,290 Z M 570,240 L 565,265 M 570,240 L 578,270"/>
+  </g>
+
+  <g transform="translate(200, 800)">
+    <circle cx="0" cy="0" r="70" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+    <circle cx="0" cy="0" r="64" stroke="#1a1a1a" stroke-dasharray="2,2" fill="none"/>
+    ${compassPointsHtml}
+    <circle cx="0" cy="0" r="6" fill="#1a1a1a"/>
+  </g>
+</svg>`;
+    }
+    case 'noir': {
+      let shadows = '';
+      for (const y of [-200, -120, -40, 40, 120, 200, 280, 360, 440, 520, 600, 680, 760, 840, 920, 1000]) {
+        shadows += `<rect x="-300" y="${y}" width="1600" height="36" fill="#1a1a1a"/>`;
+      }
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <g transform="rotate(25, 500, 500)">
+    ${shadows}
+  </g>
+  <g fill="#1a1a1a" stroke="none">
+    <rect x="0" y="850" width="60" height="150" />
+    <rect x="60" y="820" width="80" height="180" />
+    <rect x="140" y="880" width="50" height="120" />
+    <rect x="190" y="800" width="90" height="200" />
+    <rect x="280" y="860" width="40" height="140" />
+    <rect x="320" y="830" width="70" height="170" />
+    <rect x="390" y="890" width="60" height="110" />
+    <rect x="450" y="790" width="100" height="210" />
+    <rect x="550" y="840" width="50" height="160" />
+    <rect x="600" y="810" width="80" height="190" />
+    <rect x="680" y="870" width="60" height="130" />
+    <rect x="740" y="780" width="110" height="220" />
+    <rect x="850" y="840" width="50" height="160" />
+    <rect x="900" y="820" width="100" height="180" />
+  </g>
+</svg>`;
+    }
+    case 'existential-philosophical': {
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <g stroke="#1a1a1a" stroke-width="1.8" fill="none" stroke-linecap="round">
+    <circle cx="500" cy="500" r="40" stroke-width="1.2"/>
+    
+    <path d="M 500,420 A 80 80 0 1 1 420,500 A 80 80 0 0 1 500,580 L 500,540"/>
+    <path d="M 500,380 A 120 120 0 1 1 380,500 A 120 120 0 0 1 500,620 L 500,580"/>
+    <path d="M 500,340 A 160 160 0 1 1 340,500 A 160 160 0 0 1 500,660 L 500,620"/>
+    <path d="M 500,300 A 200 200 0 1 1 300,500 A 200 200 0 0 1 500,700 L 500,660"/>
+    <path d="M 500,260 A 240 240 0 1 1 260,500 A 240 240 0 0 1 500,740 L 500,700"/>
+    <path d="M 500,220 A 280 280 0 1 1 220,500 A 280 280 0 0 1 500,780 L 500,740"/>
+    <path d="M 500,180 A 320 320 0 1 1 180,500 A 320 320 0 0 1 500,820 L 500,780"/>
+    <path d="M 500,140 A 360 360 0 1 1 140,500 A 360 360 0 0 1 500,860 L 500,820"/>
+    
+    <line x1="500" y1="140" x2="500" y2="420" />
+    <line x1="500" y1="580" x2="500" y2="860" />
+    <line x1="140" y1="500" x2="420" y2="500" />
+    <line x1="580" y1="500" x2="860" y2="500" />
+  </g>
+</svg>`;
+    }
+    case 'war-literature': {
+      let gridLines = '';
+      for (const c of [200, 400, 600, 800]) {
+        gridLines += `<line x1="${c}" y1="0" x2="${c}" y2="1000"/><line x1="0" y1="${c}" x2="1000" y2="${c}"/>`;
+      }
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <g stroke="#1a1a1a" stroke-width="0.3" stroke-dasharray="8,8">
+    ${gridLines}
+  </g>
+  
+  <g stroke="#1a1a1a" fill="none" stroke-width="1">
+    <path d="M 500,300 C 650,200 800,250 850,350 C 900,450 800,550 700,500 C 600,450 450,400 500,300 Z" />
+    <path d="M 550,320 C 660,240 760,280 800,350 C 840,420 760,500 680,460 C 600,420 520,380 550,320 Z" />
+    <path d="M 600,340 C 680,280 730,300 750,350 C 770,400 720,450 660,420 Q 600,390 600,340 Z" />
+    
+    <path d="M 150,550 C 250,500 350,550 400,650 C 450,750 350,850 250,800 C 150,750 100,650 150,550 Z" />
+    <path d="M 200,580 C 270,540 330,580 360,650 C 390,720 320,780 250,750 Q 150,720 200,580 Z" />
+    <path d="M 240,610 C 290,580 320,610 330,650 C 340,690 290,730 250,700 Q 200,640 240,610 Z" />
+
+    <path d="M 100,100 Q 300,150 400,50 T 800,150" />
+    <path d="M 80,130 Q 290,180 380,80 T 780,180" />
+    
+    <g stroke="none" fill="#1a1a1a" font-family="monospace" font-size="10" font-weight="bold">
+      <text x="655" y="375">+</text>
+      <text x="665" y="380">485</text>
+      <text x="275" y="655">+</text>
+      <text x="285" y="660">321</text>
+    </g>
+  </g>
+</svg>`;
+    }
+    case 'classical-ancient': {
+      let wreathLeft = '';
+      let wreathRight = '';
+      for (const rot of [0, 15, 30, 45, 60, 75, 90, 105, 120, 135]) {
+        wreathLeft += `<path d="M 0,0 C -15,-5 -20,-20 -5,-25 C 10,-20 5,-5 0,0 Z" fill="#1a1a1a" opacity="0.2" transform="translate(-75, 10) rotate(${rot - 60}) scale(0.7)"/>`;
+        wreathRight += `<path d="M 0,0 C 15,-5 20,-20 5,-25 C -10,-20 -5,-5 0,0 Z" fill="#1a1a1a" opacity="0.2" transform="translate(75, 10) rotate(${-rot + 60}) scale(0.7)"/>`;
+      }
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <rect x="0" y="70" width="1000" height="30" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
+  <rect x="0" y="100" width="1000" height="10" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
+
+  <g stroke="#1a1a1a" stroke-width="1.5" fill="none">
+    <path d="M 0,110 L 140,110 L 130,130 L 10,130 Z"/>
+    <path d="M 10,130 Q 30,150 50,150 L 90,150 Q 110,150 130,130"/>
+    <line x1="20" y1="150" x2="20" y2="1000" /><line x1="40" y1="150" x2="40" y2="1000" />
+    <line x1="60" y1="150" x2="60" y2="1000" /><line x1="80" y1="150" x2="80" y2="1000" />
+    <line x1="100" y1="150" x2="100" y2="1000" /><line x1="120" y1="150" x2="120" y2="1000" />
+  </g>
+
+  <g stroke="#1a1a1a" stroke-width="1.5" fill="none">
+    <path d="M 1000,110 L 860,110 L 870,130 L 990,130 Z"/>
+    <path d="M 990,130 Q 970,150 950,150 L 910,150 Q 890,150 870,130"/>
+    <line x1="980" y1="150" x2="980" y2="1000" /><line x1="960" y1="150" x2="960" y2="1000" />
+    <line x1="940" y1="150" x2="940" y2="1000" /><line x1="920" y1="150" x2="920" y2="1000" />
+    <line x1="900" y1="150" x2="900" y2="1000" /><line x1="880" y1="150" x2="880" y2="1000" />
+  </g>
+
+  <g transform="translate(500, 300)" stroke="#1a1a1a" fill="none" stroke-width="1.2">
+    <path d="M 0,60 C -60,60 -90,0 -80,-50 C -75,-70 -60,-90 -40,-100" />
+    <path d="M 0,60 C 60,60 90,0 80,-50 C 75,-70 60,-90 40,-100" />
+    ${wreathLeft}
+    ${wreathRight}
+    <path d="M -10,65 Q 0,55 10,65 Q 15,90 25,110 M -10,65 Q -15,90 -25,110" />
+  </g>
+</svg>`;
+    }
+    case 'modernist': {
+      const keysHtml = [
+        { cx: 300, cy: 700, char: 'A' },
+        { cx: 370, cy: 750, char: 'E' },
+        { cx: 750, cy: 220, char: 'X' },
+        { cx: 830, cy: 170, char: 'O' }
+      ].map(key => `
+        <g transform="translate(${key.cx}, ${key.cy})">
+          <circle cx="0" cy="0" r="18" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+          <circle cx="0" cy="0" r="15" stroke="#1a1a1a" stroke-width="0.5" fill="none"/>
+          <text x="0" y="5" font-family="Courier New, monospace" font-size="14" font-weight="bold" fill="#1a1a1a" text-anchor="middle">${key.char}</text>
+        </g>
+      `).join('');
+
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <g stroke="#1a1a1a" fill="none" stroke-width="0.8">
+    <polygon points="150,150 350,100 450,280 200,320" />
+    <polygon points="350,100 600,80 650,250 450,280" />
+    <polygon points="200,320 450,280 400,550 150,480" />
+    <polygon points="450,280 650,250 700,480 400,550" />
+    
+    <polygon points="600,600 850,550 900,780 650,820" />
+    <polygon points="450,750 650,820 580,950 380,900" />
+
+    <line x1="150" y1="150" x2="650" y2="250" />
+    <line x1="350" y1="100" x2="200" y2="320" />
+    <line x1="200" y1="320" x2="700" y2="480" />
+    <line x1="450" y1="280" x2="150" y2="480" />
+    <line x1="600" y1="600" x2="900" y2="780" />
+    <line x1="850" y1="550" x2="650" y2="820" />
+  </g>
+  ${keysHtml}
+</svg>`;
+    }
+    case 'adventure': {
+      let degreeTicks = '';
+      for (let i = 0; i < 72; i++) {
+        const rad = (i * 5 * Math.PI) / 180;
+        const length = i % 2 === 0 ? 15 : 8;
+        const x1 = 500 + (365 - length) * Math.cos(rad);
+        const y1 = 500 + (365 - length) * Math.sin(rad);
+        const x2 = 500 + 365 * Math.cos(rad);
+        const y2 = 500 + 365 * Math.sin(rad);
+        degreeTicks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1a1a1a" stroke-width="0.8"/>`;
+      }
+
+      let compassPoints = '';
+      for (let i = 0; i < 8; i++) {
+        const angle = i * 45;
+        compassPoints += `
+          <polygon points="0,0 0,-330 20,-70" stroke="#1a1a1a" stroke-width="0.8" fill="#1a1a1a" transform="rotate(${angle})"/>
+          <polygon points="0,0 0,-330 -20,-70" stroke="#1a1a1a" stroke-width="0.8" fill="none" transform="rotate(${angle})"/>
+        `;
+      }
+      for (let i = 0; i < 8; i++) {
+        const angle = i * 45 + 22.5;
+        compassPoints += `
+          <polygon points="0,0 0,-220 12,-50" stroke="#1a1a1a" stroke-width="0.6" fill="#1a1a1a" transform="rotate(${angle})"/>
+          <polygon points="0,0 0,-220 -12,-50" stroke="#1a1a1a" stroke-width="0.6" fill="none" transform="rotate(${angle})"/>
+        `;
+      }
+      for (let i = 0; i < 16; i++) {
+        const angle = i * 22.5 + 11.25;
+        compassPoints += `
+          <polygon points="0,0 0,-140 7,-30" stroke="#1a1a1a" stroke-width="0.4" fill="#1a1a1a" transform="rotate(${angle})"/>
+          <polygon points="0,0 0,-140 -7,-30" stroke="#1a1a1a" stroke-width="0.4" fill="none" transform="rotate(${angle})"/>
+        `;
+      }
+
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <circle cx="500" cy="500" r="380" stroke="#1a1a1a" stroke-width="2.5" fill="none"/>
+  <circle cx="500" cy="500" r="365" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+  <circle cx="500" cy="500" r="350" stroke="#1a1a1a" stroke-width="0.5" stroke-dasharray="2,3" fill="none"/>
+  ${degreeTicks}
+  <g transform="translate(500, 500)">
+    ${compassPoints}
+    <circle cx="0" cy="0" r="15" fill="#1a1a1a"/>
+    <circle cx="0" cy="0" r="6" fill="#fff" stroke="#1a1a1a" stroke-width="1.5"/>
+  </g>
+  <g fill="#1a1a1a" font-family="Georgia, serif" font-size="28" font-weight="bold" text-anchor="middle">
+    <text x="500" y="115">N</text>
+    <text x="500" y="915">S</text>
+    <text x="895" y="510">E</text>
+    <text x="105" y="510">W</text>
+  </g>
+</svg>`;
+    }
+    case 'satire-comedy': {
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <g transform="translate(380, 500)">
+    <path d="M -80,-120 Q -95,-100 -90,-20 Q -85,110 0,110 Q 85,110 90,-20 Q 95,-100 80,-120 Q 0,-90 -80,-120 Z" stroke="#1a1a1a" stroke-width="2" fill="none"/>
+    <path d="M -45,-30 Q -30,-45 -15,-30" stroke="#1a1a1a" stroke-width="2.5" fill="none"/>
+    <path d="M 15,-30 Q 30,-45 45,-30" stroke="#1a1a1a" stroke-width="2.5" fill="none"/>
+    <path d="M 0,-10 L -5,20 L 5,20 Z M -5,20 Q 0,25 5,20" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+    <path d="M -50,30 Q 0,75 50,30 C 40,65 -40,65 -50,30 Z" stroke="#1a1a1a" stroke-width="2" fill="#1a1a1a" fill-opacity="0.1"/>
+  </g>
+
+  <g transform="translate(620, 500)">
+    <path d="M -80,-120 Q -95,-100 -90,-20 Q -85,110 0,110 Q 85,110 90,-20 Q 95,-100 80,-120 Q 0,-90 -80,-120 Z" stroke="#1a1a1a" stroke-width="2" fill="none"/>
+    <path d="M -45,-35 Q -30,-20 -15,-35" stroke="#1a1a1a" stroke-width="2.5" fill="none"/>
+    <path d="M 15,-35 Q 30,-20 45,-35" stroke="#1a1a1a" stroke-width="2.5" fill="none"/>
+    <path d="M -40,-15 Q -43,10 -35,5 Q -30,-5 -40,-15" fill="#1a1a1a"/>
+    <path d="M 0,-10 L -5,20 L 5,20 Z" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+    <path d="M -45,55 Q 0,20 45,55 C 30,40 -30,40 -45,55" stroke="#1a1a1a" stroke-width="2" fill="#1a1a1a" fill-opacity="0.1"/>
+  </g>
+
+  <polygon points="200,250 215,225 200,200 185,225" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
+  <polygon points="800,250 815,225 800,200 785,225" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
+  <polygon points="500,200 503,208 512,210 505,216 508,225 500,220 492,225 495,216 488,210 497,208" stroke="#1a1a1a" stroke-width="1" fill="none"/>
+</svg>`;
+    }
+    case 'tragedy': {
+      let sandGrains = '';
+      for (let i = 0; i < 15; i++) {
+        sandGrains += `<circle cx="${-10 + Math.random() * 60}" cy="${-10 + Math.random() * 80}" r="2" fill="#1a1a1a" stroke="none" />`;
+      }
+
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <g stroke="#1a1a1a" stroke-width="1" fill="none">
+    <path d="M 0,0 C 100,20 200,100 250,250" stroke-width="2"/>
+    <path d="M 50,12 C 55,50 60,100 40,150" />
+    <path d="M 100,32 C 110,80 120,150 90,220" />
+    <path d="M 150,62 C 170,120 180,200 150,280" />
+  </g>
+  <g stroke="#1a1a1a" stroke-width="1" fill="none">
+    <path d="M 1000,0 C 900,20 800,100 750,250" stroke-width="2"/>
+    <path d="M 950,12 C 945,50 940,100 960,150" />
+    <path d="M 900,32 C 890,80 880,150 910,220" />
+    <path d="M 850,62 C 830,120 820,200 850,280" />
+  </g>
+
+  <g transform="translate(500, 500)" stroke="#1a1a1a" fill="none" stroke-width="1.8">
+    <rect x="-110" y="-220" width="220" height="20" rx="4"/>
+    <rect x="-110" y="200" width="220" height="20" rx="4"/>
+    
+    <line x1="-90" y1="-200" x2="-90" y2="200" stroke-width="2.5" />
+    <line x1="90" y1="-200" x2="90" y2="200" stroke-width="2.5" />
+    
+    <path d="M -70,-200 C -70,-80 -15,-20 -15,0 C -15,20 -70,80 -70,200 L 70,200 C 70,80 15,20 15,0 C 15,-20 70,-80 70,-200 Z" />
+    
+    <path d="M -30,-40 L 5,0 L -10,30 L 25,60 M 5,0 L 40,-25 L 30,-50" stroke="#1a1a1a" stroke-width="2"/>
+
+    <path d="M -60,-190 C -60,-150 -40,-130 0,-130 C 40,-130 60,-150 60,-190 Z" fill="#1a1a1a" fill-opacity="0.15"/>
+    <path d="M -65,190 C -55,100 -20,120 0,120 C 20,120 55,100 65,190 Z" fill="#1a1a1a" fill-opacity="0.15"/>
+    ${sandGrains}
+  </g>
+</svg>`;
+    }
+    case 'epic': {
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <g stroke="#1a1a1a" fill="none" stroke-width="1.5">
+    <path d="M 250,180 C 350,140 650,140 750,180 M 250,180 C 230,190 230,210 250,210 C 350,170 650,170 750,210 C 770,210 770,190 750,180" />
+    <path d="M 200,680 Q 500,780 800,680 L 820,730 Q 500,830 180,730 Z" fill="#1a1a1a" fill-opacity="0.1"/>
+  </g>
+
+  <g transform="translate(500, 440)" stroke="#1a1a1a" fill="none" stroke-width="2.5">
+    <path d="M -180,-200 L 180,-200 C 180,-200 190,0 0,220 C -190,0 -180,-200 -180,-200 Z" />
+    <path d="M -160,-185 L 160,-185 C 160,-185 170,-10 0,195 C -170,-10 -160,-185 -160,-185 Z" stroke-width="1" stroke-dasharray="3,3"/>
+    
+    <line x1="0" y1="-200" x2="0" y2="195" stroke-width="1.8" />
+    <line x1="-173" y1="-20" x2="173" y2="-20" stroke-width="1.8" />
+
+    <g transform="translate(-80, -110)" stroke-width="1.5">
+      <path d="M -40,25 L -50,-15 L -20,5 L 0,-25 L 20,5 L 50,-15 L 40,25 Z M -45,25 Q 0,32 45,25" />
+      <circle cx="-50" cy="-15" r="3" fill="#1a1a1a"/><circle cx="0" cy="-25" r="4" fill="#1a1a1a"/><circle cx="50" cy="-15" r="3" fill="#1a1a1a"/>
+    </g>
+
+    <g transform="translate(80, -110)" stroke-width="1.5">
+      <path d="M -45,-10 C -30,-25 30,-25 45,-10 C 35,5 20,10 0,-5 C -20,10 -35,5 -45,-10 Z" fill="#1a1a1a" fill-opacity="0.2"/>
+    </g>
+
+    <g transform="translate(-75, 75) rotate(45)" stroke-width="1.5">
+      <line x1="0" y1="-45" x2="0" y2="45" /><line x1="-12" y1="30" x2="12" y2="30" /><circle cx="0" cy="48" r="4" fill="#1a1a1a"/>
+      <g transform="rotate(90)"><line x1="0" y1="-45" x2="0" y2="45" /><line x1="-12" y1="30" x2="12" y2="30" /></g>
+    </g>
+
+    <g transform="translate(80, 80) scale(0.9)" stroke-width="1.5">
+      <path d="M -20,30 Q -15,10 -30,0 C -35,-15 -20,-30 0,-30 C 20,-30 35,-15 30,10" />
+    </g>
+  </g>
+</svg>`;
+    }
+    case 'supernatural': {
+      let starsHtml = '';
+      const starPts = [ { x: 150, y: 150 }, { x: 280, y: 350 }, { x: 800, y: 200 }, { x: 750, y: 400 }, { x: 200, y: 800 }, { x: 850, y: 850 } ];
+      for (const s of starPts) {
+        starsHtml += `<g transform="translate(${s.x}, ${s.y})">
+          <line x1="-8" y1="0" x2="8" y2="0" stroke="#1a1a1a" stroke-width="0.8"/>
+          <line x1="0" y1="-8" x2="0" y2="8" stroke="#1a1a1a" stroke-width="0.8"/>
+          <circle cx="0" cy="0" r="3" fill="#1a1a1a"/>
+        </g>`;
+      }
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <circle cx="500" cy="250" r="140" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
+  <circle cx="500" cy="250" r="130" stroke="#1a1a1a" stroke-dasharray="2,5" fill="none"/>
+  <circle cx="430" cy="200" r="15" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+  <circle cx="560" cy="310" r="22" stroke="#1a1a1a" stroke-width="0.8" fill="none"/>
+  
+  <g transform="translate(500, 650)">
+    <ellipse cx="0" cy="0" rx="12" ry="70" fill="#1a1a1a"/>
+    <circle cx="0" cy="-80" r="14" fill="#1a1a1a"/>
+    <path d="M -5,-90 Q -40,-130 -80,-140" stroke="#1a1a1a" stroke-width="2" fill="none"/>
+    <path d="M 5,-90 Q 40,-130 80,-140" stroke="#1a1a1a" stroke-width="2" fill="none"/>
+    <path d="M 0,-40 C -80,-150 -280,-180 -320,-80 C -340,0 -200,40 -20,10" stroke="#1a1a1a" stroke-width="2" fill="#1a1a1a" fill-opacity="0.15"/>
+    <path d="M 0,-40 C 80,-150 280,-180 320,-80 C 340,0 200,40 20,10" stroke="#1a1a1a" stroke-width="2" fill="#1a1a1a" fill-opacity="0.15"/>
+    <path d="M -15,10 C -80,40 -220,150 -180,210 C -140,270 -50,150 0,30" stroke="#1a1a1a" stroke-width="2" fill="#1a1a1a" fill-opacity="0.1"/>
+    <path d="M 15,10 C 80,40 220,150 180,210 C 140,270 50,150 0,30" stroke="#1a1a1a" stroke-width="2" fill="#1a1a1a" fill-opacity="0.1"/>
+    <circle cx="-160" cy="-60" r="22" stroke="#1a1a1a" stroke-width="1.5" fill="none"/><circle cx="-160" cy="-60" r="10" fill="#1a1a1a"/>
+    <circle cx="160" cy="-60" r="22" stroke="#1a1a1a" stroke-width="1.5" fill="none"/><circle cx="160" cy="-60" r="10" fill="#1a1a1a"/>
+  </g>
+  ${starsHtml}
+</svg>`;
+    }
+    case 'political-fiction': {
+      const drawChainLink = (broken: boolean) => {
+        if (!broken) {
+          return `<rect x="-18" y="-45" width="36" height="90" rx="18" stroke="#1a1a1a" stroke-width="6" fill="none"/>
+                  <rect x="-10" y="-35" width="20" height="70" rx="10" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>`;
+        } else {
+          return `
+            <path d="M -18,15 L -18,-27 C -18,-45 -4,-45 0,-45" stroke="#1a1a1a" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <path d="M -10,15 L -10,-27 C -10,-35 -2,-35 0,-35" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+            <path d="M 18,-15 L 18,27 C 18,45 4,45 0,45" stroke="#1a1a1a" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <path d="M 10,-15 L 10,27 C 10,35 2,35 0,35" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+            <g stroke="#1a1a1a" stroke-width="0.8">
+              <line x1="-5" y1="-50" x2="-25" y2="-65" /><line x1="5" y1="-50" x2="25" y2="-65" />
+              <line x1="-5" y1="50" x2="-25" y2="65" /><line x1="5" y1="50" x2="25" y2="65" />
+            </g>
+          `;
+        }
+      };
+
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <g transform="translate(180, 250) rotate(35) scale(1.4)">${drawChainLink(false)}</g>
+  <g transform="translate(290, 330) rotate(55) scale(1.4)">${drawChainLink(false)}</g>
+  <g transform="translate(420, 400) rotate(20) scale(1.4)">${drawChainLink(true)}</g>
+  <g transform="translate(700, 250) rotate(-40) scale(1.3)">${drawChainLink(false)}</g>
+  <g transform="translate(810, 310) rotate(-15) scale(1.3)">${drawChainLink(true)}</g>
+  <g transform="translate(450, 750) rotate(85) scale(1.5)">${drawChainLink(false)}</g>
+  <g transform="translate(580, 760) rotate(110) scale(1.5)">${drawChainLink(true)}</g>
+</svg>`;
+    }
+    case 'psychological-thriller': {
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <circle cx="500" cy="500" r="420" stroke="#1a1a1a" stroke-width="3" fill="none"/>
+  <circle cx="500" cy="500" r="405" stroke="#1a1a1a" stroke-width="0.8" stroke-dasharray="4,4" fill="none"/>
+
+  <g stroke="#1a1a1a" fill="none" stroke-width="1.2" stroke-linejoin="bevel">
+    <path d="M 475,455 Q 480,450 485,455 T 485,465 T 475,465 Z" stroke-width="2"/>
+    <circle cx="480" cy="460" r="15" stroke-width="1"/>
+    <path d="M 470,450 L 350,300 L 210,210 L 50,150 M 350,300 L 260,180 L 150,80 M 210,210 L 110,310 C 50,340 0,380 0,380" />
+    <path d="M 490,450 L 620,320 L 780,220 L 950,120 M 620,320 L 720,180 L 850,60" />
+    <path d="M 490,470 L 650,580 L 800,720 L 920,880 M 650,580 L 780,620 C 850,650 900,680 900,680" />
+    <path d="M 470,470 L 320,620 L 220,780 L 100,920 M 320,620 L 200,690 C 140,700 80,720 80,720" />
+    <path d="M 480,445 L 485,280 L 450,120 M 480,475 L 475,690 L 520,850" />
+    <path d="M 350,300 L 485,280 L 620,320 L 650,580 L 475,690 L 320,620 Z" />
+  </g>
+</svg>`;
+    }
+    case 'literary-fiction': {
+      let bookLeftText = '';
+      let bookRightText = '';
+      for (let i = 0; i < 10; i++) {
+        const y = -100 + i * 24;
+        bookLeftText += `<line x1="-250" y1="${y}" x2="-50" y2="${y}" stroke-width="1" stroke-dasharray="${i % 3 === 0 ? '40,10,60,10,30' : '80,10,40,10,20'}" />`;
+        bookRightText += `<line x1="50" y1="${y}" x2="250" y2="${y}" stroke-width="1" stroke-dasharray="${i % 2 === 0 ? '60,10,80,10,20' : '40,10,50,10,60'}" />`;
+      }
+
+      return `<svg viewBox="0 0 1000 1000" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="opacity: ${opacity}; pointer-events: none;">
+  <g transform="translate(500, 550)" stroke="#1a1a1a" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M -300,-150 C -150,-170 -50,-170 0,-130 L 0,220 C -50,180 -150,180 -300,200 Z" fill="#1a1a1a" fill-opacity="0.05"/>
+    <path d="M 300,-150 C 150,-170 50,-170 0,-130 L 0,220 C 50,180 150,180 300,200 Z" fill="#1a1a1a" fill-opacity="0.05"/>
+
+    <path d="M 0,-130 C -50,-170 -150,-170 -300,-150 L -300,200 C -150,180 -50,180 0,140 Z" />
+    <path d="M 0,-130 C 50,-170 150,-170 300,-150 L 300,200 C 150,180 50,180 0,140 Z" />
+    <line x1="0" y1="-130" x2="0" y2="140" stroke-width="2" />
+    <path d="M -300,-150 C -310,-150 -320,-140 -300,-130" />
+    <path d="M 300,-150 C 310,-150 320,-140 300,-130" />
+
+    ${bookLeftText}
+    ${bookRightText}
+
+    <g transform="translate(-100, -220) rotate(-15)">
+      <path d="M -40,30 L 220,-60" stroke-width="2.5" />
+      <path d="M 20,8 C 40,-15 150,-65 220,-60 C 200,-35 80,-5 20,8 Z" fill="#1a1a1a" fill-opacity="0.15"/>
+    </g>
+  </g>
+</svg>`;
+    }
+  }
+
+  return null;
+};
+
 const getAtmosphereConfig = (genre: string, era: string): AtmosphereConfig => {
   const gId = (genre || '').toLowerCase().trim();
   const eId = (era || '').toLowerCase().trim();
@@ -878,7 +1669,6 @@ const getAtmosphereConfig = (genre: string, era: string): AtmosphereConfig => {
   let panelBg: string;
   let panelText: string;
   let chatText: string;
-  let strokeColor: string;
   let bubbleModelStyle: React.CSSProperties;
   let bubbleUserStyle: React.CSSProperties;
   let inputBarStyle: React.CSSProperties;
@@ -893,7 +1683,6 @@ const getAtmosphereConfig = (genre: string, era: string): AtmosphereConfig => {
       panelText = '#d4af37';
     }
     chatText = `hsl(${baseHue}, 15%, 92%)`;
-    strokeColor = `hsla(${baseHue}, ${baseSat}%, 70%, 0.18)`;
 
     bubbleModelStyle = {
       background: `hsla(${baseHue}, ${baseSat}%, 15%, 0.45)`,
@@ -920,7 +1709,6 @@ const getAtmosphereConfig = (genre: string, era: string): AtmosphereConfig => {
     panelBg = `hsla(${baseHue}, 20%, ${mainLightness - 2}%, 0.95)`;
     panelText = `hsl(${baseHue}, 60%, 25%)`;
     chatText = `hsl(${baseHue}, 40%, 12%)`;
-    strokeColor = `hsla(${baseHue}, ${baseSat}%, 30%, 0.12)`;
 
     bubbleModelStyle = {
       background: `hsla(${baseHue}, 30%, 95%, 0.7)`,
@@ -970,20 +1758,6 @@ const getAtmosphereConfig = (genre: string, era: string): AtmosphereConfig => {
           filter: 'blur(100px)',
         }}
       />
-
-      <div 
-        style={{ color: strokeColor }}
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-      >
-        {eConfig.structure(strokeColor)}
-      </div>
-
-      <div 
-        style={{ color: isDarkTheme ? `hsla(${baseHue}, 80%, 75%, 0.28)` : `hsla(${baseHue}, 70%, 25%, 0.24)` }}
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-      >
-        {gConfig.motif(isDarkTheme ? `hsla(${baseHue}, 85%, 75%, 0.32)` : `hsla(${baseHue}, 75%, 22%, 0.28)`)}
-      </div>
     </div>
   );
 
@@ -1599,6 +2373,12 @@ function AdvancedChatPageContent() {
             }}
           />
           {atmConfig.bgDecorations}
+          {getGenrePattern(selectedGenre, selectedEra) && (
+            <div 
+              style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1 }}
+              dangerouslySetInnerHTML={{ __html: getGenrePattern(selectedGenre, selectedEra) || '' }}
+            />
+          )}
         </>
       )}
 
