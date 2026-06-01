@@ -256,263 +256,275 @@ export default function TranslationChamberPage() {
   }
 
   return (
-    <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Dashboard Back Link */}
-      <div className="mb-4 text-left">
-        <Link
-          href="/dashboard"
-          className="text-xs text-gold hover:text-gold-light transition-colors inline-flex items-center gap-1 font-inter font-medium"
-        >
-          ← Dashboard
-        </Link>
-      </div>
+    <>
+      {/* Cream background base */}
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#F8F4E9',
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      />
+      <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Dashboard Back Link */}
+        <div className="mb-4 text-left">
+          <Link
+            href="/dashboard"
+            className="text-xs text-[#1a1a1a] hover:opacity-75 transition-all inline-flex items-center gap-1 font-inter font-semibold transition-colors duration-1000"
+          >
+            ← Dashboard
+          </Link>
+        </div>
 
-      {/* Main Headers */}
-      <div className="text-center mb-12">
-        <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-gold tracking-wide">
-          The Translation Chamber
-        </h1>
-        <p className="font-playfair italic text-cream/70 text-sm mt-3">
-          Where words cross borders without losing their soul
-        </p>
-      </div>
+        {/* Main Headers */}
+        <div className="text-center mb-12">
+          <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#1a1a1a] tracking-wide transition-colors duration-1000">
+            The Translation Chamber
+          </h1>
+          <p className="font-playfair italic text-[#6b6b6b] text-sm mt-3 transition-colors duration-1000">
+            Where words cross borders without losing their soul
+          </p>
+        </div>
 
-      {/* Main Grid Interface */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-12">
-        
-        {/* Left Column: Input Panel */}
-        <div className="glass-card border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
-          <form onSubmit={handleTranslate} className="space-y-6">
-            <div>
-              <label className="block text-[10px] uppercase font-bold tracking-widest text-gold mb-2 font-inter">
-                Original Text
-              </label>
-              <textarea
-                ref={textareaRef}
-                value={sourceText}
-                onChange={handleSourceTextInput}
-                placeholder="Paste a poem, a passage, or a letter to carry across languages..."
-                style={{ minHeight: '200px' }}
-                className="w-full px-4 py-3 rounded-xl outline-none glass-input text-sm text-cream placeholder-cream/25 resize-none leading-relaxed transition-all focus:border-gold/50"
-              />
-            </div>
-
-            {/* Language dropdowns side-by-side */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Main Grid Interface */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-12">
+          
+          {/* Left Column: Input Panel */}
+          <div className="bg-white/40 backdrop-blur-md border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6 text-[#1a1a1a] transition-all duration-500">
+            <form onSubmit={handleTranslate} className="space-y-6">
               <div>
-                <label className="block text-[9px] uppercase font-bold tracking-wider text-gold/80 mb-1.5 font-inter">
-                  Source Language
+                <label className="block text-[10px] uppercase font-bold tracking-widest text-[#1a1a1a]/85 mb-2 font-inter">
+                  Original Text
                 </label>
-                <select
-                  value={sourceLanguage}
-                  onChange={(e) => setSourceLanguage(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl outline-none glass-input text-xs font-semibold text-cream"
-                >
-                  {sourceLanguages.map((lang) => (
-                    <option key={lang} value={lang} className="bg-navy text-cream">
-                      {lang}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[9px] uppercase font-bold tracking-wider text-gold/80 mb-1.5 font-inter">
-                  Target Language
-                </label>
-                <select
-                  value={targetLanguage}
-                  onChange={(e) => setTargetLanguage(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl outline-none glass-input text-xs font-semibold text-cream"
-                >
-                  {targetLanguages.map((lang) => (
-                    <option key={lang} value={lang} className="bg-navy text-cream">
-                      {lang}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Preserve Style Toggle */}
-            <div className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl">
-              <div className="space-y-0.5">
-                <span className="text-xs font-bold text-cream font-inter block">Preserve Literary Style</span>
-                <span className="text-[10px] text-cream/40 font-inter">
-                  Preserve style, rhythm, and tone over simple translation
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPreserveStyle(!preserveStyle)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                  preserveStyle ? 'bg-gold' : 'bg-white/10'
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-navy shadow ring-0 transition duration-200 ease-in-out ${
-                    preserveStyle ? 'translate-x-5' : 'translate-x-0'
-                  }`}
+                <textarea
+                  ref={textareaRef}
+                  value={sourceText}
+                  onChange={handleSourceTextInput}
+                  placeholder="Paste a poem, a passage, or a letter to carry across languages..."
+                  style={{ minHeight: '200px' }}
+                  className="w-full px-4 py-3 rounded-xl outline-none bg-white border border-[#1a1a1a]/15 text-sm text-[#1a1a1a] placeholder-[#1a1a1a]/30 resize-none leading-relaxed transition-all focus:border-[#1a1a1a]"
                 />
-              </button>
-            </div>
+              </div>
 
-            {/* Submit button */}
-            <div>
-              <button
-                type="submit"
-                disabled={translating || !sourceText.trim()}
-                className={`w-full py-3 bg-gold hover:bg-gold-light text-navy text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-gold/15 flex items-center justify-center gap-2 ${
-                  translating || !sourceText.trim() ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {translating ? (
-                  <>
-                    <div className="w-3.5 h-3.5 rounded-full border-2 border-navy border-t-transparent animate-spin" />
-                    Translating...
-                  </>
-                ) : (
-                  'Translate'
-                )}
-              </button>
-            </div>
-          </form>
-
-          {/* Error Message */}
-          {errorMsg && (
-            <div className="p-4 bg-red-950/20 border border-red-500/30 rounded-xl text-center text-xs text-red-300">
-              {errorMsg}
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: Output / Welcome Panel */}
-        <div className="glass-card border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl min-h-[460px] flex flex-col justify-between">
-          <AnimatePresence mode="wait">
-            {!translationResult ? (
-              /* Welcome / Empty State */
-              <motion.div
-                key="welcome"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex flex-col items-center justify-center text-center my-auto py-12 space-y-6"
-              >
-                <span className="text-3xl text-gold animate-pulse">✨</span>
-                <div className="space-y-4 max-w-md">
-                  <h3 className="font-playfair text-lg text-gold font-bold">Welcome to the Translation Chamber</h3>
-                  <p className="font-playfair italic text-sm text-cream/80 leading-relaxed">
-                    &quot;Welcome to the Translation Chamber. Paste any text on the left — a poem, a passage, a letter — and I will carry it across languages while telling you what survives the crossing and what is inevitably transformed. Every translation is an interpretation. Let us begin.&quot;
-                  </p>
-                </div>
-              </motion.div>
-            ) : (
-              /* Output State */
-              <motion.div
-                key="output"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                className="space-y-6 flex-grow flex flex-col justify-between"
-              >
-                <div className="space-y-6">
-                  {/* Translation segment */}
-                  <div>
-                    <label className="block text-[10px] uppercase font-bold tracking-widest text-gold mb-2 font-inter">
-                      Translation
-                    </label>
-                    <div className="p-5 bg-purple-dark/15 border border-white/5 rounded-xl shadow-inner">
-                      <p className="font-playfair italic text-sm leading-relaxed text-cream/95 whitespace-pre-wrap">
-                        {translationResult.translation}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-white/5 my-2" />
-
-                  {/* Translator notes segment */}
-                  <div>
-                    <label className="block text-[10px] uppercase font-bold tracking-widest text-gold mb-2 font-inter">
-                      Translator&apos;s Note
-                    </label>
-                    <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
-                      <p className="font-inter text-xs text-cream/70 leading-relaxed whitespace-pre-wrap">
-                        {translationResult.translatorsNote}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Interactive Options toolbar */}
-                <div className="mt-6 pt-4 border-t border-white/5 flex flex-wrap gap-3 items-center justify-between">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleCopyTranslation}
-                      className="px-4 py-2 border border-white/10 rounded-lg text-[10px] uppercase font-bold tracking-wider font-inter text-cream transition-all hover:bg-white/5 flex items-center gap-1.5"
-                    >
-                      {copyFeedback ? '✨ Copied!' : '📋 Copy Translation'}
-                    </button>
-                    <button
-                      onClick={handleSaveToAnthology}
-                      className="px-4 py-2 bg-white/5 border border-white/5 rounded-lg text-[10px] uppercase font-bold tracking-wider font-inter text-gold transition-all hover:bg-white/10 flex items-center gap-1.5"
-                    >
-                      {saveSuccess ? '✅ Saved!' : '📜 Save to Anthology'}
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={() => handleDownloadShareCard(translationResult.translation)}
-                    className="px-4 py-2 bg-gold hover:bg-gold-light text-navy text-[10px] font-bold uppercase tracking-wider rounded-lg font-inter transition-all flex items-center gap-1 shadow-md shadow-gold/10"
+              {/* Language dropdowns side-by-side */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/80 mb-1.5 font-inter">
+                    Source Language
+                  </label>
+                  <select
+                    value={sourceLanguage}
+                    onChange={(e) => setSourceLanguage(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl outline-none bg-white border border-[#1a1a1a]/15 text-[#1a1a1a] text-xs font-semibold focus:border-[#1a1a1a] transition-all cursor-pointer"
                   >
-                    🎨 Download Card
-                  </button>
+                    {sourceLanguages.map((lang) => (
+                      <option key={lang} value={lang} className="text-[#1a1a1a] bg-white">
+                        {lang}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
 
-      </div>
+                <div>
+                  <label className="block text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/80 mb-1.5 font-inter">
+                    Target Language
+                  </label>
+                  <select
+                    value={targetLanguage}
+                    onChange={(e) => setTargetLanguage(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl outline-none bg-white border border-[#1a1a1a]/15 text-[#1a1a1a] text-xs font-semibold focus:border-[#1a1a1a] transition-all cursor-pointer"
+                  >
+                    {targetLanguages.map((lang) => (
+                      <option key={lang} value={lang} className="text-[#1a1a1a] bg-white">
+                        {lang}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
-      {/* Session History Segment */}
-      {recentTranslations.length > 0 && (
-        <div className="mt-12 glass-card border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl">
-          <h3 className="font-playfair text-xl font-bold text-gold border-b border-white/5 pb-2.5 mb-6">
-            Recent Translations
-          </h3>
-          <div className="space-y-4">
-            {recentTranslations.map((item, idx) => (
-              <div
-                key={idx}
-                className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl hover:border-gold/15 transition-all gap-4"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gold font-inter bg-gold/10 px-2 py-0.5 rounded-full">
-                      {item.sourceLanguage} → {item.targetLanguage}
-                    </span>
-                    {item.preserveStyle && (
-                      <span className="text-[9px] uppercase font-bold tracking-wider text-cream/40 font-inter">
-                        Style Preserved
-                      </span>
-                    )}
-                  </div>
-                  <p className="font-playfair italic text-xs text-cream/60 leading-relaxed line-clamp-1">
-                    &quot;{item.sourceText.length > 60 ? `${item.sourceText.slice(0, 60)}...` : item.sourceText}&quot;
-                  </p>
+              {/* Preserve Style Toggle */}
+              <div className="flex items-center justify-between p-4 bg-[#1a1a1a]/5 border border-[#1a1a1a]/10 rounded-xl">
+                <div className="space-y-0.5">
+                  <span className="text-xs font-bold text-[#1a1a1a] font-inter block">Preserve Literary Style</span>
+                  <span className="text-[10px] text-[#6b6b6b] font-inter">
+                    Preserve style, rhythm, and tone over simple translation
+                  </span>
                 </div>
                 <button
-                  onClick={() => handleLoadHistory(item)}
-                  className="px-4 py-1.5 bg-gold hover:bg-gold-light text-navy text-[10px] font-bold uppercase tracking-wider rounded-lg font-inter transition-all shadow font-semibold"
+                  type="button"
+                  onClick={() => setPreserveStyle(!preserveStyle)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    preserveStyle ? 'bg-[#1a1a1a]' : 'bg-[#1a1a1a]/10'
+                  }`}
                 >
-                  Load
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-[#F8F4E9] shadow ring-0 transition duration-200 ease-in-out ${
+                      preserveStyle ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
                 </button>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-    </div>
+              {/* Submit button */}
+              <div>
+                <button
+                  type="submit"
+                  disabled={translating || !sourceText.trim()}
+                  className={`w-full py-3 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-black/5 flex items-center justify-center gap-2 ${
+                    translating || !sourceText.trim() ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  {translating ? (
+                    <>
+                      <div className="w-3.5 h-3.5 rounded-full border-2 border-[#F8F4E9] border-t-transparent animate-spin" />
+                      Translating...
+                    </>
+                  ) : (
+                    'Translate'
+                  )}
+                </button>
+              </div>
+            </form>
+
+            {/* Error Message */}
+            {errorMsg && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-center text-xs text-red-700">
+                {errorMsg}
+              </div>
+            )}
+          </div>
+
+          {/* Right Column: Output / Welcome Panel */}
+          <div className="bg-white/40 backdrop-blur-md border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-sm min-h-[460px] flex flex-col justify-between text-[#1a1a1a] transition-all duration-500">
+            <AnimatePresence mode="wait">
+              {!translationResult ? (
+                /* Welcome / Empty State */
+                <motion.div
+                  key="welcome"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="flex flex-col items-center justify-center text-center my-auto py-12 space-y-6"
+                >
+                  <span className="text-3xl text-[#1a1a1a] animate-pulse">✨</span>
+                  <div className="space-y-4 max-w-md">
+                    <h3 className="font-playfair text-lg text-[#1a1a1a] font-bold">Welcome to the Translation Chamber</h3>
+                    <p className="font-playfair italic text-sm text-[#1a1a1a]/80 leading-relaxed">
+                      &quot;Welcome to the Translation Chamber. Paste any text on the left — a poem, a passage, a letter — and I will carry it across languages while telling you what survives the crossing and what is inevitably transformed. Every translation is an interpretation. Let us begin.&quot;
+                    </p>
+                  </div>
+                </motion.div>
+              ) : (
+                /* Output State */
+                <motion.div
+                  key="output"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  className="space-y-6 flex-grow flex flex-col justify-between"
+                >
+                  <div className="space-y-6">
+                    {/* Translation segment */}
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold tracking-widest text-[#1a1a1a]/85 mb-2 font-inter">
+                        Translation
+                      </label>
+                      <div className="p-5 bg-[#1a1a1a]/5 border border-[#1a1a1a]/10 rounded-xl shadow-inner text-[#1a1a1a]">
+                        <p className="font-playfair italic text-sm leading-relaxed text-[#1a1a1a]/90 whitespace-pre-wrap">
+                          {translationResult.translation}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-[#1a1a1a]/10 my-2" />
+
+                    {/* Translator notes segment */}
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold tracking-widest text-[#1a1a1a]/85 mb-2 font-inter">
+                        Translator&apos;s Note
+                      </label>
+                      <div className="p-4 bg-[#1a1a1a]/5 border border-[#1a1a1a]/10 rounded-xl text-[#1a1a1a]">
+                        <p className="font-inter text-xs text-[#6b6b6b] leading-relaxed whitespace-pre-wrap">
+                          {translationResult.translatorsNote}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Interactive Options toolbar */}
+                  <div className="mt-6 pt-4 border-t border-[#1a1a1a]/10 flex flex-wrap gap-3 items-center justify-between">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleCopyTranslation}
+                        className="px-4 py-2 bg-white/60 hover:bg-white/90 border border-[#1a1a1a]/15 text-[#1a1a1a] rounded-lg text-[10px] uppercase font-bold tracking-wider font-inter transition-all flex items-center gap-1.5 shadow-sm"
+                      >
+                        {copyFeedback ? '✨ Copied!' : '📋 Copy Translation'}
+                      </button>
+                      <button
+                        onClick={handleSaveToAnthology}
+                        className="px-4 py-2 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] border-none rounded-lg text-[10px] uppercase font-bold tracking-wider font-inter transition-all flex items-center gap-1.5 shadow-sm shadow-black/5"
+                      >
+                        {saveSuccess ? '✅ Saved!' : '📜 Save to Anthology'}
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => handleDownloadShareCard(translationResult.translation)}
+                      className="px-4 py-2 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-[10px] font-bold uppercase tracking-wider rounded-lg font-inter transition-all flex items-center gap-1 shadow-md shadow-black/5"
+                    >
+                      🎨 Download Card
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+        </div>
+
+        {/* Session History Segment */}
+        {recentTranslations.length > 0 && (
+          <div className="mt-12 bg-white/40 backdrop-blur-md border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-sm text-[#1a1a1a] transition-all duration-500">
+            <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] border-b border-[#1a1a1a]/10 pb-2.5 mb-6">
+              Recent Translations
+            </h3>
+            <div className="space-y-4">
+              {recentTranslations.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white/50 border border-[#1a1a1a]/10 rounded-xl hover:border-[#1a1a1a]/30 transition-all gap-4"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#1a1a1a] font-inter bg-[#1a1a1a]/10 px-2 py-0.5 rounded-full">
+                        {item.sourceLanguage} → {item.targetLanguage}
+                      </span>
+                      {item.preserveStyle && (
+                        <span className="text-[9px] uppercase font-bold tracking-wider text-[#6b6b6b]/60 font-inter">
+                          Style Preserved
+                        </span>
+                      )}
+                    </div>
+                    <p className="font-playfair italic text-xs text-[#1a1a1a]/70 leading-relaxed line-clamp-1">
+                      &quot;{item.sourceText.length > 60 ? `${item.sourceText.slice(0, 60)}...` : item.sourceText}&quot;
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleLoadHistory(item)}
+                    className="px-4 py-1.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-[10px] font-bold uppercase tracking-wider rounded-lg font-inter transition-all shadow hover:opacity-90"
+                  >
+                    Load
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </>
   );
 }
