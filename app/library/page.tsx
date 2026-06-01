@@ -754,7 +754,8 @@ function LibraryPageContent() {
                 }
               }
             }}
-            className="w-full px-4 py-3 pl-11 rounded-xl outline-none glass-input text-sm text-black shadow-inner"
+            className="w-full px-4 py-3 pl-11 rounded-xl outline-none glass-input text-sm !text-black shadow-inner"
+            style={{ color: 'black' }}
           />
           <button
             type="submit"
