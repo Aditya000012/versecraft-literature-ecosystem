@@ -307,18 +307,18 @@ export default function WriteWithMePage() {
       <div className="mb-4 text-left">
         <Link
           href="/dashboard"
-          className="text-xs text-gold hover:text-gold-light transition-colors inline-flex items-center gap-1 font-inter font-medium"
+          className="text-xs text-[#1a1a1a] hover:opacity-75 transition-all inline-flex items-center gap-1 font-inter font-semibold"
         >
           ← Dashboard
         </Link>
       </div>
 
       {/* Heading block */}
-      <div className="text-center mb-10">
-        <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-gold tracking-wide">
+      <div className="text-center mb-10 select-none">
+        <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#1a1a1a] tracking-wide">
           Write With Me
         </h1>
-        <p className="font-playfair italic text-cream/70 text-sm mt-3 max-w-xl mx-auto leading-relaxed">
+        <p className="font-playfair italic text-[#6b6b6b] text-sm mt-3 max-w-xl mx-auto leading-relaxed">
           You write a line. I write the next. Together we make something neither of us could alone.
         </p>
       </div>
@@ -333,24 +333,24 @@ export default function WriteWithMePage() {
             exit={{ opacity: 0, y: -15 }}
             className="max-w-2xl mx-auto space-y-8"
           >
-            <div className="glass-card border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6">
-              <h3 className="font-playfair text-xl font-bold text-gold border-b border-white/5 pb-2">
+            <div className="bg-white border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6 text-[#1a1a1a]">
+              <h3 className="font-playfair text-xl font-bold text-[#1a1a1a] border-b border-[#1a1a1a]/10 pb-2">
                 Conceive the Foundation
               </h3>
 
               {/* Selection selects */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-[10px] uppercase font-bold tracking-widest text-gold mb-2 font-inter">
+                  <label className="block text-[10px] uppercase font-bold tracking-widest text-[#1a1a1a]/85 mb-2 font-inter">
                     Genre Focus
                   </label>
                   <select
                     value={genre}
                     onChange={(e) => setGenre(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl outline-none glass-input text-xs font-semibold text-cream"
+                    className="w-full px-3 py-2.5 rounded-xl outline-none bg-white border border-[#1a1a1a]/15 text-[#1a1a1a] text-xs font-semibold focus:border-[#1a1a1a] transition-all cursor-pointer"
                   >
                     {genresList.map((g) => (
-                      <option key={g} value={g} className="bg-navy text-cream">
+                      <option key={g} value={g} className="text-[#1a1a1a] bg-white">
                         {g}
                       </option>
                     ))}
@@ -358,16 +358,16 @@ export default function WriteWithMePage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] uppercase font-bold tracking-widest text-gold mb-2 font-inter">
+                  <label className="block text-[10px] uppercase font-bold tracking-widest text-[#1a1a1a]/85 mb-2 font-inter">
                     Tone Harmony
                   </label>
                   <select
                     value={tone}
                     onChange={(e) => setTone(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl outline-none glass-input text-xs font-semibold text-cream"
+                    className="w-full px-3 py-2.5 rounded-xl outline-none bg-white border border-[#1a1a1a]/15 text-[#1a1a1a] text-xs font-semibold focus:border-[#1a1a1a] transition-all cursor-pointer"
                   >
                     {tonesList.map((t) => (
-                      <option key={t} value={t} className="bg-navy text-cream">
+                      <option key={t} value={t} className="text-[#1a1a1a] bg-white">
                         {t}
                       </option>
                     ))}
@@ -376,10 +376,10 @@ export default function WriteWithMePage() {
               </div>
 
               {/* Toggle switch for first line */}
-              <div className="flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl">
+              <div className="flex items-center justify-between p-4 bg-[#1a1a1a]/5 border border-[#1a1a1a]/10 rounded-xl">
                 <div className="space-y-0.5">
-                  <span className="text-xs font-bold text-cream font-inter block">Let AI open the story</span>
-                  <span className="text-[10px] text-cream/40 font-inter">
+                  <span className="text-xs font-bold text-[#1a1a1a] font-inter block">Let AI open the story</span>
+                  <span className="text-[10px] text-[#6b6b6b] font-inter">
                     AI will compose an atmospheric, tense starting sentence to set the tone
                   </span>
                 </div>
@@ -387,11 +387,11 @@ export default function WriteWithMePage() {
                   type="button"
                   onClick={() => setAiFirst(!aiFirst)}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    aiFirst ? 'bg-gold' : 'bg-white/10'
+                    aiFirst ? 'bg-[#1a1a1a]' : 'bg-[#1a1a1a]/10'
                   }`}
                 >
                   <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-navy shadow ring-0 transition duration-200 ease-in-out ${
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-[#F8F4E9] shadow ring-0 transition duration-200 ease-in-out ${
                       aiFirst ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   />
@@ -402,7 +402,7 @@ export default function WriteWithMePage() {
               <div>
                 <button
                   onClick={handleBeginStory}
-                  className="w-full py-3 bg-gold hover:bg-gold-light text-navy text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-gold/15 flex items-center justify-center font-inter"
+                  className="w-full py-3 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-black/5 flex items-center justify-center font-inter"
                 >
                   Begin the Story
                 </button>
@@ -411,42 +411,42 @@ export default function WriteWithMePage() {
 
             {/* Stories local history collapsible section */}
             {history.length > 0 && (
-              <div className="glass-card border-white/5 rounded-xl overflow-hidden shadow">
+              <div className="bg-white border border-[#1a1a1a]/10 rounded-xl overflow-hidden shadow">
                 <button
                   onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
-                  className="w-full px-6 py-4 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-between text-left"
+                  className="w-full px-6 py-4 bg-[#1a1a1a]/5 hover:bg-[#1a1a1a]/10 transition-colors flex items-center justify-between text-left"
                 >
-                  <span className="text-xs uppercase font-bold tracking-wider text-gold font-inter">
+                  <span className="text-xs uppercase font-bold tracking-wider text-[#1a1a1a] font-inter">
                     📚 Previous Collaborations ({history.length})
                   </span>
-                  <span className="text-xs text-cream/40">
+                  <span className="text-xs text-[#1a1a1a]/60">
                     {isHistoryCollapsed ? '▼ Expand' : '▲ Collapse'}
                   </span>
                 </button>
 
                 {!isHistoryCollapsed && (
-                  <div className="p-4 sm:p-6 border-t border-white/5 space-y-4 bg-black/20">
+                  <div className="p-4 sm:p-6 border-t border-[#1a1a1a]/10 space-y-4 bg-[#1a1a1a]/5">
                     {history.map((item) => (
                       <div
                         key={item.id}
-                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white/5 border border-white/5 rounded-xl hover:border-gold/15 transition-all gap-4"
+                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white border border-[#1a1a1a]/10 rounded-xl hover:border-[#1a1a1a]/30 transition-all gap-4"
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-gold font-inter bg-gold/10 px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#1a1a1a] font-inter bg-[#1a1a1a]/10 px-2 py-0.5 rounded-full">
                               {item.genre}
                             </span>
-                            <span className="text-[9px] uppercase tracking-wider text-cream/40 font-inter">
+                            <span className="text-[9px] uppercase tracking-wider text-[#6b6b6b] font-inter">
                               {item.tone} • {item.savedAt}
                             </span>
                           </div>
-                          <p className="font-playfair italic text-xs text-cream/60 leading-relaxed line-clamp-1">
+                          <p className="font-playfair italic text-xs text-[#1a1a1a]/70 leading-relaxed line-clamp-1">
                             &quot;{item.story[0]?.content}&quot;
                           </p>
                         </div>
                         <button
                           onClick={() => handleLoadHistory(item)}
-                          className="px-4 py-1.5 bg-gold hover:bg-gold-light text-navy text-[10px] font-bold uppercase tracking-wider rounded-lg font-inter transition-all shadow font-semibold"
+                          className="px-4 py-1.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-[10px] font-bold uppercase tracking-wider rounded-lg font-inter transition-all shadow"
                         >
                           Continue
                         </button>
@@ -469,9 +469,9 @@ export default function WriteWithMePage() {
             className="max-w-3xl mx-auto space-y-8"
           >
             {/* Story Flow view */}
-            <div className="glass-card border-white/5 rounded-2xl p-6 sm:p-8 shadow-2xl min-h-[300px] flex flex-col justify-between">
+            <div className="bg-white border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-xl min-h-[300px] flex flex-col justify-between text-[#1a1a1a]">
               <div>
-                <div className="flex justify-between items-center mb-6 pb-2 border-b border-white/5 text-[9px] font-bold uppercase tracking-wider text-gold">
+                <div className="flex justify-between items-center mb-6 pb-2 border-b border-[#1a1a1a]/10 text-[9px] font-bold uppercase tracking-wider text-[#1a1a1a]/60">
                   <span>Genre: {genre} • Tone: {tone}</span>
                   <span>Interactive Flow</span>
                 </div>
@@ -483,10 +483,10 @@ export default function WriteWithMePage() {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4 }}
-                      className={`leading-relaxed text-sm sm:text-base ${
+                      className={`leading-relaxed text-sm sm:text-base text-left ${
                         turn.role === 'user'
-                          ? 'font-inter text-[#f5f0e8]/90 text-left'
-                          : 'font-playfair italic text-gold text-left'
+                          ? 'font-inter text-[#1a1a1a]'
+                          : 'font-playfair italic text-[#1a1a1a]/80 font-medium'
                       }`}
                     >
                       {turn.content}
@@ -498,7 +498,7 @@ export default function WriteWithMePage() {
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="font-playfair italic text-gold/60 text-sm animate-pulse text-left"
+                      className="font-playfair italic text-[#1a1a1a]/60 text-sm animate-pulse text-left"
                     >
                       The muse is writing...
                     </motion.div>
@@ -508,11 +508,11 @@ export default function WriteWithMePage() {
               </div>
 
               {/* Live counts */}
-              <div className="flex justify-between items-center border-t border-white/5 pt-4 text-[10px] font-bold uppercase tracking-wider text-gold font-inter">
+              <div className="flex justify-between items-center border-t border-[#1a1a1a]/10 pt-4 text-[10px] font-bold uppercase tracking-wider text-[#1a1a1a]/75 font-inter">
                 <span>Story Word Count: {getWordCount()}</span>
                 <button
                   onClick={handleEndSession}
-                  className="text-red-400 hover:text-red-300 transition-colors uppercase font-bold"
+                  className="px-4 py-1.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-[10px] font-bold uppercase tracking-wider rounded-lg font-inter transition-all shadow"
                 >
                   I&apos;m done writing
                 </button>
@@ -520,10 +520,10 @@ export default function WriteWithMePage() {
             </div>
 
             {/* Input Form area */}
-            <div className="glass-card border-white/5 rounded-2xl p-6 shadow-2xl">
+            <div className="bg-white border border-[#1a1a1a]/10 rounded-2xl p-6 shadow-xl text-[#1a1a1a]">
               <form onSubmit={handleAddPart} className="space-y-4">
                 <div>
-                  <label className="block text-[10px] uppercase font-bold tracking-widest text-gold mb-2 font-inter">
+                  <label className="block text-[10px] uppercase font-bold tracking-widest text-[#1a1a1a]/85 mb-2 font-inter">
                     Your Turn
                   </label>
                   <textarea
@@ -532,7 +532,7 @@ export default function WriteWithMePage() {
                     onChange={handleTextareaInput}
                     placeholder="Write the next line, sentence, or paragraph..."
                     style={{ minHeight: '60px' }}
-                    className="w-full px-4 py-3 rounded-xl outline-none glass-input text-sm text-cream placeholder-cream/25 resize-none leading-relaxed transition-all focus:border-gold/50"
+                    className="w-full px-4 py-3 rounded-xl outline-none bg-white border border-[#1a1a1a]/15 text-sm text-[#1a1a1a] placeholder-[#1a1a1a]/30 resize-none leading-relaxed transition-all focus:border-[#1a1a1a]"
                   />
                 </div>
 
@@ -540,7 +540,7 @@ export default function WriteWithMePage() {
                   <button
                     type="submit"
                     disabled={aiLoading || !userInput.trim()}
-                    className={`px-6 py-2.5 bg-gold hover:bg-gold-light text-navy text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow flex items-center gap-2 ${
+                    className={`px-6 py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow flex items-center gap-2 ${
                       aiLoading || !userInput.trim() ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
@@ -552,7 +552,7 @@ export default function WriteWithMePage() {
 
             {/* Error notifications */}
             {errorMsg && (
-              <div className="p-4 bg-red-950/20 border border-red-500/30 rounded-xl text-center text-xs text-red-300">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-center text-xs text-red-700">
                 {errorMsg}
               </div>
             )}
@@ -569,8 +569,8 @@ export default function WriteWithMePage() {
             className="max-w-3xl mx-auto space-y-8"
           >
             {/* Story Prose container */}
-            <div className="glass-card border-white/5 rounded-2xl p-8 sm:p-10 shadow-2xl space-y-6">
-              <h2 className="font-playfair text-2xl font-bold text-gold text-center border-b border-white/5 pb-4">
+            <div className="bg-white border border-[#1a1a1a]/10 rounded-2xl p-8 sm:p-10 shadow-xl space-y-6 text-[#1a1a1a]">
+              <h2 className="font-playfair text-2xl font-bold text-[#1a1a1a] text-center border-b border-[#1a1a1a]/10 pb-4">
                 Synthesized Manuscript
               </h2>
 
@@ -580,8 +580,8 @@ export default function WriteWithMePage() {
                     key={index}
                     className={`leading-relaxed text-sm sm:text-base text-left ${
                       turn.role === 'user'
-                        ? 'font-inter text-[#f5f0e8]/90'
-                        : 'font-playfair italic text-gold font-light'
+                        ? 'font-inter text-[#1a1a1a]'
+                        : 'font-playfair italic text-[#1a1a1a]/80 font-light'
                     }`}
                   >
                     {turn.content}
@@ -590,24 +590,24 @@ export default function WriteWithMePage() {
               </div>
 
               {/* Manuscript metrics */}
-              <div className="flex justify-between items-center border-t border-white/5 pt-4 text-[10px] font-bold uppercase tracking-wider text-gold font-inter">
+              <div className="flex justify-between items-center border-t border-[#1a1a1a]/10 pt-4 text-[10px] font-bold uppercase tracking-wider text-[#1a1a1a]/75 font-inter">
                 <span>Total Words: {getWordCount()}</span>
                 <span>Collaboration complete</span>
               </div>
             </div>
 
             {/* Ending action controls */}
-            <div className="glass-card border-white/5 rounded-2xl p-6 shadow-2xl flex flex-wrap gap-4 items-center justify-between">
+            <div className="bg-white border border-[#1a1a1a]/10 rounded-2xl p-6 shadow-xl flex flex-wrap gap-4 items-center justify-between text-[#1a1a1a]">
               <div className="flex gap-3">
                 <button
                   onClick={handleSaveToAnthology}
-                  className="px-5 py-2.5 bg-white/5 border border-white/5 rounded-xl text-xs uppercase font-bold tracking-wider font-inter text-gold transition-all hover:bg-white/10"
+                  className="px-5 py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-xs font-bold uppercase tracking-wider rounded-xl font-inter transition-all shadow shadow-black/5"
                 >
                   {saveSuccess ? '✅ Saved!' : '📜 Save to Anthology'}
                 </button>
                 <button
                   onClick={handleDownloadCard}
-                  className="px-5 py-2.5 border border-white/10 rounded-xl text-xs uppercase font-bold tracking-wider font-inter text-cream transition-all hover:bg-white/5"
+                  className="px-5 py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-xs font-bold uppercase tracking-wider rounded-xl font-inter transition-all shadow shadow-black/5"
                 >
                   🎨 Download as Card
                 </button>
@@ -615,7 +615,7 @@ export default function WriteWithMePage() {
 
               <button
                 onClick={() => setScreen('setup')}
-                className="px-5 py-2.5 bg-gold hover:bg-gold-light text-navy text-xs font-bold uppercase tracking-wider rounded-xl font-inter transition-all shadow shadow-gold/15"
+                className="px-5 py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] text-xs font-bold uppercase tracking-wider rounded-xl font-inter transition-all shadow shadow-black/5"
               >
                 Start New Story
               </button>
