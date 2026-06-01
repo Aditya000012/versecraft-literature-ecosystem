@@ -51,15 +51,82 @@ const genresList = [
 ];
 
 const tonesList = [
-  'Melancholic',
-  'Suspenseful',
-  'Lyrical',
+  'Emotional',
   'Dark',
-  'Whimsical',
-  'Intimate',
+  'Poetic',
   'Epic',
-  'Wistful',
+  'Dreamlike',
+  'Intimate',
+  'Reflective',
+  'Suspenseful',
+  'Playful',
+  'Simple',
 ];
+
+const getDynamicTonePrompt = (selectedTone: string, selectedGenre: string): string => {
+  const t = (selectedTone || '').toLowerCase().trim();
+
+  // 1. Infer subgenres dynamically based on the combination of genre and tone
+  let inferredSubgenres = '';
+  if (t === 'dark') {
+    inferredSubgenres = 'macabre, gothic realism, psychological suspense';
+  } else if (t === 'poetic') {
+    inferredSubgenres = 'lyrical prose, imagism, atmospheric romanticism';
+  } else if (t === 'epic') {
+    inferredSubgenres = 'high-fantasy lore, heroic chronicles, mythic realism';
+  } else if (t === 'dreamlike') {
+    inferredSubgenres = 'surrealism, magical realism, stream of consciousness';
+  } else if (t === 'intimate') {
+    inferredSubgenres = 'confessional memoir, character-driven minimalism, close third-person interiority';
+  } else if (t === 'reflective') {
+    inferredSubgenres = 'philosophical fiction, contemplative prose, essayistic storytelling';
+  } else if (t === 'suspenseful') {
+    inferredSubgenres = 'noir thriller, pacing-focused tension, gothic horror';
+  } else if (t === 'playful') {
+    inferredSubgenres = 'satirical whimsy, meta-fiction, comedic banter';
+  } else if (t === 'simple') {
+    inferredSubgenres = 'minimalist realism, clean prose, hemingwayesque understatement';
+  } else if (t === 'emotional') {
+    inferredSubgenres = 'melodramatic romance, raw character pathos, evocative realism';
+  }
+
+  // 2. Build the detailed guidance/prompt instructing the LLM on how to behave for this specific tone
+  let toneGuidance = '';
+  switch (t) {
+    case 'emotional':
+      toneGuidance = 'Focus heavily on raw human affect, character pathos, visceral feelings, and expressive dialogue or interior thoughts that pull at the heartstrings.';
+      break;
+    case 'dark':
+      toneGuidance = 'Employ eerie, ominous, and macabre imagery. Focus on hidden shadows, psychological dread, unsettling atmospheres, and severe undercurrents.';
+      break;
+    case 'poetic':
+      toneGuidance = 'Write with high lyrical quality, utilizing sensory metaphors, rich cadences, deliberate sentence rhythms, and vivid aesthetic imagery.';
+      break;
+    case 'epic':
+      toneGuidance = 'Adopt a grand, mythic, and elevated scale. Infuse descriptions with legendary lore, sweeping landscapes, historic weight, and heroic struggle.';
+      break;
+    case 'dreamlike':
+      toneGuidance = 'Incorporate surreal transitions, fluid logic, ethereal imagery, and an atmospheric haze where the boundaries of reality are beautifully blurred.';
+      break;
+    case 'intimate':
+      toneGuidance = 'Focus on close interiority, quiet moments of connection, unspoken subtext, domestic spaces, and delicate, deeply personal observations.';
+      break;
+    case 'reflective':
+      toneGuidance = 'Introduce contemplative pauses, philosophical inquiry, philosophical subtext, intellectual depth, and calm, thoughtful prose.';
+      break;
+    case 'suspenseful':
+      toneGuidance = 'Generate high narrative tension. Use short, crisp sentences, pacing control, lingering questions, and an undercurrent of imminent revelation.';
+      break;
+    case 'playful':
+      toneGuidance = 'Infuse the writing with witty banter, meta-fictional elements, lighthearted irony, clever vocabulary, and whimsical narrative turns.';
+      break;
+    case 'simple':
+      toneGuidance = 'Use minimalist, clean, and direct prose. Focus on brief sentences, honest/unadorned descriptions, and powerful subtext beneath simple words.';
+      break;
+  }
+
+  return `${selectedTone} (${toneGuidance} Infer and adapt subgenres dynamically: ${inferredSubgenres}. Weave this tone flawlessly into the co-written prose of the ${selectedGenre} genre.)`;
+};
 
 const getGenrePatternRaw = (genre: string): string | null => {
   const g = (genre || '').toLowerCase().trim();
@@ -1181,7 +1248,7 @@ export default function WriteWithMePage() {
             userContribution: '',
             story: [],
             genre,
-            tone,
+            tone: getDynamicTonePrompt(tone, genre),
             isFirstTurn: true,
           }),
         });
@@ -1223,7 +1290,7 @@ export default function WriteWithMePage() {
           userContribution: userText,
           story: story, // send the history before the user's latest addition
           genre,
-          tone,
+          tone: getDynamicTonePrompt(tone, genre),
           isFirstTurn: story.length === 0,
         }),
       });
