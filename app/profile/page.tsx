@@ -65,8 +65,52 @@ interface ProfileData {
   };
 }
 
-const genresList = ['Fiction', 'Poetry', 'Gothic', 'Romance', 'Mystery', 'Fantasy', 'Classics', 'Sufi'];
-const erasList = ['Victorian', 'Ancient', 'Renaissance', 'Modernist', 'Romantic Period', 'Contemporary'];
+const genresList = [
+  'Fiction',
+  'Literary Fiction',
+  'Poetry',
+  'Gothic',
+  'Romance',
+  'Mystery',
+  'Fantasy',
+  'Horror',
+  'Magical Realism',
+  'Historical Fiction',
+  'Realism',
+  'Sufi',
+  'Classical',
+  'Science Fiction',
+  'Dystopian',
+  'Psychological Thriller',
+  'Adventure',
+  'Satire',
+  'Tragedy',
+  'Comedy',
+  'Epic',
+  'Noir',
+  'Existential',
+  'Supernatural',
+  'War Literature',
+  'Political Fiction',
+  'Philosophical Fiction',
+  'Classics'
+];
+
+const erasList = [
+  'Ancient',
+  'Medieval',
+  'Renaissance',
+  'Baroque',
+  'Enlightenment',
+  'Romantic Period',
+  'Victorian',
+  'Edwardian',
+  'Modernist',
+  'Mid-Century',
+  'Postmodern',
+  'Contemporary',
+  'Present Day'
+];
 
 function ProfilePageContent() {
   const { user, loading } = useAuth();
@@ -586,9 +630,9 @@ function ProfilePageContent() {
         </div>
 
         {/* Header Profile Info card */}
-        <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-xs mb-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="border-b border-[#1a1a1a]/10 pb-8 mb-8 flex flex-col sm:flex-row items-center justify-between gap-6 bg-transparent">
           <div className="flex items-center gap-4 text-center sm:text-left">
-            <div className="w-16 h-16 rounded-full border border-[#1a1a1a]/10 bg-[#FAF7F0] flex items-center justify-center text-[#1a1a1a] font-playfair font-bold text-2xl tracking-widest shadow-inner">
+            <div className="w-16 h-16 rounded-full border border-[#1a1a1a]/10 bg-transparent flex items-center justify-center text-[#1a1a1a] font-playfair font-bold text-2xl tracking-widest">
               {profileData?.displayName?.charAt(0).toUpperCase() || 'R'}
             </div>
             <div>
@@ -622,9 +666,9 @@ function ProfilePageContent() {
         </div>
 
         {/* Currently Reading Strip */}
-        <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-2xl p-4 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-inter shadow-xs">
+        <div className="border-y border-[#1a1a1a]/10 py-4 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-inter bg-transparent">
           <div className="flex items-center gap-3">
-            <span className="text-[9px] uppercase font-bold tracking-[0.2em] text-[#1a1a1a]/40 bg-[#1a1a1a]/5 px-2.5 py-1 rounded-md">CURRENTLY READING</span>
+            <span className="text-[9px] uppercase font-bold tracking-[0.2em] text-[#1a1a1a]/50 border border-[#1a1a1a]/10 px-2.5 py-0.5 rounded-md">CURRENTLY READING</span>
             <span className="font-playfair font-bold text-sm text-[#1a1a1a]">Frankenstein</span>
             <span className="text-[#1a1a1a]/40 select-none">✦</span>
             <span className="text-[#1a1a1a]/70 italic">Mary Shelley</span>
@@ -683,7 +727,7 @@ function ProfilePageContent() {
             >
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column: Literary Identity */}
-              <div className="lg:col-span-2 bg-[#FAF7F0] border border-[#1a1a1a]/10 p-8 sm:p-10 rounded-2xl space-y-8 shadow-xs relative">
+              <div className="lg:col-span-2 py-4 space-y-8 relative bg-transparent">
                 <div>
                   <span className="text-[9px] uppercase font-bold tracking-[0.25em] text-[#1a1a1a]/40 block mb-2 font-inter">THE PORTRAIT</span>
                   <h2 className="font-playfair text-3xl font-bold text-[#1a1a1a] tracking-tight">Literary Identity</h2>
@@ -732,8 +776,8 @@ function ProfilePageContent() {
                   <span className="text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/40 block mb-2 font-inter">LITERARY FOCUS & PROFILE</span>
                   <p className="font-playfair italic text-sm text-[#1a1a1a]/80 leading-relaxed">
                     {profileData?.preferences?.customNote 
-                      ? `“${profileData.preferences.customNote}”` 
-                      : '“Drawn toward gothic introspection, realism, lyrical melancholy, and philosophical fiction.”'}
+                       ? `“${profileData.preferences.customNote}”` 
+                       : '“Drawn toward gothic introspection, realism, lyrical melancholy, and philosophical fiction.”'}
                   </p>
                 </div>
               </div>
@@ -741,13 +785,13 @@ function ProfilePageContent() {
               {/* Right Column: Stats & Reading Fingerprint */}
               <div className="space-y-6 flex flex-col justify-between">
                 {/* Stats clickable panel */}
-                <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 p-6 rounded-2xl space-y-4 shadow-xs">
+                <div className="py-4 space-y-4 bg-transparent">
                   <span className="text-[9px] uppercase font-bold tracking-[0.25em] text-[#1a1a1a]/40 block font-inter">THE NETWORK</span>
                   
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <button
                       onClick={() => document.getElementById('my-posts-section')?.scrollIntoView({ behavior: 'smooth' })}
-                      className="p-3 border border-[#1a1a1a]/5 hover:border-[#1a1a1a]/20 bg-white/40 rounded-xl transition-all"
+                      className="p-3 border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/30 bg-transparent rounded-xl transition-all"
                     >
                       <span className="text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 block font-inter">Essays / Verses</span>
                       <span className="font-playfair text-lg font-bold text-[#1a1a1a] block mt-1">{userPostsCount}</span>
@@ -755,7 +799,7 @@ function ProfilePageContent() {
 
                     <button
                       onClick={() => setActiveModal('followers')}
-                      className="p-3 border border-[#1a1a1a]/5 hover:border-[#1a1a1a]/20 bg-white/40 rounded-xl transition-all"
+                      className="p-3 border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/30 bg-transparent rounded-xl transition-all"
                     >
                       <span className="text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 block font-inter">Circle</span>
                       <span className="font-playfair text-lg font-bold text-[#1a1a1a] block mt-1">{profileData?.followers?.length || 0}</span>
@@ -763,7 +807,7 @@ function ProfilePageContent() {
 
                     <button
                       onClick={() => setActiveModal('following')}
-                      className="p-3 border border-[#1a1a1a]/5 hover:border-[#1a1a1a]/20 bg-white/40 rounded-xl transition-all"
+                      className="p-3 border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/30 bg-transparent rounded-xl transition-all"
                     >
                       <span className="text-[9px] uppercase font-bold tracking-wider text-[#1a1a1a]/50 block font-inter">Companions</span>
                       <span className="font-playfair text-lg font-bold text-[#1a1a1a] block mt-1">{profileData?.following?.length || 0}</span>
@@ -772,7 +816,7 @@ function ProfilePageContent() {
                 </div>
 
                 {/* Reading Fingerprint Section */}
-                <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 p-6 rounded-2xl space-y-4 shadow-xs flex-grow">
+                <div className="py-4 space-y-4 flex-grow bg-transparent">
                   <div>
                     <span className="text-[9px] uppercase font-bold tracking-[0.25em] text-[#1a1a1a]/40 block font-inter">THE TENDENCIES</span>
                     <h3 className="font-playfair text-lg font-bold text-[#1a1a1a]">Reading Fingerprint</h3>
@@ -848,7 +892,7 @@ function ProfilePageContent() {
                   {userPosts.map((post) => (
                     <div
                       key={post.id}
-                      className="bg-[#FAF7F0] border border-[#1a1a1a]/10 p-6 sm:p-8 rounded-2xl space-y-4 hover:border-[#1a1a1a]/20 transition-all inline-block w-full break-inside-avoid shadow-xs"
+                      className="border-b border-[#1a1a1a]/10 pb-6 mb-6 space-y-4 hover:border-[#1a1a1a]/30 transition-all inline-block w-full break-inside-avoid bg-transparent"
                     >
                       <div className="flex justify-between items-center w-full">
                         <span className="text-[9px] text-[#1a1a1a]/40 font-inter font-bold uppercase">
@@ -910,7 +954,7 @@ function ProfilePageContent() {
             </div>
 
             {anthologyItems.length === 0 ? (
-              <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-xl p-12 text-center max-w-lg mx-auto">
+              <div className="py-12 text-center max-w-lg mx-auto bg-transparent">
                 <span className="text-3xl block mb-2">📜</span>
                 <p className="font-playfair text-lg text-[#1a1a1a]/70 italic">Your anthology stands completely blank.</p>
                 <p className="text-xs text-[#1a1a1a]/40 mt-1 font-inter">
@@ -922,7 +966,7 @@ function ProfilePageContent() {
                 {anthologyItems.map((item: AnthologyItem) => (
                   <div
                     key={item.id}
-                    className="bg-[#FAF7F0] border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/20 rounded-2xl p-6 shadow-xs relative flex flex-col justify-between group transition-all"
+                    className="border-b border-[#1a1a1a]/10 pb-6 mb-6 relative flex flex-col justify-between group transition-all bg-transparent"
                   >
                     <div>
                       {/* Meta header */}
@@ -943,7 +987,7 @@ function ProfilePageContent() {
                       </div>
 
                       {/* Response */}
-                      <div className="p-4 bg-[#F8F4E9]/50 border border-[#1a1a1a]/5 rounded-xl mt-3 shadow-inner">
+                      <div className="pl-4 border-l-2 border-[#1a1a1a]/20 mt-3 py-1 font-serif">
                         <p className="font-playfair italic text-xs leading-relaxed text-[#1a1a1a] font-light">
                           “ {item.response} ”
                         </p>
@@ -1053,7 +1097,7 @@ function ProfilePageContent() {
             exit={{ opacity: 0, y: -15 }}
             className="max-w-3xl mx-auto"
           >
-            <form onSubmit={handleSavePreferences} className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
+            <form onSubmit={handleSavePreferences} className="py-4 space-y-6 bg-transparent">
               <div className="pb-2 border-b border-[#1a1a1a]/10 mb-4">
                 <h3 className="font-playfair text-2xl font-bold text-[#1a1a1a]">
                   ⚙️ Preferences
@@ -1075,7 +1119,7 @@ function ProfilePageContent() {
                         className={`px-3 py-1.5 border rounded-full text-xs font-semibold font-inter transition-all ${
                           active
                             ? 'bg-[#1a1a1a] border-transparent text-white shadow-sm'
-                            : 'bg-[#F8F4E9] border-[rgba(26,26,26,0.1)] text-[#1a1a1a]/70 hover:border-[#1a1a1a]'
+                            : 'bg-transparent border-[rgba(26,26,26,0.1)] text-[#1a1a1a]/70 hover:border-[#1a1a1a]'
                         }`}
                       >
                         {genre}
@@ -1099,7 +1143,7 @@ function ProfilePageContent() {
                         className={`px-3 py-1.5 border rounded-full text-xs font-semibold font-inter transition-all ${
                           active
                             ? 'bg-[#1a1a1a] border-transparent text-white shadow-sm'
-                            : 'bg-[#F8F4E9] border-[rgba(26,26,26,0.1)] text-[#1a1a1a]/70 hover:border-[#1a1a1a]'
+                            : 'bg-transparent border-[rgba(26,26,26,0.1)] text-[#1a1a1a]/70 hover:border-[#1a1a1a]'
                         }`}
                       >
                         {era}
@@ -1116,7 +1160,7 @@ function ProfilePageContent() {
                   <select
                     value={favoriteGenre}
                     onChange={(e) => setFavoriteGenre(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl outline-none border border-[#1a1a1a]/20 bg-white text-xs font-semibold text-[#1a1a1a] focus:border-[#1a1a1a] transition-all cursor-pointer"
+                    className="w-full px-2 py-2 rounded-none outline-none border-b border-[#1a1a1a]/20 bg-transparent text-xs font-semibold text-[#1a1a1a] focus:border-[#1a1a1a] transition-all cursor-pointer"
                   >
                     <option value="" className="bg-[#FAF7F0] text-[#1a1a1a]">Select Primary Genre</option>
                     {genresList.map((g) => (
@@ -1130,7 +1174,7 @@ function ProfilePageContent() {
                   <select
                     value={favoriteEra}
                     onChange={(e) => setFavoriteEra(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl outline-none border border-[#1a1a1a]/20 bg-white text-xs font-semibold text-[#1a1a1a] focus:border-[#1a1a1a] transition-all cursor-pointer"
+                    className="w-full px-2 py-2 rounded-none outline-none border-b border-[#1a1a1a]/20 bg-transparent text-xs font-semibold text-[#1a1a1a] focus:border-[#1a1a1a] transition-all cursor-pointer"
                   >
                     <option value="" className="bg-[#FAF7F0] text-[#1a1a1a]">Select Primary Era</option>
                     {erasList.map((e) => (
@@ -1148,7 +1192,7 @@ function ProfilePageContent() {
                   onChange={(e) => setCustomNote(e.target.value)}
                   placeholder="e.g. I am seeking dense gothic metaphors combined with Urdu romantic poetry cadences. I love the style of Sylvia Plath and John Keats."
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl outline-none border border-[#1a1a1a]/20 bg-white text-xs text-[#1a1a1a] placeholder-[#1a1a1a]/30 resize-none leading-relaxed focus:border-[#1a1a1a] transition-all font-serif"
+                  className="w-full px-2 py-3 rounded-none outline-none border-b border-[#1a1a1a]/20 bg-transparent text-xs text-[#1a1a1a] placeholder-[#1a1a1a]/30 resize-none leading-relaxed focus:border-[#1a1a1a] transition-all font-serif"
                 />
               </div>
 
@@ -1190,10 +1234,10 @@ function ProfilePageContent() {
               <p className="font-playfair italic text-xs text-[#1a1a1a]/60 mt-1 font-light">“Hours counted in silent worlds.”</p>
             </div>
 
-            <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-2xl p-6 sm:p-8 shadow-xs text-center relative overflow-hidden space-y-6">
+            <div className="py-4 text-center relative space-y-6 bg-transparent">
               <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#1a1a1a]/60 block font-inter">THE CELESTIAL CLOCK</span>
               
-              <div className="relative w-44 h-44 rounded-full border border-[#1a1a1a]/10 mx-auto flex items-center justify-center bg-[#F8F4E9] shadow-inner">
+              <div className="relative w-44 h-44 rounded-full border border-[#1a1a1a]/10 mx-auto flex items-center justify-center bg-transparent">
                 {/* Clock hands animations mock */}
                 <div className="absolute inset-2.5 rounded-full border border-dashed border-[#1a1a1a]/10" />
                 <div className="absolute w-0.5 h-14 bg-[#1a1a1a] origin-bottom -mt-14 animate-spin [animation-duration:120s]" />
@@ -1254,7 +1298,7 @@ function ProfilePageContent() {
             </div>
 
             {anthologyItems.length === 0 ? (
-              <div className="bg-[#FAF7F0] border border-[#1a1a1a]/10 rounded-xl p-12 text-center max-w-lg mx-auto">
+              <div className="py-12 text-center max-w-lg mx-auto bg-transparent">
                 <span className="text-3xl block mb-2">⏳</span>
                 <p className="font-playfair text-lg text-[#1a1a1a]/70 italic">Your timeline awaits its first verse.</p>
                 <div className="mt-6">
@@ -1267,7 +1311,14 @@ function ProfilePageContent() {
                 </div>
               </div>
             ) : (
-              <div className="relative pl-8 ml-3 space-y-8" style={{ borderLeft: '2px solid rgba(26, 26, 26, 0.15)' }}>
+              <div className="relative pl-8 ml-3 space-y-8">
+                {/* Animated vertical axis line */}
+                <motion.div
+                  className="absolute left-[6px] top-2 bottom-2 w-[2px] bg-[#1a1a1a]/15 origin-top"
+                  initial={{ scaleY: 0 }}
+                  animate={{ scaleY: 1 }}
+                  transition={{ duration: 1.2, ease: "easeOut" }}
+                />
                 {(() => {
                   const sortedItems = [...anthologyItems].sort((a, b) => {
                     const dateA = parseSavedAt(a.savedAt).getTime();
@@ -1306,22 +1357,28 @@ function ProfilePageContent() {
 
                           return (
                             <div key={item.id} className="relative">
-                              {/* Gold timeline dot */}
-                              <div
-                                className="absolute rounded-full"
+                              {/* Animated timeline dot */}
+                              <motion.div
+                                className="absolute rounded-full bg-[#1a1a1a]"
                                 style={{
-                                  width: '10px',
-                                  height: '10px',
-                                  backgroundColor: '#1a1a1a',
-                                  left: '-38px',
-                                  top: '28px',
+                                  width: '8px',
+                                  height: '8px',
+                                  left: '-37px',
+                                  top: '29px',
                                 }}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: currentIdx * 0.08 + 0.15, type: 'spring', stiffness: 300 }}
                               />
                               <motion.div
-                                initial={{ opacity: 0, x: 30 }}
+                                initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: currentIdx * 0.1, duration: 0.4 }}
-                                className="bg-[#FAF7F0] border border-[#1a1a1a]/10 hover:border-[#1a1a1a]/20 rounded-2xl p-6 shadow-xs relative flex flex-col justify-between group transition-all"
+                                whileHover={{ x: 6 }}
+                                transition={{ 
+                                  opacity: { duration: 0.4, delay: currentIdx * 0.08 },
+                                  x: { duration: 0.4, delay: currentIdx * 0.08 }
+                                }}
+                                className="relative flex flex-col justify-between group transition-all pb-6 mb-6 border-b border-[#1a1a1a]/10 bg-transparent"
                               >
                                 <div>
                                   {/* Card Header */}
@@ -1343,7 +1400,7 @@ function ProfilePageContent() {
                                   </div>
 
                                   {/* Response Content Preview / Expanded */}
-                                  <div className="p-4 bg-[#F8F4E9]/50 border border-[#1a1a1a]/5 rounded-xl shadow-inner mt-2">
+                                  <div className="pl-4 border-l-2 border-[#1a1a1a]/20 mt-3 py-1 font-serif">
                                     <p className="font-playfair italic text-[13px] leading-relaxed text-[#1a1a1a] font-light">
                                       “ {isExpanded ? item.response : previewText}{!isExpanded && isLong && '...'} ”
                                     </p>
