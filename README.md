@@ -1,206 +1,242 @@
 # Versecraft
 
-**Versecraft** is an AI-powered literary ecosystem built to make literature feel alive again.
+### *A Living Literary Universe*
 
-It is not just a reading app or a chatbot. Versecraft is a digital literary universe where readers can explore books, authors, movements, translations, recommendations, reading companions, personal anthologies, timelines, wishlists, and immersive literary experiences inside a calm, elegant, book-first interface.
+> *Versecraft is not a reading app.*
+> *It is a literary ecosystem designed to make books feel alive again.*
 
----
+Versecraft is an AI-powered digital literature universe where books are not merely consumed — they are explored, translated, interpreted, discussed, remembered, curated, and lived with.
 
-## ✦ Vision
+Built around the idea that modern reading platforms feel transactional, Versecraft reimagines literature as an immersive experience: part reading sanctuary, part literary archive, part multilingual companion, and part intelligent cultural ecosystem.
 
-Modern reading platforms often feel like marketplaces.
+From discovering forgotten classics to debating philosophy with AI literary companions, traversing movements that shaped civilizations, translating prose across languages, curating personal anthologies, and receiving emotionally aware recommendations —
 
-Versecraft is designed to feel different.
-
-It is built as a literary sanctuary — a place where books are not merely searched, purchased, or stored, but discovered, interpreted, discussed, translated, remembered, and lived with.
-
-The goal is simple:
-
-> make literature feel personal, intelligent, multilingual, and alive.
+**Versecraft transforms literature from a product into an experience.**
 
 ---
 
-## ✦ Core Features
+## ✦ What Makes Versecraft Different?
 
-### Grand Library
+Most platforms ask:
 
-Explore books through a refined literary interface with genre shelves, search, wishlist support, reading lists, and free public-domain reading integrations.
+> **“What book do you want?”**
 
-### In-App Reader
+Versecraft asks:
 
-Read available public-domain works directly inside Versecraft through an integrated reader experience.
+> **“What world are you trying to enter?”**
 
-### Reader Hub
+Instead of a marketplace, Versecraft feels like:
 
-A personal reading room for currently reading books, reading progress, personal shelves, reading lists, and uploaded EPUB volumes.
-
-### Author’s Hall
-
-Discover major literary voices through elegant author profiles, biographies, key works, influences, legacy, and connected literary identity.
-
-### Literary Movements
-
-Explore movements such as Romanticism, Modernism, Realism, Gothic Literature, Surrealism, Existentialism, Magical Realism, and more through structured literary archive pages.
-
-### Companion Chat
-
-AI-powered literary companions designed for reading discussion, interpretation, creative exploration, and emotionally aware literary conversation.
-
-### Translation Chamber
-
-A literary translation interface focused on preserving meaning, rhythm, tone, and emotional cadence across languages.
-
-### Curated Alcove
-
-AI-assisted book recommendations shaped by genre, era, language, mood, and author vibe, with poetic curator notes.
-
-### Personal Anthology
-
-Save meaningful verses, reflections, fragments, and literary moments into a personal archive.
-
-### Wishlist & Reading Lists
-
-Organize books into personal collections, future reads, and thematic shelves.
-
-### Timeline & Exploration Timer
-
-Track reading activity and literary exploration across time.
+* a grand literary library
+* a private reading chamber
+* an archive of civilizations and movements
+* an intelligent multilingual companion
+* a place to think, annotate, debate, translate, and wander
 
 ---
 
-## ✦ Tech Stack
+# ✦ The Versecraft Ecosystem
 
-* **Next.js 14**
-* **TypeScript**
-* **React 18**
-* **Tailwind CSS**
-* **Firebase**
-* **Google Gemini API**
-* **Groq API**
-* **Google Books API**
-* **Framer Motion**
-* **html2canvas**
+## 📚 Grand Library
 
----
+A curated literary environment for discovery, exploration, and reading.
 
-## ✦ Project Structure
-
-```txt
-versecraft/
-├── app/              # Next.js app routes and pages
-├── components/       # Reusable UI components
-├── contexts/         # Global React contexts
-├── lib/              # Utilities, Firebase config, constants
-├── scratch/          # Development scratch files
-├── public/           # Static assets if used
-├── package.json
-├── tailwind.config.ts
-├── tsconfig.json
-└── next.config.mjs
-```
+* genre-first browsing
+* elegant literary categorization
+* public-domain reading integration
+* saved volumes, reading lists, and wishlists
+* immersive, non-marketplace experience
 
 ---
 
-## ✦ Environment Variables
+## 🕯 Reader Hub
 
-Versecraft uses external APIs and Firebase services. Create a `.env.local` file in the root directory.
+A personal literary workspace.
 
-```env
-# Firebase
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
+Track:
 
-# AI APIs
-GEMINI_API_KEY=
-GROQ_API_KEY=
+* current reads
+* uploaded EPUB volumes
+* reading progress
+* exploration history
+* reading collections
+* literary timelines
 
-# Books
-GOOGLE_BOOKS_API_KEY=
-```
-
-Never commit `.env` or `.env.local` files.
+Designed to feel less like productivity software and more like a scholar’s reading desk.
 
 ---
 
-## ✦ Getting Started
+## 🧠 Companion Chambers
 
-Install dependencies:
+AI literary companions built for thought, not generic chat.
 
-```bash
-npm install
-```
+Discuss:
 
-Run the development server:
+* philosophy
+* symbolism
+* themes
+* character psychology
+* literary interpretation
+* emotional resonance
+* historical context
 
-```bash
-npm run dev
-```
+Versecraft companions are designed to feel conversational, reflective, and intellectually engaging.
 
-Build for production:
+---
 
-```bash
-npm run build
-```
+## 🌍 Translation Chamber
 
-Start production server:
+A multilingual literary translation system.
 
-```bash
-npm start
-```
+Instead of literal translation, Versecraft attempts to preserve:
 
-Open:
+* tone
+* rhythm
+* emotional cadence
+* literary intent
+* poetic feeling
 
-```txt
-http://localhost:3000
-```
+because literature should survive translation without losing its soul.
+
+---
+
+## 🏛 Author’s Hall
+
+A living archive of literary minds.
+
+Explore:
+
+* biographies
+* major works
+* influences & legacy
+* philosophical traditions
+* literary relationships
+* intellectual lineage
+
+Move through literature not as isolated books — but as connected civilizations of thought.
+
+---
+
+## ✦ Literary Movements
+
+Traverse the currents that shaped human storytelling.
+
+Explore movements like:
+
+**Romanticism · Realism · Gothic Literature · Modernism · Existentialism · Surrealism · Magical Realism · Symbolism · Sufi Literature · Renaissance Literature** and more.
+
+Every movement exists as a contextual, interconnected literary world.
+
+---
+
+## 🔮 The Curated Alcove
+
+AI-assisted literary recommendations.
+
+Versecraft recommends books through:
+
+* emotional tone
+* era
+* genre
+* language
+* author energy ("author vibe")
+* philosophical atmosphere
+
+with poetic recommendation reasoning rather than algorithmic coldness.
+
+---
+
+## ✍ Personal Literary Memory
+
+Build your own archive.
+
+Create:
+
+* personal anthologies
+* saved verses
+* literary reflections
+* wishlists
+* timelines
+* exploration logs
+
+A memory system for readers.
 
 ---
 
 ## ✦ Design Philosophy
 
-Versecraft follows a literary-first design system:
+Versecraft rejects dashboard clutter, marketplace psychology, and overstimulation.
 
-* cream and parchment-inspired surfaces
-* black and charcoal typography
-* serif-led editorial hierarchy
-* thin dividers instead of heavy containers
-* calm spacing
-* minimal motion
-* no marketplace energy
-* no dashboard clutter
+Its interface is built around:
 
-The interface is built to feel closer to a reading room, archive, study desk, or literary chamber than a conventional web app.
+* editorial typography
+* calm pacing
+* parchment-inspired surfaces
+* literary hierarchy
+* restrained motion
+* immersive minimalism
+
+The product is intentionally designed to feel closer to:
+
+> a reading room, archive, private study, or old library
+
+than modern consumer software.
 
 ---
 
-## ✦ Current Status
+## ✦ Tech Stack
 
-Versecraft is under active development.
+**Frontend & Architecture**
 
-The current version includes the foundation of the full literature ecosystem: library, reader, author hall, movements archive, recommendations, translation, companion chat, profile systems, and reading collections.
+* Next.js 14
+* TypeScript
+* React 18
+* Tailwind CSS
 
-Future improvements may include:
+**Backend & Services**
 
-* deeper Gutenberg/public-domain integration
-* richer reading analytics
-* improved EPUB handling
-* advanced literary companion memory
-* expanded multilingual support
-* author and movement graph visualizations
-* deployment-ready production hardening
+* Firebase
+* Google Books API
+* Google Gemini API
+* Groq API
+
+**Motion & Rendering**
+
+* Framer Motion
+* html2canvas
+
+---
+
+## ✦ Local Setup
+
+```bash
+npm install
+npm run dev
+```
+
+Production build:
+
+```bash
+npm run build
+npm start
+```
+
+---
+
+## ✦ Vision
+
+Versecraft is being built toward a larger ambition:
+
+> **to become the operating system for literary exploration.**
+
+A place where language, books, philosophy, memory, interpretation, translation, and imagination coexist inside one ecosystem.
 
 ---
 
 ## ✦ Ownership
 
-This project is proprietary.
+© 2026 Versecraft — All Rights Reserved.
 
-© 2026 Versecraft. All rights reserved.
+This repository is public for portfolio and demonstration purposes.
 
-Unauthorized copying, redistribution, reproduction, or commercial use of this codebase is not permitted.
-
-The repository is public for demonstration and portfolio purposes only. Usage as an end user is welcome through the deployed application when available.
+Unauthorized reproduction, redistribution, or commercial reuse of the codebase is prohibited.
