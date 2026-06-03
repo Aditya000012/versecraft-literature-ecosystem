@@ -187,236 +187,278 @@ export default function ReadingListsPage() {
   }
 
   return (
-    <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-10">
-      {/* Dashboard Back Link */}
-      <div className="text-left">
-        <Link
-          href="/dashboard"
-          className="text-xs text-gold hover:text-gold-light transition-colors inline-flex items-center gap-1 font-inter font-medium"
+    <>
+      {/* Cream background base */}
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#F8F4E9',
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Connected-word background overlay */}
+      <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden opacity-[0.03] text-[#1a1a1a]">
+        <svg
+          className="w-full h-full"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1200 800"
+          preserveAspectRatio="xMidYMid slice"
         >
-          ← Dashboard
-        </Link>
+          {/* Paths connecting words */}
+          <path d="M 150 150 L 350 250 L 200 450 L 400 600 Z" fill="none" stroke="currentColor" strokeWidth="0.8" />
+          <path d="M 1050 120 L 950 320 L 1100 480 L 850 650" fill="none" stroke="currentColor" strokeWidth="0.8" />
+          <path d="M 500 50 L 700 150 L 600 350" fill="none" stroke="currentColor" strokeWidth="0.8" />
+
+          {/* Drifting literary words text nodes */}
+          <text x="150" y="140" className="font-playfair italic text-xs tracking-widest font-bold fill-current">solitude</text>
+          <text x="350" y="240" className="font-playfair italic text-xs tracking-widest font-bold fill-current">memory</text>
+          <text x="200" y="440" className="font-playfair italic text-xs tracking-widest font-bold fill-current">wonder</text>
+          <text x="400" y="590" className="font-playfair italic text-xs tracking-widest font-bold fill-current">silence</text>
+
+          <text x="1050" y="110" className="font-playfair italic text-xs tracking-widest font-bold fill-current">myth</text>
+          <text x="950" y="310" className="font-playfair italic text-xs tracking-widest font-bold fill-current">longing</text>
+          <text x="1100" y="470" className="font-playfair italic text-xs tracking-widest font-bold fill-current">devotion</text>
+          <text x="850" y="640" className="font-playfair italic text-xs tracking-widest font-bold fill-current">grief</text>
+
+          <text x="500" y="40" className="font-playfair italic text-xs tracking-widest font-bold fill-current">echo</text>
+          <text x="700" y="140" className="font-playfair italic text-xs tracking-widest font-bold fill-current">midnight</text>
+        </svg>
       </div>
 
-      {/* Heading Block */}
-      <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end gap-6 border-b border-white/5 pb-8">
-        <div className="text-center sm:text-left space-y-2">
-          <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-gold tracking-wide">
-            My Reading Lists
-          </h1>
-          <p className="font-playfair italic text-cream/70 text-sm sm:text-base">
-            Curate your literary journey
-          </p>
-        </div>
-
-        {/* Create list button */}
-        {!loading && (
-          <button
-            onClick={() => setShowInput(!showInput)}
-            className="px-6 py-2.5 bg-gold hover:bg-gold-light text-navy text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-gold/15 font-inter flex items-center gap-1.5"
+      <div className="relative z-10 w-full min-h-screen pt-28 pb-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-10 text-[#1a1a1a]">
+        {/* Dashboard Back Link */}
+        <div className="text-left">
+          <Link
+            href="/dashboard"
+            className="text-xs text-[#1a1a1a]/60 hover:text-[#1a1a1a] hover:underline transition-all inline-flex items-center gap-1 font-inter font-medium"
           >
-            📁 New List
-          </button>
-        )}
-      </div>
-
-      {/* Inline list creation form */}
-      <AnimatePresence>
-        {showInput && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -10, height: 0 }}
-            className="p-5 glass-card border-[#c9a84c]/20 rounded-2xl w-full max-w-md mx-auto space-y-4 shadow-xl"
-          >
-            <div>
-              <label className="block text-[9px] uppercase font-bold tracking-widest text-gold mb-1.5 font-inter">
-                List Name
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="E.g. Summer Poetry, Gothic Inspirations..."
-                value={newListName}
-                onChange={(e) => setNewListName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleCreateList();
-                }}
-                className="w-full px-4 py-2.5 rounded-xl outline-none glass-input text-xs text-cream placeholder-cream/25 focus:border-gold/45 shadow"
-              />
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowInput(false)}
-                className="flex-grow py-2 border border-white/10 hover:bg-white/5 rounded-lg text-xs font-semibold font-inter text-cream transition-all text-center"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleCreateList}
-                disabled={creating || !newListName.trim()}
-                className="flex-grow py-2 bg-gold hover:bg-gold-light disabled:opacity-50 disabled:cursor-not-allowed text-navy text-xs font-bold uppercase tracking-wider rounded-lg font-inter transition-all text-center shadow"
-              >
-                {creating ? 'Creating...' : 'Create'}
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main Lists Section */}
-      {loading ? (
-        <div className="py-24 text-center">
-          <span className="font-playfair text-[#1a1a1a] italic text-sm animate-pulse block">
-            Gathering your lists...
-          </span>
+            ← Dashboard
+          </Link>
         </div>
-      ) : errorMsg ? (
-        <div className="glass-card border-white/5 p-12 text-center rounded-2xl max-w-md mx-auto space-y-6">
-          <span className="text-3xl block">⚠️</span>
-          <p className="font-playfair text-lg text-gold italic">An error occurred</p>
-          <p className="text-xs text-cream/40 leading-relaxed font-inter">{errorMsg}</p>
-        </div>
-      ) : lists.length === 0 ? (
-        /* EMPTY PAGE STATE */
-        <div className="py-24 text-center max-w-md mx-auto space-y-8">
-          <p className="font-playfair text-2xl text-gold italic leading-relaxed">
-            Your reading lists await.<br />Create your first list to begin curating your literary journey.
-          </p>
-          <button
-            onClick={() => setShowInput(true)}
-            className="px-8 py-3 bg-gold hover:bg-gold-light text-navy text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-gold/15 font-inter"
-          >
-            Create List Now
-          </button>
-        </div>
-      ) : (
-        /* LISTS FEED */
-        <div className="space-y-8">
-          {lists.map((list) => {
-            const isExpanded = expanded[list.id];
-            const bookCount = list.books ? list.books.length : 0;
 
-            return (
-              <motion.div
-                key={list.id}
-                layout="position"
-                className="glass-card border-white/5 rounded-2xl shadow-xl overflow-hidden"
-              >
-                {/* List Header trigger */}
-                <div
-                  onClick={() => toggleExpand(list.id)}
-                  className="p-5 sm:p-6 bg-white/5 border-b border-white/5 flex justify-between items-center cursor-pointer hover:bg-white/10 transition-colors"
+        {/* Heading Block */}
+        <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end gap-6 border-b border-[#1a1a1a]/10 pb-8">
+          <div className="text-center sm:text-left space-y-2">
+            <h1 className="font-playfair text-4xl sm:text-5xl font-bold text-[#1a1a1a] tracking-wide">
+              My Reading Lists
+            </h1>
+            <p className="font-playfair italic text-[#1a1a1a]/60 text-sm sm:text-base">
+              Curate your literary journey
+            </p>
+          </div>
+
+          {/* Create list button */}
+          {!loading && (
+            <button
+              onClick={() => setShowInput(!showInput)}
+              className="px-6 py-2.5 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-xs font-inter flex items-center gap-1.5"
+            >
+              📁 New List
+            </button>
+          )}
+        </div>
+
+        {/* Inline list creation form */}
+        <AnimatePresence>
+          {showInput && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, y: -10, height: 0 }}
+              className="py-4 border-b border-[#1a1a1a]/10 w-full max-w-md mx-auto space-y-4 bg-transparent"
+            >
+              <div>
+                <label className="block text-[9px] uppercase font-bold tracking-widest text-[#1a1a1a]/60 mb-1.5 font-inter">
+                  List Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="E.g. Summer Poetry, Gothic Inspirations..."
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCreateList();
+                  }}
+                  className="w-full px-2 py-2.5 rounded-none outline-none border-b border-[#1a1a1a]/20 bg-transparent text-xs font-semibold text-[#1a1a1a] placeholder-[#1a1a1a]/30 focus:border-[#1a1a1a] transition-all"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowInput(false)}
+                  className="flex-grow py-2 border border-[#1a1a1a]/20 hover:bg-[#1a1a1a]/5 rounded-lg text-xs font-semibold font-inter text-[#1a1a1a] transition-all text-center"
                 >
-                  <div className="flex items-center gap-3 select-none">
-                    {/* Expand/Collapse Chevron */}
-                    <span className={`text-[10px] text-gold transition-transform duration-300 ${isExpanded ? 'rotate-90' : 'rotate-0'}`}>
-                      ▶
-                    </span>
-                    <h3 className="font-playfair text-lg sm:text-xl font-bold text-cream">
-                      {list.name}
-                    </h3>
-                    <span className="px-2 py-0.5 bg-gold/10 text-gold border border-gold/20 rounded-md text-[9px] font-bold uppercase tracking-wider font-inter">
-                      {bookCount} {bookCount === 1 ? 'Book' : 'Books'}
-                    </span>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateList}
+                  disabled={creating || !newListName.trim()}
+                  className="flex-grow py-2 bg-[#1a1a1a] hover:bg-[#2d2d2d] disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-wider rounded-lg font-inter transition-all text-center shadow"
+                >
+                  {creating ? 'Creating...' : 'Create'}
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Main Lists Section */}
+        {loading ? (
+          <div className="py-24 text-center">
+            <span className="font-playfair text-[#1a1a1a] italic text-sm animate-pulse block">
+              Gathering your lists...
+            </span>
+          </div>
+        ) : errorMsg ? (
+          <div className="border border-[#1a1a1a]/10 bg-[#FAF7F0] p-12 text-center rounded-2xl max-w-md mx-auto space-y-6 text-[#1a1a1a]">
+            <span className="text-3xl block">⚠️</span>
+            <p className="font-playfair text-lg text-[#1a1a1a] italic">An error occurred</p>
+            <p className="text-xs text-[#1a1a1a]/60 leading-relaxed font-inter">{errorMsg}</p>
+          </div>
+        ) : lists.length === 0 ? (
+          /* EMPTY PAGE STATE */
+          <div className="py-24 text-center max-w-md mx-auto space-y-8 bg-transparent">
+            <p className="font-playfair text-2xl text-[#1a1a1a] italic leading-relaxed">
+              Your reading lists await.<br />Create your first list to begin curating your literary journey.
+            </p>
+            <button
+              onClick={() => setShowInput(true)}
+              className="px-8 py-3 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-xs font-inter"
+            >
+              Create List Now
+            </button>
+          </div>
+        ) : (
+          /* LISTS FEED */
+          <div className="space-y-12">
+            {lists.map((list) => {
+              const isExpanded = expanded[list.id];
+              const bookCount = list.books ? list.books.length : 0;
+
+              return (
+                <motion.div
+                  key={list.id}
+                  layout="position"
+                  className="border-b border-[#1a1a1a]/10 pb-8 bg-transparent"
+                >
+                  {/* List Header trigger */}
+                  <div
+                    onClick={() => toggleExpand(list.id)}
+                    className="flex justify-between items-center cursor-pointer py-4 bg-transparent select-none"
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Expand/Collapse Chevron */}
+                      <span className={`text-[9px] text-[#1a1a1a]/50 transition-transform duration-300 ${isExpanded ? 'rotate-90' : 'rotate-0'}`}>
+                        ▶
+                      </span>
+                      <h3 className="font-playfair text-lg sm:text-xl font-bold text-[#1a1a1a]">
+                        {list.name}
+                      </h3>
+                      <span className="px-2 py-0.5 bg-[#1a1a1a]/5 text-[#1a1a1a]/60 border border-[#1a1a1a]/15 rounded-md text-[9px] font-bold uppercase tracking-wider font-inter">
+                        {bookCount} {bookCount === 1 ? 'Book' : 'Books'}
+                      </span>
+                    </div>
+
+                    {/* Actions */}
+                    <button
+                      onClick={(e) => handleDeleteList(e, list.id)}
+                      className="text-red-600 hover:text-red-500 font-bold uppercase tracking-wider text-[10px] font-inter transition-colors"
+                    >
+                      Delete List
+                    </button>
                   </div>
 
-                  {/* Actions */}
-                  <button
-                    onClick={(e) => handleDeleteList(e, list.id)}
-                    className="px-3 py-1 bg-red-950/20 hover:bg-red-600 border border-red-500/20 hover:border-transparent text-red-400 hover:text-cream text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all font-inter"
-                  >
-                    🗑️ Delete List
-                  </button>
-                </div>
+                  {/* Expanded books container */}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="bg-transparent mt-4"
+                      >
+                        {bookCount === 0 ? (
+                          <p className="font-playfair italic text-xs text-[#1a1a1a]/50 py-8 text-center select-none">
+                            No books in this list yet. Add books from the Library or Recommendations.
+                          </p>
+                        ) : (
+                          /* Horizontal scrollable cards */
+                          <div className="flex gap-5 overflow-x-auto pb-4 pt-1 no-scrollbar">
+                            {list.books.map((book) => {
+                              const authorStr = Array.isArray(book.authors) 
+                                ? book.authors.join(', ') 
+                                : (book.authors || 'Unknown Author');
 
-                {/* Expanded books container */}
-                <AnimatePresence initial={false}>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="p-5 sm:p-6 bg-purple-dark/5"
-                    >
-                      {bookCount === 0 ? (
-                        <p className="font-playfair italic text-xs text-gold/60 py-8 text-center select-none">
-                          No books in this list yet. Add books from the Library or Recommendations.
-                        </p>
-                      ) : (
-                        /* Horizontal scrollable cards */
-                        <div className="flex gap-5 overflow-x-auto pb-4 pt-1 scrollbar-thin scrollbar-thumb-gold/20 scrollbar-track-transparent">
-                          {list.books.map((book) => {
-                            const authorStr = Array.isArray(book.authors) 
-                              ? book.authors.join(', ') 
-                              : (book.authors || 'Unknown Author');
+                              return (
+                                <div
+                                  key={book.bookId}
+                                  className="w-36 flex-shrink-0 flex flex-col justify-between transition-all relative group bg-transparent"
+                                >
+                                  <div>
+                                    {/* Cover */}
+                                    <div className="aspect-[3/4] bg-[#1a1a1a]/5 rounded-lg overflow-hidden relative mb-3">
+                                      <img
+                                        src={book.thumbnail}
+                                        alt={book.title}
+                                        className="w-full h-full object-cover"
+                                      />
+                                      {/* Offscreen remove hover action */}
+                                      <button
+                                        onClick={(e) => handleRemoveBook(e, list.id, book.bookId)}
+                                        className="absolute top-2 right-2 p-1 bg-white/95 border border-[#1a1a1a]/10 text-red-600 hover:text-red-500 rounded-full transition-all shadow-xs opacity-0 group-hover:opacity-100 duration-200 text-xs font-bold w-6 h-6 flex items-center justify-center"
+                                        title="Remove from list"
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
 
-                            return (
-                              <div
-                                key={book.bookId}
-                                className="w-36 flex-shrink-0 flex flex-col justify-between glass-card border-white/5 p-3 rounded-xl hover:border-gold/25 transition-all relative group shadow"
-                              >
-                                <div>
-                                  {/* Cover */}
-                                  <div className="aspect-[3/4] bg-black/40 rounded-lg overflow-hidden relative shadow mb-3">
-                                    <img
-                                      src={book.thumbnail}
-                                      alt={book.title}
-                                      className="w-full h-full object-cover"
-                                    />
-                                    {/* Offscreen remove hover action */}
-                                    <button
-                                      onClick={(e) => handleRemoveBook(e, list.id, book.bookId)}
-                                      className="absolute top-2 right-2 p-1.5 bg-red-950/80 hover:bg-red-600 text-red-400 hover:text-cream rounded-full border border-red-500/30 transition-all shadow opacity-0 group-hover:opacity-100 duration-200"
-                                      title="Remove from list"
-                                    >
-                                      ✕
-                                    </button>
+                                    {/* Info */}
+                                    <h4 className="font-playfair font-bold text-[#1a1a1a] text-[11px] leading-snug line-clamp-2" title={book.title}>
+                                      {book.title}
+                                    </h4>
+                                    <p className="font-inter text-[9px] text-[#1a1a1a]/50 mt-1 line-clamp-1 truncate" title={authorStr}>
+                                      {authorStr}
+                                    </p>
                                   </div>
 
-                                  {/* Info */}
-                                  <h4 className="font-playfair font-bold text-cream text-[11px] leading-snug line-clamp-2" title={book.title}>
-                                    {book.title}
-                                  </h4>
-                                  <p className="font-inter text-[9px] text-cream/40 mt-1 line-clamp-1 truncate" title={authorStr}>
-                                    {authorStr}
-                                  </p>
+                                  {/* Buy link / Actions */}
+                                  <div className="mt-4 pt-2 border-t border-[#1a1a1a]/5 flex justify-between items-center">
+                                    <a
+                                      href={book.infoLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[9px] font-bold text-[#1a1a1a]/60 hover:text-[#1a1a1a] hover:underline uppercase tracking-wider font-inter"
+                                    >
+                                      Acquire ↗
+                                    </a>
+                                    
+                                    {/* Visible direct remove for touch screens */}
+                                    <button
+                                      onClick={(e) => handleRemoveBook(e, list.id, book.bookId)}
+                                      className="text-[9px] font-bold text-red-600 hover:text-red-500 uppercase tracking-wider font-inter sm:hidden"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
                                 </div>
-
-                                {/* Buy link / Actions */}
-                                <div className="mt-4 pt-2 border-t border-white/5 flex justify-between items-center">
-                                  <a
-                                    href={book.infoLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[9px] font-bold text-gold hover:text-gold-light uppercase tracking-wider font-inter hover:underline"
-                                  >
-                                    Acquire ↗
-                                  </a>
-                                  
-                                  {/* Visible direct remove for touch screens */}
-                                  <button
-                                    onClick={(e) => handleRemoveBook(e, list.id, book.bookId)}
-                                    className="text-[9px] font-bold text-red-400 hover:text-red-300 uppercase tracking-wider font-inter sm:hidden"
-                                  >
-                                    Remove
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
