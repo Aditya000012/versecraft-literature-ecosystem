@@ -683,11 +683,9 @@ function SimpleChatPageContent() {
         />
       ))}
 
-      {/* Watermark V */}
       <div
-        className="font-playfair"
+        className="font-playfair fixed md:absolute"
         style={{
-          position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',

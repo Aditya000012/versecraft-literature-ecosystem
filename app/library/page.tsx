@@ -1187,7 +1187,7 @@ function LibraryPageContent() {
                 {/* Flex container */}
                 <div className="flex flex-col md:flex-row gap-6 mt-2">
                   {/* Book cover left */}
-                  <div className="w-full md:w-1/3 aspect-[3/4] bg-white border border-[#1a1a1a]/15 rounded-xl overflow-hidden shadow-md flex-shrink-0">
+                  <div className="w-32 h-44 mx-auto md:mx-0 md:w-1/3 md:h-auto md:aspect-[3/4] bg-white border border-[#1a1a1a]/15 rounded-xl overflow-hidden shadow-md flex-shrink-0">
                     <img
                       src={selectedBook.volumeInfo.imageLinks?.thumbnail || selectedBook.volumeInfo.imageLinks?.smallThumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80'}
                       alt={selectedBook.volumeInfo.title}
@@ -1252,7 +1252,7 @@ function LibraryPageContent() {
                     </div>
 
                     {/* Actions buttons footer */}
-                    <div className="mt-6 pt-4 border-t border-[#1a1a1a]/10 flex flex-wrap gap-2.5 justify-end">
+                    <div className="mt-6 pt-4 border-t border-[#1a1a1a]/10 flex flex-col sm:flex-row gap-2.5 justify-end w-full">
                       {/* Discuss button */}
                       <button
                         type="button"
@@ -1260,7 +1260,7 @@ function LibraryPageContent() {
                           setSelectedBook(null);
                           router.push(`/chat/simple?book=${encodeURIComponent(selectedBook.volumeInfo.title)}&author=${encodeURIComponent(selectedBook.volumeInfo.authors?.[0] || 'Unknown')}`);
                         }}
-                        className="flex-1 py-3 rounded-xl border border-[#1a1a1a]/15 bg-white/60 hover:bg-[#1a1a1a]/5 text-[#1a1a1a] text-xs font-bold uppercase tracking-widest font-inter transition-all duration-200 flex items-center justify-center gap-1.5"
+                        className="w-full sm:flex-1 py-3 rounded-xl border border-[#1a1a1a]/15 bg-white/60 hover:bg-[#1a1a1a]/5 text-[#1a1a1a] text-xs font-bold uppercase tracking-widest font-inter transition-all duration-200 flex items-center justify-center gap-1.5"
                       >
                         💬 Discuss with Companion
                       </button>
@@ -1273,7 +1273,7 @@ function LibraryPageContent() {
                             setSelectedBook(null);
                             router.push(`/read/${selectedBook.gutenbergId}`);
                           }}
-                          className="flex-1 py-3 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] rounded-xl text-center text-xs font-bold uppercase tracking-widest font-inter transition-all flex items-center justify-center gap-1.5"
+                          className="w-full sm:flex-1 py-3 bg-[#1a1a1a] hover:bg-[#2d2d2d] text-[#F8F4E9] rounded-xl text-center text-xs font-bold uppercase tracking-widest font-inter transition-all flex items-center justify-center gap-1.5"
                         >
                           📖 Read Now
                         </button>
@@ -1284,7 +1284,7 @@ function LibraryPageContent() {
                         href={selectedBook.volumeInfo.infoLink || `https://books.google.com/books?id=${selectedBook.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 py-3 bg-white/60 hover:bg-white/90 border border-[#1a1a1a]/15 rounded-xl text-center text-xs font-bold uppercase tracking-widest font-inter text-[#1a1a1a]/85 transition-all shadow-sm flex items-center justify-center gap-1.5"
+                        className="w-full sm:flex-1 py-3 bg-white/60 hover:bg-white/90 border border-[#1a1a1a]/15 rounded-xl text-center text-xs font-bold uppercase tracking-widest font-inter text-[#1a1a1a]/85 transition-all shadow-sm flex items-center justify-center gap-1.5"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -1297,7 +1297,7 @@ function LibraryPageContent() {
                         href={`https://play.google.com/store/search?q=${encodeURIComponent(selectedBook.volumeInfo.title + ' ' + (selectedBook.volumeInfo.authors?.[0] || ''))}&c=books`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 py-3 bg-white/60 hover:bg-white/90 border border-[#1a1a1a]/15 text-[#1a1a1a]/85 rounded-xl text-center text-xs font-bold uppercase tracking-widest font-inter transition-all flex items-center justify-center gap-1.5"
+                        className="w-full sm:flex-1 py-3 bg-white/60 hover:bg-white/90 border border-[#1a1a1a]/15 text-[#1a1a1a]/85 rounded-xl text-center text-xs font-bold uppercase tracking-widest font-inter transition-all flex items-center justify-center gap-1.5"
                       >
                         Buy Ebook
                       </a>
@@ -1306,7 +1306,7 @@ function LibraryPageContent() {
                       <button
                         type="button"
                         onClick={(e) => toggleWishlist(e, selectedBook)}
-                        className={`flex-1 py-3 rounded-xl border text-xs font-bold uppercase tracking-widest font-inter transition-all flex items-center justify-center gap-1.5 ${
+                        className={`w-full sm:flex-1 py-3 rounded-xl border text-xs font-bold uppercase tracking-widest font-inter transition-all flex items-center justify-center gap-1.5 ${
                           isBookInWishlist(selectedBook.id)
                             ? 'bg-[#1a1a1a] border-[#1a1a1a] text-[#F8F4E9]'
                             : 'bg-white/60 border-[#1a1a1a]/15 text-[#1a1a1a] hover:bg-[#1a1a1a]/5 hover:text-[#1a1a1a]'

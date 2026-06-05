@@ -750,7 +750,7 @@ export default function DashboardPage() {
 
       <div
         ref={dashboardContainerRef}
-        className="relative z-10 w-full flex flex-col gap-24 select-none overflow-hidden pb-20"
+        className="relative z-10 w-full flex flex-col gap-24 select-none overflow-x-hidden pb-20"
         style={{ animation: 'candlelight-ambience 28s infinite ease-in-out' }}
       >
         {/* Scroll-Responsive "Living Manuscript Drift" System (Background Layers) */}

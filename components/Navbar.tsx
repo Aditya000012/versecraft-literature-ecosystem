@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, updateDoc, increment } from 'firebase/firestore';
@@ -21,13 +21,20 @@ const genres = [
 export default function Navbar() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<'library' | 'chat' | 'profile' | null>(null);
   const [librarySearch, setLibrarySearch] = useState('');
   const [profileData, setProfileData] = useState<{ timeSpent: number; displayName: string } | null>(null);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close mobile menu on pathname changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   // Monitor scroll for solid background transition
   useEffect(() => {
@@ -419,9 +426,111 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
+            
+            {/* Hamburger Menu Toggle (Mobile Only) */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg text-[#1a1a1a] hover:bg-black/5 transition-colors focus:outline-none"
+              aria-label="Toggle Menu"
+            >
+              {isMobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Drawer (Mobile Only) */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-[#1a1a1a]/10 bg-[#F8F4E9] px-4 pt-4 pb-6 space-y-4 max-h-[85vh] overflow-y-auto">
+          {/* Library Search Form */}
+          <form onSubmit={handleLibrarySearchSubmit} className="relative w-full">
+            <input
+              type="text"
+              placeholder="Search books or authors..."
+              value={librarySearch}
+              onChange={(e) => setLibrarySearch(e.target.value)}
+              className="w-full px-3 py-2 pl-9 text-xs rounded-lg focus:outline-none bg-white border border-[#1a1a1a]/25 text-[#1a1a1a] placeholder-[#1a1a1a]/30 focus:border-[#1a1a1a]/55"
+            />
+            <svg 
+              className="absolute left-3 top-3 w-4 h-4 text-[#1a1a1a]/40" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </form>
+
+          {/* Primary Routes */}
+          <div className="flex flex-col space-y-3 font-inter font-semibold text-sm text-[#1a1a1a]/85">
+            <div className="border-b border-black/5 pb-2">
+              <span className="text-[10px] uppercase tracking-wider font-bold text-[#1a1a1a]/50">Navigation</span>
+            </div>
+            <Link href="/library" className="px-2 py-1 hover:bg-black/5 rounded transition-all">Library</Link>
+            <Link href="/reader" className="px-2 py-1 hover:bg-black/5 rounded transition-all">Reader</Link>
+            <Link href="/authors" className="px-2 py-1 hover:bg-black/5 rounded transition-all">Authors</Link>
+            <Link href="/movements" className="px-2 py-1 hover:bg-black/5 rounded transition-all">Movements</Link>
+            <Link href="/community" className="px-2 py-1 hover:bg-black/5 rounded transition-all">Community</Link>
+            <Link href="/recommendations" className="px-2 py-1 hover:bg-black/5 rounded transition-all">Recommendations</Link>
+          </div>
+
+          {/* Companion Chat Chambers (Nested Options) */}
+          <div className="flex flex-col space-y-2 font-inter text-xs text-[#1a1a1a]/85">
+            <div className="border-b border-black/5 pb-1 mt-2">
+              <span className="text-[10px] uppercase tracking-wider font-bold text-[#1a1a1a]/50">Companion Chat</span>
+            </div>
+            <Link href="/chat/simple" className="px-2 py-1.5 hover:bg-black/5 rounded transition-all flex flex-col">
+              <span className="font-semibold text-xs">Simple Chat</span>
+              <span className="text-[9px] text-[#1a1a1a]/55">Open creative dialogue</span>
+            </Link>
+            <Link href="/chat/advanced" className="px-2 py-1.5 hover:bg-black/5 rounded transition-all flex flex-col">
+              <span className="font-semibold text-xs">Advanced Chat</span>
+              <span className="text-[9px] text-[#1a1a1a]/55">Genre & Era-locked filters</span>
+            </Link>
+            <Link href="/translation" className="px-2 py-1.5 hover:bg-black/5 rounded transition-all flex flex-col">
+              <span className="font-semibold text-xs">Translation Chamber</span>
+              <span className="text-[9px] text-[#1a1a1a]/55">Carry literature across borders</span>
+            </Link>
+            <Link href="/write-with-me" className="px-2 py-1.5 hover:bg-black/5 rounded transition-all flex flex-col">
+              <span className="font-semibold text-xs">Write With Me</span>
+              <span className="text-[9px] text-[#1a1a1a]/55">Co-compose flowing prose</span>
+            </Link>
+          </div>
+
+          {/* Account and Profile options (if user logged in) */}
+          {user && (
+            <div className="flex flex-col space-y-2 border-t border-[#1a1a1a]/10 pt-4 font-inter text-xs text-[#1a1a1a]/85">
+              <div className="border-b border-black/5 pb-1">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-[#1a1a1a]/50">Your Study Room</span>
+              </div>
+              <Link href="/profile?tab=my-profile" className="px-2 py-1 hover:bg-black/5 rounded transition-all">👤 My Profile</Link>
+              <Link href="/profile?tab=anthology" className="px-2 py-1 hover:bg-black/5 rounded transition-all">📜 Personal Anthology</Link>
+              <Link href="/profile?tab=wishlist" className="px-2 py-1 hover:bg-black/5 rounded transition-all">❤️ Wishlist</Link>
+              <Link href="/reading-lists" className="px-2 py-1 hover:bg-black/5 rounded transition-all">📚 Reading Lists</Link>
+              <Link href="/profile?tab=preferences" className="px-2 py-1 hover:bg-black/5 rounded transition-all">⚙️ Preferences</Link>
+              
+              {user?.uid === 'AGUsKuZPq7YFBydMnnOnUcFhvdx1' && (
+                <Link href="/admin" className="px-2 py-1 hover:bg-black/5 rounded transition-all font-semibold">🛡️ Admin Panel</Link>
+              )}
+              
+              <button
+                onClick={handleSignOut}
+                className="w-full text-left px-2 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded transition-all mt-2"
+              >
+                🚪 Sign Out
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </nav>
   );
 }

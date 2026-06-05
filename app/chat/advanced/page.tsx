@@ -1662,6 +1662,14 @@ const getGenrePattern = (genre: string): string | null => {
     openTag += ' height="100%"';
   }
 
+  // Inject class name for mobile styling
+  const classMatch = openTag.match(/class="[^"]*"/);
+  if (classMatch) {
+    openTag = openTag.replace(classMatch[0], 'class="genre-pattern-svg"');
+  } else {
+    openTag += ' class="genre-pattern-svg"';
+  }
+
   return openTag + rest;
 };
 
@@ -2419,6 +2427,17 @@ function AdvancedChatPageContent() {
             nav svg {
               stroke: ${atmConfig.panelText} !important;
               color: ${atmConfig.panelText} !important;
+            }
+            @media (max-width: 768px) {
+              .genre-pattern-svg {
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                width: 220% !important;
+                height: auto !important;
+                min-height: 120% !important;
+                opacity: 0.12 !important;
+              }
             }
           `}} />
           <div
